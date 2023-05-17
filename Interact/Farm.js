@@ -287,7 +287,7 @@ const checkTransaction = async (txid) => {
       return true;
     } else if (receipt?.status == false) {
       clearInterval(checkSuccess);
-      console.log("fail txid", txidApprove);
+      console.log("fail txid", txid);
       return false;
     }
   }, 2000);

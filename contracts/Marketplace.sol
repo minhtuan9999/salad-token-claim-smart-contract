@@ -26,7 +26,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -81,7 +81,7 @@ contract ReMonsterMarketplace is
 
     // EVENTS
     event OrderCreated(
-        bytes32 id,
+        bytes32 orderId,
         uint256 indexed tokenId,
         address indexed seller,
         address nftAddress,
@@ -190,8 +190,8 @@ contract ReMonsterMarketplace is
         uint256 tokenId,
         uint256 priceInWei,
         uint256 amount
-    ) public nonReentrant whenNotPaused {
-        (bytes32 orderId, address nftOwner) = _createMarketItemSale(
+    ) public nonReentrant whenNotPaused returns (bytes32 orderId, address nftOwner) {
+        (orderId, nftOwner) = _createMarketItemSale(
             contracAddress,
             tokenId,
             priceInWei,
@@ -367,14 +367,24 @@ contract ReMonsterMarketplace is
      */
     function buyItem(
         bytes32 orderId
-    ) public whenNotPaused returns (Order memory order) {
-        order = orderByAssetId[orderId];
+    ) public whenNotPaused{
+        Order memory order = orderByAssetId[orderId];
         require(order.active, "Asset not published");
 
         address seller = order.seller;
 
         require(seller != address(0), "Invalid address");
         require(seller != msg.sender, "Unauthorized user");
+
+        // Transfer sale amount to contract
+        require(
+            tokenBase.transferFrom(
+                msg.sender,
+                address(this),
+                order.price
+            ),
+            "Transfering to the Marketplace contract failed"
+        );
         if (isERC721(order.contractAddress)) {
             IERC721 nftContract = IERC721(order.contractAddress);
             require(
@@ -410,8 +420,7 @@ contract ReMonsterMarketplace is
 
             // Transfer share amount for marketplace Owner
             require(
-                tokenBase.transferFrom(
-                    address(this),
+                tokenBase.transfer(
                     addressReceiveFee,
                     saleShareAmount
                 ),
@@ -421,8 +430,7 @@ contract ReMonsterMarketplace is
 
         // Transfer sale amount to seller
         require(
-            tokenBase.transferFrom(
-                address(this),
+            tokenBase.transfer(
                 seller,
                 order.price.sub(saleShareAmount)
             ),
