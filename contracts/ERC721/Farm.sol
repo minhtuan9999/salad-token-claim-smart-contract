@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: CC0-1.0
-// 
-// 
-//    /$$$$$$$                /$$      /$$                                 /$$                        
-//   | $$__  $$              | $$$    /$$$                                | $$                        
-//   | $$  \ $$  /$$$$$$     | $$$$  /$$$$  /$$$$$$  /$$$$$$$   /$$$$$$$ /$$$$$$    /$$$$$$   /$$$$$$ 
+//
+//
+//    /$$$$$$$                /$$      /$$                                 /$$
+//   | $$__  $$              | $$$    /$$$                                | $$
+//   | $$  \ $$  /$$$$$$     | $$$$  /$$$$  /$$$$$$  /$$$$$$$   /$$$$$$$ /$$$$$$    /$$$$$$   /$$$$$$
 //   | $$$$$$$/ /$$__  $$    | $$ $$/$$ $$ /$$__  $$| $$__  $$ /$$_____/|_  $$_/   /$$__  $$ /$$__  $$
 //   | $$__  $$| $$$$$$$$    | $$  $$$| $$| $$  \ $$| $$  \ $$|  $$$$$$   | $$    | $$$$$$$$| $$  \__/
-//   | $$  \ $$| $$_____/    | $$\  $ | $$| $$  | $$| $$  | $$ \____  $$  | $$ /$$| $$_____/| $$      
-//   | $$  | $$|  $$$$$$$ /$$| $$ \/  | $$|  $$$$$$/| $$  | $$ /$$$$$$$/  |  $$$$/|  $$$$$$$| $$      
-//   |__/  |__/ \_______/|__/|__/     |__/ \______/ |__/  |__/|_______/    \___/   \_______/|__/                                   
-// 
-//            .----------------. .----------------. .----------------. .----------------. 
+//   | $$  \ $$| $$_____/    | $$\  $ | $$| $$  | $$| $$  | $$ \____  $$  | $$ /$$| $$_____/| $$
+//   | $$  | $$|  $$$$$$$ /$$| $$ \/  | $$|  $$$$$$/| $$  | $$ /$$$$$$$/  |  $$$$/|  $$$$$$$| $$
+//   |__/  |__/ \_______/|__/|__/     |__/ \______/ |__/  |__/|_______/    \___/   \_______/|__/
+//
+//            .----------------. .----------------. .----------------. .----------------.
 //           | .--------------. | .--------------. | .--------------. | .--------------. |
 //           | |  _________   | | |      __      | | |  _______     | | | ____    ____ | |
 //           | | |_   ___  |  | | |     /  \     | | | |_   __ \    | | ||_   \  /   _|| |
@@ -31,8 +31,17 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./Interface/IERC4907.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract FARM is Ownable, ERC721, IERC4907, AccessControl {
+contract FARM is
+    Ownable,
+    ERC721,
+    IERC4907,
+    AccessControl,
+    ReentrancyGuard,
+    Pausable
+{
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -41,16 +50,12 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
 
     // stored current packageId
     Counters.Counter private _tokenIds;
-    IERC20 public immutable tokenBase;
+    // Base URI
+    string private _baseURIextended;
 
     struct UserInfo {
         address user; // address of user role
         uint64 expires; // unix timestamp, user expires
-    }
-
-    struct FarmInfo {
-        bool isSale;
-        uint256 price;
     }
 
     struct MonsterInfo {
@@ -67,49 +72,28 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
 
     mapping(uint256 => UserInfo) internal _users;
 
-    // ID => Info Farm
-    mapping(uint256 => FarmInfo) internal farm;
-
     // ID Farm => Info Monster
     mapping(uint256 => MonsterInfo) internal training;
 
     // EVENTS
-    event NewFarm(uint256 tokenId, address owner);
+    event NewFarm(uint256 typeNFT, uint256 tokenId, address owner);
 
     constructor(
         string memory name_,
-        string memory symbol_,
-        address admin,
-        address manager,
-        IERC20 _tokenBase
+        string memory symbol_
     ) ERC721(name_, symbol_) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(ADMIN_ROLE, admin);
-        _setupRole(MANAGERMENT_ROLE, manager);
-        tokenBase = _tokenBase;
+        _setupRole(ADMIN_ROLE, _msgSender());
+        _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    /**
-     * Set farm price
-     * @param packageId: package ID
-     * @param price: price want to set
-     */
-    function setFarmPrice(
-        uint256 packageId,
-        uint256 price
-    ) public onlyRole(MANAGERMENT_ROLE) {
-        farm[packageId] = FarmInfo({isSale: true, price: price});
+    function setBaseURI(string memory baseURI_) external onlyOwner {
+        _baseURIextended = baseURI_;
     }
 
-    /**
-     * Set farm price
-     * @param packageId: package ID
-     */
-    function endPackageFarm(
-        uint256 packageId
-    ) public onlyRole(MANAGERMENT_ROLE) {
-        delete farm[packageId];
+    function _baseURI() internal view virtual override returns (string memory) {
+        return _baseURIextended;
     }
 
     function trainingMonster(
@@ -117,10 +101,10 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
         uint256 farmId,
         uint256 monsterId
     ) public {
-        require(!training[farmId].isTraining, "Training already exists");
+        require(!training[farmId].isTraining, "FARM::trainingMonster: Training already exists");
         require(
             ERC721.ownerOf(farmId) == msg.sender,
-            "ERC721: Incorrect farm owner"
+            "FARM::trainingMonster::ERC721: Incorrect farm owner"
         );
 
         // tokenId must be approved for this contract
@@ -138,51 +122,34 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
         uint256 farmId,
         uint256 monsterId
     ) public {
-        require(training[farmId].isTraining, "Training does not exist");
+        require(training[farmId].isTraining, "FARM::endTrainingMonster: Training does not exist");
         address ownerMonster = training[farmId].owner;
         require(
             ownerMonster == msg.sender || msg.sender == owner(),
-            "Unauthorized user"
+            "FARM::endTrainingMonster: Unauthorized user"
         );
 
         monsterContract.transferFrom(address(this), ownerMonster, monsterId);
         delete training[farmId];
     }
 
-    function buyFarm(uint256 packageID) public {
-        require(farm[packageID].isSale, "Package not published");
-        require(msg.sender != address(0), "Invalid address");
-
-        // Transfer share amount for marketplace Owner
-        require(
-            tokenBase.transferFrom(
-                msg.sender,
-                address(this),
-                farm[packageID].price
-            ),
-            "Transfering the cut to the Marketplace owner failed"
-        );
-        _createFarm(msg.sender);
-        // _setTokenURI(tokenId, _uri);
+    function createNFT(
+        address _address,
+        uint256 _type
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        _createFarm(_address, _type);
     }
 
     /**
      * create a farm and mint to owner
      * @param owner: owner of farm
      */
-    function _createFarm(address owner) internal {
+    function _createFarm(address owner, uint256 typeNFT) internal {
         uint256 tokenId = _tokenIds.current();
         _mint(owner, tokenId);
         userToListFarm[owner].add(tokenId);
         _tokenIds.increment();
-        emit NewFarm(tokenId, owner);
-    }
-
-    function setTokenURI(
-        uint256 tokenId,
-        string memory _tokenURI
-    ) public onlyRole(MANAGERMENT_ROLE) {
-        _setTokenURI(tokenId, _tokenURI);
+        emit NewFarm(typeNFT, tokenId, owner);
     }
 
     function _setTokenURI(
@@ -191,7 +158,7 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
     ) internal virtual {
         require(
             _exists(tokenId),
-            "ERC721Metadata: URI set of nonexistent token"
+            "FARM::setTokenURI::ERC721Metadata: URI set of nonexistent token"
         );
         _tokenURIs[tokenId] = _tokenURI;
     }
@@ -199,10 +166,12 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
     /**
      * withdraw all erc20 token base balance of this contract
      */
-    function withdrawToken() external onlyRole(ADMIN_ROLE) {
-        uint256 balance = tokenBase.balanceOf(address(this));
-        require(balance > 0, "Insufficient balance");
-        tokenBase.transfer(msg.sender, balance);
+    function withdrawToken(
+        address contractAddress
+    ) external onlyRole(ADMIN_ROLE) {
+        uint256 balance = IERC20(contractAddress).balanceOf(address(this));
+        require(balance > 0, "FARM::withdrawToken: Insufficient balance");
+        IERC20(contractAddress).transfer(msg.sender, balance);
     }
 
     /**
@@ -210,30 +179,8 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
      */
     function getListFarmByAddress(
         address _address
-    ) public view returns (uint256 [] memory listFarm) {
+    ) public view returns (uint256[] memory listFarm) {
         listFarm = userToListFarm[_address].values();
-    }
-
-    /**
-     * Get Info farm by ID Package
-     */
-    function getInforPackage(
-        uint256 packageID
-    ) public view returns (bool isSale, uint256 price) {
-        isSale = farm[packageID].isSale;
-        price = farm[packageID].price;
-    }
-
-    /**
-     * get erc20 token base balance of this contract
-     */
-    function getContractERC20Balance()
-        public
-        view
-        onlyRole(ADMIN_ROLE)
-        returns (uint256)
-    {
-        return tokenBase.balanceOf(address(this));
     }
 
     /// @notice set the user and expires of a NFT
@@ -245,10 +192,10 @@ contract FARM is Ownable, ERC721, IERC4907, AccessControl {
         uint256 tokenId,
         address user,
         uint64 expires
-    ) external onlyRole(MANAGERMENT_ROLE){
+    ) external onlyRole(MANAGERMENT_ROLE) {
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
-            "ERC721: transfer caller is not owner nor approved"
+            "FARM::setUser::ERC721: transfer caller is not owner nor approved"
         );
         UserInfo storage info = _users[tokenId];
         info.user = user;

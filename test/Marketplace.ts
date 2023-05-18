@@ -136,7 +136,7 @@ describe("ReMonsterMarketplace", function () {
         });
 
         describe("Events", function () {
-            it("Should emit an event on setFeeSeller", async function () {
+            it("Should emit an event on setNewAddressFee", async function () {
                 const { marketplace, owner, addressReceiceFee } = await loadFixture(
                     deployMarketplaceFixture
                 );
@@ -157,7 +157,7 @@ describe("ReMonsterMarketplace", function () {
                 );
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).createMarketItemSale(marketplace.address, 0, 1999, 10)).to.be.revertedWith('Unsupported contract');
+                await expect(marketplace.connect(ownerNFT).createMarketItemSale(marketplace.address, 0, 1999, 10)).to.be.revertedWith('ReMonsterMarketplace::createMarketItemSale: Unsupported contract');
             });
 
             it("Should revert with the right error if called not from Owner NFT 721", async function () {
@@ -165,7 +165,7 @@ describe("ReMonsterMarketplace", function () {
                     deployMarketplaceFixture
                 );
                 // We use marketplace.connect() to send a transaction from ownerOAS account
-                await expect(marketplace.connect(ownerOAS).createMarketItemSale(test721.address, 0, 1999, 1)).to.be.rejectedWith('Only the owner can create orders');
+                await expect(marketplace.connect(ownerOAS).createMarketItemSale(test721.address, 0, 1999, 1)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Only the owner can create orders');
             });
 
             it("Should revert with the right error if called not enough NFT 1155", async function () {
@@ -174,7 +174,7 @@ describe("ReMonsterMarketplace", function () {
                 );
 
                 // We use marketplace.connect() to send a transaction from ownerOAS account
-                await expect(marketplace.connect(ownerOAS).createMarketItemSale(test1155.address, 0, 1999, 10)).to.be.rejectedWith('Insufficient balance');
+                await expect(marketplace.connect(ownerOAS).createMarketItemSale(test1155.address, 0, 1999, 10)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Insufficient balance');
             });
 
             it("Should revert with the right error if contract is not authorized to manage the asset 721", async function () {
@@ -183,7 +183,7 @@ describe("ReMonsterMarketplace", function () {
                 );
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test721.address, 0, 1999, 1)).to.be.rejectedWith('The contract is not authorized to manage the asset');
+                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test721.address, 0, 1999, 1)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: The contract is not authorized to manage the asset');
             });
 
             it("Should revert with the right error if contract is not authorized to manage the asset 1155", async function () {
@@ -192,7 +192,7 @@ describe("ReMonsterMarketplace", function () {
                 );
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, 1999, 10)).to.be.rejectedWith('The contract is not authorized to manage the asset');
+                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, 1999, 10)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: The contract is not authorized to manage the asset');
             });
 
             it("Should revert with the right error if price is less than or equal to 0 - 721", async function () {
@@ -204,7 +204,7 @@ describe("ReMonsterMarketplace", function () {
                 await expect(test721.connect(ownerNFT).setApprovalForAll(marketplace.address, true)).not.to.be.reverted;
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test721.address, 0, 0, 10)).to.be.rejectedWith('Price should be bigger than 0');
+                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test721.address, 0, 0, 10)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Price should be bigger than 0');
             });
 
             it("Should revert with the right error if price is less than or equal to 0 - 1155", async function () {
@@ -216,7 +216,7 @@ describe("ReMonsterMarketplace", function () {
                 await expect(test1155.connect(ownerNFT).setApprovalForAll(marketplace.address, true)).not.to.be.reverted;
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, 0, 10)).to.be.rejectedWith('Price should be bigger than 0');
+                await expect(marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, 0, 10)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Price should be bigger than 0');
             });
 
             it("Shouldn't fail if the createMarketItemSale has arrived and the owner NFT-721 calls it", async function () {
@@ -281,9 +281,9 @@ describe("ReMonsterMarketplace", function () {
                 );
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).cancelMarketItemSale('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('Asset not published');
+                await expect(marketplace.connect(ownerNFT).cancelMarketItemSale('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Asset not published');
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).cancelMarketItemSale('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('Asset not published');
+                await expect(marketplace.connect(ownerNFT).cancelMarketItemSale('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Asset not published');
             });
 
             it("Should revert with the right error if called not from Owner NFT 721 or ADMIN", async function () {
@@ -301,7 +301,7 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerOAS account
-                        await expect(marketplace.connect(ownerOAS).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('Unauthorized user');
+                        await expect(marketplace.connect(ownerOAS).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Unauthorized user');
                     }
                 }
             });
@@ -321,7 +321,7 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerOAS account
-                        await expect(marketplace.connect(ownerOAS).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('Unauthorized user');
+                        await expect(marketplace.connect(ownerOAS).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Unauthorized user');
                     }
                 }
             });
@@ -458,9 +458,9 @@ describe("ReMonsterMarketplace", function () {
                 );
 
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).buyItem('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('Asset not published');
+                await expect(marketplace.connect(ownerNFT).buyItem('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('ReMonsterMarketplace::buyItem: Asset not published');
                 // We use marketplace.connect() to send a transaction from ownerNFT account
-                await expect(marketplace.connect(ownerNFT).buyItem('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('Asset not published');
+                await expect(marketplace.connect(ownerNFT).buyItem('0x65cd9354bf3ea586f83658938cb96d86c0b86783fb2a3149a727ddccc9270a56')).to.be.rejectedWith('ReMonsterMarketplace::buyItem: Asset not published');
             });
 
             it("Should revert with the right error if called from Owner NFT 721", async function () {
@@ -478,7 +478,7 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerNFT account
-                        await expect(marketplace.connect(ownerNFT).buyItem(orderCreatedEvent.args.orderId)).to.be.rejectedWith('Unauthorized user');
+                        await expect(marketplace.connect(ownerNFT).buyItem(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::buyItem: Unauthorized user');
                     }
                 }
             });
@@ -498,7 +498,7 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerNFT account
-                        await expect(marketplace.connect(ownerNFT).buyItem(orderCreatedEvent.args.orderId)).to.be.rejectedWith('Unauthorized user');
+                        await expect(marketplace.connect(ownerNFT).buyItem(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::buyItem: Unauthorized user');
                     }
                 }
             });
@@ -588,6 +588,7 @@ describe("ReMonsterMarketplace", function () {
                 await expect(test20.connect(ownerOAS).approve(marketplace.address, "1000000000000000000000000000000000000000000")).not.to.be.reverted;
                 let sendTransaction = await marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, "100000000000000000000", 1)
                 const receipt = await sendTransaction.wait();
+
                 if (receipt && receipt.events) {
                     const events = receipt.events;
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
