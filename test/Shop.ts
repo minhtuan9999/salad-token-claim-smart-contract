@@ -23,8 +23,8 @@ describe("ReMonsterShop", function () {
         const shop = await Shop.connect(owner).deploy(addressReceice, test20.address);
         shop.deployed();
 
-        const Farm = await ethers.getContractFactory("FARM");
-        const farm = await Farm.connect(owner).deploy("FARM", "FM");
+        const Farm = await ethers.getContractFactory("ReMonsterFarm");
+        const farm = await Farm.connect(owner).deploy("ReMonsterFarm", "FM");
         farm.deployed();
 
         // Set role manager to SHOP

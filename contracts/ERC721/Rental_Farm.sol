@@ -17,7 +17,7 @@ contract RentalFarm is Ownable, AccessControl {
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
     IERC20 public tokenBase;
-    FARM public immutable farmContract;
+    ReMonsterFarm public immutable farmContract;
 
     struct RentalListing {
         bool isListing;
@@ -28,7 +28,7 @@ contract RentalFarm is Ownable, AccessControl {
     // Token ID => RentalListing
     mapping(uint256 => RentalListing) public infoFarm;
 
-    constructor(address admin, address manager, FARM farm, IERC20 _tokenBase) {
+    constructor(address admin, address manager, ReMonsterFarm farm, IERC20 _tokenBase) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, admin);

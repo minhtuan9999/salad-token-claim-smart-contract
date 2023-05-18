@@ -34,7 +34,7 @@ import "./Interface/IERC4907.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-contract FARM is
+contract ReMonsterFarm is
     Ownable,
     ERC721,
     IERC4907,
@@ -88,7 +88,7 @@ contract FARM is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    function setBaseURI(string memory baseURI_) external onlyOwner {
+    function setBaseURI(string memory baseURI_) external onlyRole(MANAGERMENT_ROLE) {
         _baseURIextended = baseURI_;
     }
 
@@ -101,10 +101,10 @@ contract FARM is
         uint256 farmId,
         uint256 monsterId
     ) public {
-        require(!training[farmId].isTraining, "FARM::trainingMonster: Training already exists");
+        require(!training[farmId].isTraining, "ReMonsterFarm::trainingMonster: Training already exists");
         require(
             ERC721.ownerOf(farmId) == msg.sender,
-            "FARM::trainingMonster::ERC721: Incorrect farm owner"
+            "ReMonsterFarm::trainingMonster::ERC721: Incorrect farm owner"
         );
 
         // tokenId must be approved for this contract
@@ -122,11 +122,11 @@ contract FARM is
         uint256 farmId,
         uint256 monsterId
     ) public {
-        require(training[farmId].isTraining, "FARM::endTrainingMonster: Training does not exist");
+        require(training[farmId].isTraining, "ReMonsterFarm::endTrainingMonster: Training does not exist");
         address ownerMonster = training[farmId].owner;
         require(
             ownerMonster == msg.sender || msg.sender == owner(),
-            "FARM::endTrainingMonster: Unauthorized user"
+            "ReMonsterFarm::endTrainingMonster: Unauthorized user"
         );
 
         monsterContract.transferFrom(address(this), ownerMonster, monsterId);
@@ -152,17 +152,6 @@ contract FARM is
         emit NewFarm(typeNFT, tokenId, owner);
     }
 
-    function _setTokenURI(
-        uint256 tokenId,
-        string memory _tokenURI
-    ) internal virtual {
-        require(
-            _exists(tokenId),
-            "FARM::setTokenURI::ERC721Metadata: URI set of nonexistent token"
-        );
-        _tokenURIs[tokenId] = _tokenURI;
-    }
-
     /**
      * withdraw all erc20 token base balance of this contract
      */
@@ -170,7 +159,7 @@ contract FARM is
         address contractAddress
     ) external onlyRole(ADMIN_ROLE) {
         uint256 balance = IERC20(contractAddress).balanceOf(address(this));
-        require(balance > 0, "FARM::withdrawToken: Insufficient balance");
+        require(balance > 0, "ReMonsterFarm::withdrawToken: Insufficient balance");
         IERC20(contractAddress).transfer(msg.sender, balance);
     }
 
@@ -195,7 +184,7 @@ contract FARM is
     ) external onlyRole(MANAGERMENT_ROLE) {
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
-            "FARM::setUser::ERC721: transfer caller is not owner nor approved"
+            "ReMonsterFarm::setUser::ERC721: transfer caller is not owner nor approved"
         );
         UserInfo storage info = _users[tokenId];
         info.user = user;

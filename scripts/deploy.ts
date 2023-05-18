@@ -1,19 +1,38 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  // Config
+  const TOTAL_SUPPLY = "100000000000000000000000000000";
+  const FEE = "10000000000000000000"; // 10% * 10^18
+  const ADDRESS_RECEICE = "0xeC9168A14469B88caC91398a0E22a8Ce9f9A44ed";
+  const NAME_FARM = "FARM"
+  const SYMBOL_FARM = "FM"
 
-  const lockedAmount = ethers.utils.parseEther("0.001");
+  // Deploy contract token (OAS) 
+  const Test20 = await ethers.getContractFactory("Test20");
+  const test20 = await Test20.deploy(TOTAL_SUPPLY);
+  test20.deployed();
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const Marketplace = await ethers.getContractFactory("ReMonsterMarketplace");
+  const marketplace = await Marketplace.deploy(FEE, ADDRESS_RECEICE, test20.address);
+  marketplace.deployed();
 
-  await lock.deployed();
+  const Shop = await ethers.getContractFactory("ReMonsterShop");
+  const shop = await Shop.deploy(ADDRESS_RECEICE, test20.address);
+  shop.deployed();
 
-  console.log(
-    `Lock with ${ethers.utils.formatEther(lockedAmount)}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+  const Farm = await ethers.getContractFactory("FARM");
+  const farm = await Farm.deploy(NAME_FARM, SYMBOL_FARM);
+  farm.deployed();
+
+  // Set role manager to SHOP
+  await farm.grantRole(farm.MANAGERMENT_ROLE(), shop.address)
+
+  // Log results
+  console.log(`ADDRESS_CONTRACT_TOKEN: ${test20.address}`);
+  console.log(`ADDRESS_CONTRACT_MARKETPLACE: ${marketplace.address}`);
+  console.log(`ADDRESS_CONTRACT_SHOP: ${shop.address}`);
+  console.log(`ADDRESS_CONTRACT_FARM: ${farm.address}`)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
