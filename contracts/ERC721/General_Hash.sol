@@ -6,26 +6,69 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract GeneralHash is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
-    using Strings for uint256;
+    using EnumerableSet for EnumerableSet.UintSet;
 
     // stored current packageId
     Counters.Counter private _tokenIds;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGERMENT_NFT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    string public baseTokenURI;
-
-    // EVENTS
-
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol, uint256 _regenerationLimit) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
+        _setRoleAdmin(MANAGERMENT_NFT_ROLE, MANAGERMENT_NFT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
+        regenerationLimit = _regenerationLimit;
     }
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
+    mapping (address => EnumerableSet.UintSet) private _holderTokens;
+    mapping (uint256 => uint256) private _countRegeneration;
+
+    // mint limit
+    uint256 private regenerationLimit;
+    // 
+
+    // Event create Monster
+    event createGeneralHash(address _address, uint256 _tokenId);
+
+    // Get holder Tokens
+    function getHolderToken(address _address) public view returns(uint256[] memory){
+        return _holderTokens[_address].values();
+    }
+    // Set mint limit
+    function setMintLimit(uint256 _number)  public onlyOwner {
+        regenerationLimit = _number;
+    }
+    // Set managerment role
+    function setManagermentRole(address _address) public onlyOwner{
+        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
+        _setupRole(MANAGERMENT_ROLE, _address);
+    }
+    // Set managerment nft role
+    function setManagermentNFTRole(address _address) public onlyOwner{
+        require(!hasRole(MANAGERMENT_NFT_ROLE, _address), "Monster: Readly Role");
+        _setupRole(MANAGERMENT_NFT_ROLE, _address);
+    }
+    /**
+     *@dev See {ERC721-_beforeTokenTransfer}.
+    */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal virtual override {
+        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+        _holderTokens[to].add(firstTokenId);
+        _holderTokens[from].remove(firstTokenId);
+    }
 
     // Base URI
     string private _baseURIextended;
@@ -34,46 +77,8 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         _baseURIextended = baseURI_;
     }
 
-    function _setTokenURI(uint256 tokenId, string memory _tokenURI)
-        internal
-        virtual
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI set of nonexistent token"
-        );
-        _tokenURIs[tokenId] = _tokenURI;
-    }
-
     function _baseURI() internal view virtual override returns (string memory) {
         return _baseURIextended;
-    }
-
-    function tokenURI(uint256 tokenId)
-        public
-        view
-        virtual
-        override
-        returns (string memory)
-    {
-        require(
-            _exists(tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-
-        string memory _tokenURI = _tokenURIs[tokenId];
-        string memory base = _baseURI();
-
-        // If there is no base URI, return the token URI.
-        if (bytes(base).length == 0) {
-            return _tokenURI;
-        }
-        // If both are set, concatenate the baseURI and tokenURI (via abi.encodePacked).
-        if (bytes(_tokenURI).length > 0) {
-            return string(abi.encodePacked(base, _tokenURI));
-        }
-        // If there is a baseURI but no tokenURI, concatenate the tokenID to the baseURI.
-        return string(abi.encodePacked(base, tokenId.toString()));
     }
 
     function supportsInterface(bytes4 interfaceId)
@@ -93,26 +98,58 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         _unpause();
     }
 
-
     /*
-     * mint a General Hash
+     * mint a Genesishash
      * @param _uri: _uri of NFT
-     * @param _addressTo: _uri of NFT
+     * @param _address: owner of NFT
      */
-    function mintGeneralHash(address _addressTo, string memory _uri) public whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    
+    function createNFT(
+        address _address
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _tokenIds.current();
-        _mint(_addressTo, tokenId);
-        _setTokenURI(tokenId, _uri);
+        _mint(_address, tokenId);
         _tokenIds.increment();
+        _holderTokens[_address].add(tokenId);
+        emit createGeneralHash(_address, tokenId);
     } 
 
     /*
-     * update Uri
-     * @param _tokenId: tokenId change uri
-     * @param _uri: new uri of NFT
+     * mint a Genesishash
+     * @param _address: owner of NFT
      */
-    function updateUri(uint256 _tokenId, string memory _uri) public whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_tokenId < totalSupply(),"TokenId not exits!");
-        _setTokenURI(_tokenId, _uri);
+    
+    function mintGenesishash(
+        address _address
+    ) external returns(uint256) {
+        require(hasRole(MANAGERMENT_NFT_ROLE, msg.sender), "Monster: Not permission");
+        uint256 tokenId = _tokenIds.current();
+        _mint(_address, tokenId);
+        _tokenIds.increment();
+        _holderTokens[_address].add(tokenId);
+        return tokenId;
+    } 
+
+    /*
+     * burn a Genesishash
+     * @param _tokenId: tokenId burn
+     */
+    function burnGeneralHash(uint256 _tokenId) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(_exists(_tokenId), "Token id not exist");
+        _burn(_tokenId);
     }
-}
+    /*
+     * count Regeneration
+     * @param _tokenId: tokenId 
+     * @param _owner: owner 
+     */
+    function fusionRegeneration(uint256 _tokenId) external  {
+        require(hasRole(MANAGERMENT_NFT_ROLE, msg.sender), "Monster: Fusion Regerneration: Not permission");
+        require(_exists(_tokenId), "Monster: Fusion Regerneration: Token id not exist");
+        _countRegeneration[_tokenId]++;
+        if(_countRegeneration[_tokenId] == regenerationLimit){
+            _burn(_tokenId);
+        }
+    } 
+
+}   
