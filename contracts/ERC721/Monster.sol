@@ -9,7 +9,13 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pausable {
+contract Monster is
+    Ownable,
+    ReentrancyGuard,
+    ERC721Enumerable,
+    AccessControl,
+    Pausable
+{
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -17,7 +23,8 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
     Counters.Counter private _tokenIds;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGERMENT_NFT_ROLE =
+        keccak256("MANAGERMENT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
@@ -25,10 +32,11 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
         _setupRole(MANAGERMENT_ROLE, _msgSender());
         _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
     }
+
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
-    mapping (address => EnumerableSet.UintSet) private _holderTokens;
-    mapping (uint256 => uint256) private _countMint;
+    mapping(address => EnumerableSet.UintSet) private _holderTokens;
+    mapping(uint256 => uint256) private _countMint;
     mapping(uint256 => monsterDetail) public _monster;
 
     //struct Monster
@@ -42,26 +50,38 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
     // Event create Monster Free
     event createNFTMonsterFree(address _address, uint256 _tokenDi);
     // Event fusion Monster
-    event fusionNFTMonster(address _address, uint256 _newNFTMonster, uint256 _firstTokenId, uint256 _lastTokenId);
+    event fusionNFTMonster(
+        address _address,
+        uint256 _newNFTMonster,
+        uint256 _firstTokenId,
+        uint256 _lastTokenId
+    );
 
     // Get holder Tokens
-    function getHolderToken(address _address) public view returns(uint256[] memory){
+    function getHolderToken(
+        address _address
+    ) public view returns (uint256[] memory) {
         return _holderTokens[_address].values();
     }
 
     // Set managerment role
-    function setManagermentRole(address _address) external onlyOwner{
+    function setManagermentRole(address _address) external onlyOwner {
         require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
         _setupRole(MANAGERMENT_ROLE, _address);
     }
+
     // Set managerment nft role
-    function setManagermentNFTRole(address _address) external onlyOwner{
-        require(!hasRole(MANAGERMENT_NFT_ROLE, _address), "Monster: Readly Role");
+    function setManagermentNFTRole(address _address) external onlyOwner {
+        require(
+            !hasRole(MANAGERMENT_NFT_ROLE, _address),
+            "Monster: Readly Role"
+        );
         _setupRole(MANAGERMENT_NFT_ROLE, _address);
     }
+
     /**
      *@dev See {ERC721-_beforeTokenTransfer}.
-    */
+     */
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -84,12 +104,9 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
         return _baseURIextended;
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(AccessControl, ERC721Enumerable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(AccessControl, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -106,25 +123,26 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
-    
-    function createNFT(
-        address _address
-    ) external returns (uint256){
-        require(hasRole(MANAGERMENT_NFT_ROLE, msg.sender), "Monster: Not permission");
+
+    function createNFT(address _address) external returns (uint256) {
+        require(
+            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
+            "Monster: Not permission"
+        );
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
         _holderTokens[_address].add(tokenId);
         _monster[tokenId].lifeSpan = true;
         return tokenId;
-    } 
+    }
 
- /*
+    /*
      * mint a Monster
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
-    
+
     function createFreeNFT(
         address _address
     ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
@@ -135,7 +153,7 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
         _monster[tokenId].lifeSpan = true;
         _monster[tokenId].isFree = true;
         emit createNFTMonsterFree(_address, tokenId);
-    } 
+    }
 
     /*
      * fusion a Monster
@@ -144,8 +162,15 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
      * @param _lastTokenId: last tokenId fusion => burn
      */
 
-    function fusionNFT(address _address, uint256 _firstTokenId, uint256 _lastTokenId) external returns(uint256){
-        require(hasRole(MANAGERMENT_NFT_ROLE, msg.sender), "Monster: Not permission");
+    function fusionNFT(
+        address _address,
+        uint256 _firstTokenId,
+        uint256 _lastTokenId
+    ) external returns (uint256) {
+        require(
+            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
+            "Monster: Not permission"
+        );
         require(_exists(_firstTokenId), "Monster: TokenId not exist");
         require(_exists(_lastTokenId), "Monster: TokenId not exist");
         uint256 tokenId = _tokenIds.current();
@@ -165,8 +190,11 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
      * @param _lastTokenId: last tokenId fusion => burn
      */
 
-    function fusionRegeneration(address _address) external returns(uint256){
-        require(hasRole(MANAGERMENT_NFT_ROLE, msg.sender), "Monster: Not permission");
+    function fusionRegeneration(address _address) external returns (uint256) {
+        require(
+            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
+            "Monster: Not permission"
+        );
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
@@ -180,33 +208,40 @@ contract Monster is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pa
      * @param _tokenId: tokenId burn
      */
     function burnMonster(uint256 _tokenId) external {
-        require(hasRole(MANAGERMENT_NFT_ROLE, msg.sender), "Monster: Not permission");
+        require(
+            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
+            "Monster: Not permission"
+        );
         _burn(_tokenId);
     }
-    
+
     /*
      * staus lifespan a Monster
-     * @param _tokenId: tokenId 
+     * @param _tokenId: tokenId
      */
-    function getStatusMonster(uint256 tokenId) external view returns(bool) {
-        require(_exists(tokenId),"Monster: Monster not exists");
+    function getStatusMonster(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Monster: Monster not exists");
         return _monster[tokenId].lifeSpan;
     }
+
     /*
      * set staus lifespan a Monster
-     * @param _tokenId: tokenId 
+     * @param _tokenId: tokenId
      */
-    function setStatusMonster(uint256 tokenId, bool status) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(tokenId),"Monster: Monster not exists");
+    function setStatusMonster(
+        uint256 tokenId,
+        bool status
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(_exists(tokenId), "Monster: Monster not exists");
         _monster[tokenId].lifeSpan = status;
     }
 
     /*
      * staus lifespan a Monster
-     * @param _tokenId: tokenId 
+     * @param _tokenId: tokenId
      */
-    function isFreeMonster(uint256 tokenId) external view returns(bool) {
-        require(_exists(tokenId),"Monster: Monster not exists");
+    function isFreeMonster(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Monster: Monster not exists");
         return _monster[tokenId].isFree;
     }
-}   
+}

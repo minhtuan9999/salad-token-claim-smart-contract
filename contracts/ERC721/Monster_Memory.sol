@@ -11,7 +11,13 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessControl, Pausable {
+contract MonsterMemory is
+    Ownable,
+    ReentrancyGuard,
+    ERC721Enumerable,
+    AccessControl,
+    Pausable
+{
     using Counters for Counters.Counter;
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -20,7 +26,8 @@ contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessContr
     Counters.Counter private _tokenIds;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGERMENT_NFT_ROLE =
+        keccak256("MANAGERMENT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
@@ -28,10 +35,11 @@ contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessContr
         _setupRole(MANAGERMENT_ROLE, _msgSender());
         _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
     }
+
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
-    mapping (address => EnumerableSet.UintSet) private _holderTokens;
-    mapping (uint256 => uint256) private _countMint;
+    mapping(address => EnumerableSet.UintSet) private _holderTokens;
+    mapping(uint256 => uint256) private _countMint;
 
     // address Feature monster contract
     address private addressManagermentNFT;
@@ -39,23 +47,30 @@ contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessContr
     event createNFTMonsterMemory(address _address, uint256 _typeNFT);
 
     // Get holder Tokens
-    function getHolderToken(address _address) public view returns(uint256[] memory){
+    function getHolderToken(
+        address _address
+    ) public view returns (uint256[] memory) {
         return _holderTokens[_address].values();
     }
 
     // Set managerment role
-    function setManagermentRole(address _address) external onlyOwner{
+    function setManagermentRole(address _address) external onlyOwner {
         require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
         _setupRole(MANAGERMENT_ROLE, _address);
     }
+
     // Set managerment nft role
-    function setManagermentNFTRole(address _address) external onlyOwner{
-        require(!hasRole(MANAGERMENT_NFT_ROLE, _address), "Monster: Readly Role");
+    function setManagermentNFTRole(address _address) external onlyOwner {
+        require(
+            !hasRole(MANAGERMENT_NFT_ROLE, _address),
+            "Monster: Readly Role"
+        );
         _setupRole(MANAGERMENT_NFT_ROLE, _address);
     }
+
     /**
      *@dev See {ERC721-_beforeTokenTransfer}.
-    */
+     */
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -78,12 +93,9 @@ contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessContr
         return _baseURIextended;
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(AccessControl, ERC721Enumerable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(AccessControl, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -100,7 +112,7 @@ contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessContr
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
-    
+
     function createNFT(
         address _address,
         uint256 _typeNFT
@@ -110,32 +122,33 @@ contract MonsterMemory is Ownable, ReentrancyGuard,ERC721Enumerable, AccessContr
         _tokenIds.increment();
         _holderTokens[_address].add(tokenId);
         emit createNFTMonsterMemory(_address, _typeNFT);
-    } 
+    }
 
     /*
      * mint a Monster Memory
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
-    
-    function mintMonsterMemory(
-        address _address
-    ) external returns(uint256) {
-        require(address(this) == addressManagermentNFT, "Monster: Not permission");
+
+    function mintMonsterMemory(address _address) external returns (uint256) {
+        require(
+            address(this) == addressManagermentNFT,
+            "Monster: Not permission"
+        );
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
         _holderTokens[_address].add(tokenId);
         return tokenId;
-    } 
+    }
 
     /*
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burnMonsterMemory(uint256 _tokenId) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE){
+    function burnMonsterMemory(
+        uint256 _tokenId
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
-    
-
-}   
+}
