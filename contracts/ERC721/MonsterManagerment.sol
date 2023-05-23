@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface Monster {
+interface IMonster {
     //fusion monster
     function fusionNFT(
         address _address,
@@ -219,15 +219,15 @@ contract MonsterManagerment is
         uint256 _firstTokenId,
         uint256 _lastTokenId
     ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 newTokenId = Monster(_monsterAddress).fusionNFT(
+        uint256 newTokenId = IMonster(_monsterAddress).fusionNFT(
             _owner,
             _firstTokenId,
             _lastTokenId
         );
-        bool lifeSpanFistMonster = Monster(_monsterAddress).getStatusMonster(
+        bool lifeSpanFistMonster = IMonster(_monsterAddress).getStatusMonster(
             _firstTokenId
         );
-        bool lifeSpanLastMonster = Monster(_monsterAddress).getStatusMonster(
+        bool lifeSpanLastMonster = IMonster(_monsterAddress).getStatusMonster(
             _lastTokenId
         );
         if (lifeSpanFistMonster && lifeSpanLastMonster) {
@@ -269,15 +269,15 @@ contract MonsterManagerment is
         address _owner,
         uint256 _idBurn
     ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        bool isStatusMonster = Monster(_monsterAddress).getStatusMonster(
+        bool isStatusMonster = IMonster(_monsterAddress).getStatusMonster(
             _idBurn
         );
         require(
             !isStatusMonster,
             "MonsterManagerment: createCoachNFT: The monster is alive"
         );
-        Monster(_monsterAddress).burnMonster(_idBurn);
-        bool isFreeMonster = Monster(_monsterAddress).isFreeMonster(_idBurn);
+        IMonster(_monsterAddress).burnMonster(_idBurn);
+        bool isFreeMonster = IMonster(_monsterAddress).isFreeMonster(_idBurn);
         uint256 tokenId;
         if (isFreeMonster) {
             tokenId = Coach(_coachAddress).mintCoach(_owner, true);
@@ -302,15 +302,15 @@ contract MonsterManagerment is
         address _owner,
         uint256 _idBurn
     ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        bool isStatusMonster = Monster(_monsterAddress).getStatusMonster(
+        bool isStatusMonster = IMonster(_monsterAddress).getStatusMonster(
             _idBurn
         );
         require(
             !isStatusMonster,
             "MonsterManagerment: createCoachNFT: The monster is alive"
         );
-        Monster(_monsterAddress).burnMonster(_idBurn);
-        bool isFreeMonster = Monster(_monsterAddress).isFreeMonster(_idBurn);
+        IMonster(_monsterAddress).burnMonster(_idBurn);
+        bool isFreeMonster = IMonster(_monsterAddress).isFreeMonster(_idBurn);
         uint256 tokenId;
         if (isFreeMonster) {
             tokenId = MonsterCrystal(_crystalAddress).mintMonsterCrystal(
@@ -351,7 +351,7 @@ contract MonsterManagerment is
             IERC721(_genesisAddress).ownerOf(_lastId) == _owner,
             "The owner is not correct"
         );
-        uint256 newTokenId = Monster(_monsterAddress).fusionRegeneration(
+        uint256 newTokenId = IMonster(_monsterAddress).fusionRegeneration(
             _owner
         );
         emit fusionGenesisHashNFT(_owner, _firstId, _lastId, newTokenId);
@@ -380,7 +380,7 @@ contract MonsterManagerment is
             IERC721(_generalAddress).ownerOf(_lastId) == _owner,
             "The owner is not correct"
         );
-        uint256 newTokenId = Monster(_monsterAddress).fusionRegeneration(
+        uint256 newTokenId = IMonster(_monsterAddress).fusionRegeneration(
             _owner
         );
         GeneralHash(_generalAddress).fusionRegeneration(_firstId);
@@ -413,7 +413,7 @@ contract MonsterManagerment is
             IERC721(_generalAddress).ownerOf(_generalId) == _owner,
             "The owner is not correct"
         );
-        uint256 newTokenId = Monster(_monsterAddress).fusionRegeneration(
+        uint256 newTokenId = IMonster(_monsterAddress).fusionRegeneration(
             _owner
         );
         GeneralHash(_generalAddress).fusionRegeneration(_generalId);
@@ -437,7 +437,7 @@ contract MonsterManagerment is
             IERC721(_genesisAddress).ownerOf(_genesisId) == _owner,
             "The owner is not correct"
         );
-        uint256 tokenId = Monster(_monsterAddress).createNFT(_owner);
+        uint256 tokenId = IMonster(_monsterAddress).createNFT(_owner);
         emit createMonsterFromGenesis(_owner, _genesisId, tokenId);
     }
 
@@ -458,7 +458,7 @@ contract MonsterManagerment is
             IERC721(_generalAddress).ownerOf(_generalId) == _owner,
             "The owner is not correct"
         );
-        uint256 tokenId = Monster(_monsterAddress).createNFT(_owner);
+        uint256 tokenId = IMonster(_monsterAddress).createNFT(_owner);
         GeneralHash(_generalAddress).fusionRegeneration(_generalId);
         emit createMonsterFromGeneral(_owner, _generalId, tokenId);
     }
@@ -480,7 +480,7 @@ contract MonsterManagerment is
             IERC721(_generalAddress).ownerOf(_generalId) == _owner,
             "The owner is not correct"
         );
-        uint256 tokenId = Monster(_monsterAddress).createNFT(_owner);
+        uint256 tokenId = IMonster(_monsterAddress).createNFT(_owner);
         GeneralHash(_generalAddress).fusionRegeneration(_generalId);
         emit createMonsterFromGeneral(_owner, _generalId, tokenId);
     }
@@ -501,7 +501,7 @@ contract MonsterManagerment is
             IERC721(_nftAddress).ownerOf(_nftTokenId) == _owner,
             "The owner is not correct"
         );
-        uint256 tokenId = Monster(_monsterAddress).createNFT(_owner);
+        uint256 tokenId = IMonster(_monsterAddress).createNFT(_owner);
         emit createMonsterFromNFTs(_nftAddress, _owner, _nftTokenId, tokenId);
     }
 
