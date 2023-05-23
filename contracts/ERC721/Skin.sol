@@ -34,11 +34,8 @@ contract Skin is
     }
 
     // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
     mapping(address => EnumerableSet.UintSet) private _holderTokens;
     mapping(uint256 => uint256) private _countMint;
-    // address Feature monster contract
-    address private addressManagermentNFT;
     // Event create Monster Crystal
     event createNFTMonsterSkin(address _address, uint256 _tokenId);
 
@@ -47,12 +44,6 @@ contract Skin is
         address _address
     ) public view returns (uint256[] memory) {
         return _holderTokens[_address].values();
-    }
-
-    // Set managerment role
-    function setManagermentRole(address _address) external onlyOwner {
-        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
-        _setupRole(MANAGERMENT_ROLE, _address);
     }
 
     // Set managerment nft role

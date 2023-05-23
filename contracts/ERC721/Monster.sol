@@ -21,7 +21,6 @@ contract Monster is
 
     // stored current packageId
     Counters.Counter private _tokenIds;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
@@ -30,10 +29,10 @@ contract Monster is
     }
 
     // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-    mapping(address => EnumerableSet.UintSet) private _holderTokens;
+    mapping(address => EnumerableSet.UintSet) private _listTokenIdOfAddress;
     mapping(uint256 => uint256) private _countMint;
     mapping(uint256 => monsterDetail) public _monster;
+    mapping(address => bool) private _realdyFreeNFT;
 
     //struct Monster
     struct monsterDetail {
@@ -42,7 +41,7 @@ contract Monster is
     }
 
     // Event create Monster
-    event createNFTMonster(address _address, uint256 _tokenId);
+    event createNFTMonster(address _address, uint256 _tokenId, uint256 _type);
     // Event create Monster Free
     event createNFTMonsterFree(address _address, uint256 _tokenDi);
     // Event fusion Monster
@@ -53,17 +52,11 @@ contract Monster is
         uint256 _lastTokenId
     );
 
-    // Get holder Tokens
-    function getHolderToken(
+    // Get list Tokens
+    function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _holderTokens[_address].values();
-    }
-
-    // Set managerment role
-    function setManagermentRole(address _address) external onlyOwner {
-        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
-        _setupRole(MANAGERMENT_ROLE, _address);
+        return _listTokenIdOfAddress[_address].values();
     }
 
     /**
@@ -76,8 +69,8 @@ contract Monster is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _holderTokens[to].add(firstTokenId);
-        _holderTokens[from].remove(firstTokenId);
+        _listTokenIdOfAddress[to].add(firstTokenId);
+        _listTokenIdOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -111,11 +104,11 @@ contract Monster is
      * @param _address: owner of NFT
      */
 
-    function createNFT(address _address) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+    function _createNFT(address _address) private returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
+        _listTokenIdOfAddress[_address].add(tokenId);
         _monster[tokenId].lifeSpan = true;
         return tokenId;
     }
@@ -125,15 +118,27 @@ contract Monster is
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
+
+    function createNFT(
+        address _address,
+        uint256 _type
+    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+        uint256 tokenId = _createNFT(_address);
+        emit createNFTMonster(_address, tokenId, _type);
+    }
+
+    /*
+     * mint a Monster
+     * @param _uri: _uri of NFT
+     * @param _address: owner of NFT
+     */
     function createFreeNFT(
         address _address
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        _monster[tokenId].lifeSpan = true;
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(!_realdyFreeNFT[_address], "Exist NFT Free of address");
+        uint256 tokenId = _createNFT(_address);
         _monster[tokenId].isFree = true;
+        _realdyFreeNFT[_address] = true;
         emit createNFTMonsterFree(_address, tokenId);
     }
 
@@ -145,43 +150,16 @@ contract Monster is
      */
 
     function fusionNFT(
-        address _address,
-        uint256 _firstTokenId,
-        uint256 _lastTokenId
+        address _address
     ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        require(_exists(_firstTokenId), "Monster: TokenId not exist");
-        require(_exists(_lastTokenId), "Monster: TokenId not exist");
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _burn(_firstTokenId);
-        _burn(_lastTokenId);
-        _holderTokens[_address].add(tokenId);
-        _monster[tokenId].lifeSpan = true;
-        return tokenId;
-    }
-
-    /*
-     * fusion a Monster
-     * @param _address: address of owner
-     * @param _firstTokenId: first tokenId fusion => burn
-     * @param _lastTokenId: last tokenId fusion => burn
-     */
-
-    function fusionRegeneration(address _address) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        _monster[tokenId].lifeSpan = true;
-        return tokenId;
+        return _createNFT(_address);
     }
 
     /*
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burnMonster(uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE){
+    function burn(uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 
@@ -201,7 +179,7 @@ contract Monster is
     function setStatusMonster(
         uint256 tokenId,
         bool status
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         require(_exists(tokenId), "Monster: Monster not exists");
         _monster[tokenId].lifeSpan = status;
     }

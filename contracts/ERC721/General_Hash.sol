@@ -21,60 +21,24 @@ contract GeneralHash is
 
     // stored current packageId
     Counters.Counter private _tokenIds;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE =
-        keccak256("MANAGERMENT_NFT_ROLE");
 
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint256 _regenerationLimit
-    ) ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setRoleAdmin(MANAGERMENT_NFT_ROLE, MANAGERMENT_NFT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
-        regenerationLimit = _regenerationLimit;
     }
 
     // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-    mapping(address => EnumerableSet.UintSet) private _holderTokens;
-    mapping(uint256 => uint256) private _countRegeneration;
-
-    // mint limit
-    uint256 private regenerationLimit;
-    //
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
     // Event create Monster
-    event createGeneralHash(address _address, uint256 _tokenId);
+    event createGeneralHash(address _address, uint256 _tokenId, uint256 _type);
 
-    // Get holder Tokens
-    function getHolderToken(
+    // Get list Tokens of address
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _holderTokens[_address].values();
-    }
-
-    // Set mint limit
-    function setMintLimit(uint256 _number) public onlyOwner {
-        regenerationLimit = _number;
-    }
-
-    // Set managerment role
-    function setManagermentRole(address _address) public onlyOwner {
-        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
-        _setupRole(MANAGERMENT_ROLE, _address);
-    }
-
-    // Set managerment nft role
-    function setManagermentNFTRole(address _address) public onlyOwner {
-        require(
-            !hasRole(MANAGERMENT_NFT_ROLE, _address),
-            "Monster: Readly Role"
-        );
-        _setupRole(MANAGERMENT_NFT_ROLE, _address);
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -87,8 +51,8 @@ contract GeneralHash is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _holderTokens[to].add(firstTokenId);
-        _holderTokens[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -122,14 +86,26 @@ contract GeneralHash is
      * @param _address: owner of NFT
      */
 
-    function createNFT(
-        address _address
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    function _createNFT(address _address) private returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        emit createGeneralHash(_address, tokenId);
+        _listTokensOfAddress[_address].add(tokenId);
+        return tokenId;
+    }
+
+    /*
+     * mint a Genesishash
+     * @param _uri: _uri of NFT
+     * @param _address: owner of NFT
+     */
+
+    function createNFT(
+        address _address,
+        uint256 _type
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 tokenId = _createNFT(_address);
+        emit createGeneralHash(_address, tokenId, _type);
     }
 
     /*
@@ -137,46 +113,20 @@ contract GeneralHash is
      * @param _address: owner of NFT
      */
 
-    function mintGenesishash(address _address) external returns (uint256) {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        return tokenId;
+    function mintGeneralhash(
+        address _address
+    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+        return _createNFT(_address);
     }
 
     /*
      * burn a Genesishash
      * @param _tokenId: tokenId burn
      */
-    function burnGeneralHash(
+    function burn(
         uint256 _tokenId
     ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         require(_exists(_tokenId), "Token id not exist");
         _burn(_tokenId);
-    }
-
-    /*
-     * count Regeneration
-     * @param _tokenId: tokenId
-     * @param _owner: owner
-     */
-    function fusionRegeneration(uint256 _tokenId) external {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Fusion Regerneration: Not permission"
-        );
-        require(
-            _exists(_tokenId),
-            "Monster: Fusion Regerneration: Token id not exist"
-        );
-        _countRegeneration[_tokenId]++;
-        if (_countRegeneration[_tokenId] == regenerationLimit) {
-            _burn(_tokenId);
-        }
     }
 }

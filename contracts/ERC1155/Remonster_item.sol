@@ -6,10 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract RemonsterItem  is ERC1155,AccessControl, Ownable {
+contract RemonsterItem is ERC1155, AccessControl, Ownable {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_ITEM_ROLE = keccak256("MANAGERMENT_ITEM_ROLE");
+    bytes32 public constant MANAGERMENT_ITEM_ROLE =
+        keccak256("MANAGERMENT_ITEM_ROLE");
 
     using Strings for uint256;
 
@@ -24,8 +25,14 @@ contract RemonsterItem  is ERC1155,AccessControl, Ownable {
 
     string public baseMetadata;
 
-    // EVENT 
-    event mintMonsterItems(address _addressTo, uint256 _tokenId, uint256 _number, bytes _metadata);
+    // EVENT
+    event mintMonsterItems(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _number,
+        bytes _metadata
+    );
+
     /**
      * @dev See {IERC1155MetadataURI-uri}.
      *
@@ -36,20 +43,19 @@ contract RemonsterItem  is ERC1155,AccessControl, Ownable {
      * Clients calling this function must replace the `\{id\}` substring with the
      * actual token type ID.
      */
-    function uri(uint256 tokenId) public view virtual override returns (string memory) {
-        return  string(abi.encodePacked(baseMetadata, tokenId.toString()));
+    function uri(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        return string(abi.encodePacked(baseMetadata, tokenId.toString()));
     }
 
     function setBaseMetadata(string memory _baseMetadata) public onlyOwner {
         baseMetadata = _baseMetadata;
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(AccessControl, ERC1155)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(AccessControl, ERC1155) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -65,14 +71,19 @@ contract RemonsterItem  is ERC1155,AccessControl, Ownable {
      *      FUSION_ITEM = 2;
      *      MATERIAL_ITEM = 3;
      *      EXPEDITION_TICKET = 5;
-     *      TOURNAMENT_TICKET = 6; 
+     *      TOURNAMENT_TICKET = 6;
      */
-    function mintMonsterItem(address _addressTo,uint256 _tokenId, uint256 _number, bytes memory _data ) public onlyRole(MANAGERMENT_ROLE){
-        _mint(_addressTo,_tokenId,_number,_data);
+    function mint(
+        address _addressTo,
+        uint256 _tokenId,
+        uint256 _number,
+        bytes memory _data
+    ) public onlyRole(MANAGERMENT_ROLE) {
+        _mint(_addressTo, _tokenId, _number, _data);
         emit mintMonsterItems(_addressTo, _tokenId, _number, _data);
     }
 
-    function burnMonsterItem(address _from,uint256 _id,uint256 _amount) external {
+    function burn(address _from, uint256 _id, uint256 _amount) external {
         require(hasRole(MANAGERMENT_ITEM_ROLE, msg.sender), "Not permission");
         _burn(_from, _id, _amount);
     }

@@ -21,45 +21,24 @@ contract GenesisHash is
 
     // stored current packageId
     Counters.Counter private _tokenIds;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE =
-        keccak256("MANAGERMENT_NFT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setRoleAdmin(MANAGERMENT_NFT_ROLE, MANAGERMENT_NFT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
     }
 
     // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-    mapping(address => EnumerableSet.UintSet) private _holderTokens;
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
-    // Event create Monster
-    event createGenesisHash(address _address, uint256 _tokenId);
+    // Event create Genesishash
+    event createGenesisHash(address _address, uint256 _tokenId, uint256 _type);
 
     // Get holder Tokens
     function getHolderToken(
         address _address
     ) public view returns (uint256[] memory) {
-        return _holderTokens[_address].values();
-    }
-
-    // Set managerment role
-    function setManagermentRole(address _address) public onlyOwner {
-        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
-        _setupRole(MANAGERMENT_ROLE, _address);
-    }
-
-    // Set managerment nft role
-    function setManagermentNFTRole(address _address) public onlyOwner {
-        require(
-            !hasRole(MANAGERMENT_NFT_ROLE, _address),
-            "Monster: Readly Role"
-        );
-        _setupRole(MANAGERMENT_NFT_ROLE, _address);
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -72,8 +51,8 @@ contract GenesisHash is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _holderTokens[to].add(firstTokenId);
-        _holderTokens[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -107,14 +86,26 @@ contract GenesisHash is
      * @param _address: owner of NFT
      */
 
-    function createNFT(
-        address _address
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    function _createNFT(address _address) private returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        emit createGenesisHash(_address, tokenId);
+        _listTokensOfAddress[_address].add(tokenId);
+        return tokenId;
+    }
+
+    /*
+     * mint a Genesishash
+     * @param _uri: _uri of NFT
+     * @param _address: owner of NFT
+     */
+
+    function createNFT(
+        address _address,
+        uint256 _type
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 tokenId = _createNFT(_address);
+        emit createGenesisHash(_address, tokenId, _type);
     }
 
     /*
@@ -123,24 +114,16 @@ contract GenesisHash is
      */
 
     function mintGenesishash(address _address) external returns (uint256) {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        return tokenId;
+        return _createNFT(_address);
     }
 
     /*
      * burn a Genesishash
      * @param _tokenId: tokenId burn
      */
-    function burnGenesisHash(
+    function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         require(_exists(_tokenId), "Token id not exist");
         _burn(_tokenId);
     }
