@@ -23,14 +23,10 @@ contract Monster is
     Counters.Counter private _tokenIds;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE =
-        keccak256("MANAGERMENT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setRoleAdmin(MANAGERMENT_NFT_ROLE, MANAGERMENT_NFT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
     }
 
     // Optional mapping for token URIs
@@ -68,15 +64,6 @@ contract Monster is
     function setManagermentRole(address _address) external onlyOwner {
         require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
         _setupRole(MANAGERMENT_ROLE, _address);
-    }
-
-    // Set managerment nft role
-    function setManagermentNFTRole(address _address) external onlyOwner {
-        require(
-            !hasRole(MANAGERMENT_NFT_ROLE, _address),
-            "Monster: Readly Role"
-        );
-        _setupRole(MANAGERMENT_NFT_ROLE, _address);
     }
 
     /**
@@ -124,11 +111,7 @@ contract Monster is
      * @param _address: owner of NFT
      */
 
-    function createNFT(address _address) external returns (uint256) {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
+    function createNFT(address _address) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
@@ -142,7 +125,6 @@ contract Monster is
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
-
     function createFreeNFT(
         address _address
     ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
@@ -166,11 +148,7 @@ contract Monster is
         address _address,
         uint256 _firstTokenId,
         uint256 _lastTokenId
-    ) external returns (uint256) {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
+    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
         require(_exists(_firstTokenId), "Monster: TokenId not exist");
         require(_exists(_lastTokenId), "Monster: TokenId not exist");
         uint256 tokenId = _tokenIds.current();
@@ -190,11 +168,7 @@ contract Monster is
      * @param _lastTokenId: last tokenId fusion => burn
      */
 
-    function fusionRegeneration(address _address) external returns (uint256) {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
+    function fusionRegeneration(address _address) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
@@ -207,11 +181,7 @@ contract Monster is
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burnMonster(uint256 _tokenId) external {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
+    function burnMonster(uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE){
         _burn(_tokenId);
     }
 

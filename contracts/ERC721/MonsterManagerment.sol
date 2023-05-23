@@ -65,6 +65,14 @@ interface Accessories {
     function mintAccessories(address _address) external returns (uint256);
 }
 
+interface MonsterItem {
+    function burnMonsterItem(address _from,uint256 _id,uint256 _amount) external;
+}
+interface Skin {
+     function createNFT(
+        address _address
+    ) external;
+}
 contract MonsterManagerment is
     Ownable,
     ReentrancyGuard,
@@ -97,7 +105,8 @@ contract MonsterManagerment is
         uint256 _newMonster,
         uint256 _firstTokenId,
         uint256 _lastTokenId,
-        uint256 _newMonsterMemory
+        uint256 _firstMemory,
+        uint256 _lastMemory
     );
     // monster lifeSpan == true => not mint monster memory
     event fusionNFTMonsterNotMemory(
@@ -181,6 +190,21 @@ contract MonsterManagerment is
         uint256 _generalAddress,
         uint256 _newTokenId
     );
+    /*
+     * create Accessories From material
+     * @param _owner: address of owner
+     * @param _materialId: id of material item
+     * @param _newTokenId: new tokenId of Accessories
+     */
+    event createAccessoriesNFT(address _owner,uint256 _materialId, uint256 _newTokenId);
+
+    /*
+     * create Accessories From material
+     * @param _owner: address of owner
+     * @param _materialId: id of material item
+     * @param _newTokenId: new tokenId of Accessories
+     */
+    event createMonsterFromNFTs(address _nftAddress, address _owner,uint256 _nftTokenId, uint256 _newTokenId);
 
     /*
      * fusion a Monster
@@ -208,14 +232,17 @@ contract MonsterManagerment is
         );
         if (lifeSpanFistMonster && lifeSpanLastMonster) {
             // mint monster memory
-            uint256 newMonsterMemory = MonsterMemory(_monsterMemoryAddress)
+            uint256 firstMemory = MonsterMemory(_monsterMemoryAddress)
+                .mintMonsterMemory(_owner);
+            uint256 lastMemory = MonsterMemory(_monsterMemoryAddress)
                 .mintMonsterMemory(_owner);
             emit fusionNFTMonster(
                 _owner,
                 newTokenId,
                 _firstTokenId,
                 _lastTokenId,
-                newMonsterMemory
+                firstMemory,
+                lastMemory
             );
         } else {
             emit fusionNFTMonsterNotMemory(
@@ -421,7 +448,7 @@ contract MonsterManagerment is
      * @param _generalAddress: address of genesis contract
      * @param _generalId: genesis tokenId fusion
      */
-    function createMonsterFromGeneralHash(
+    function createMonsterFromRegeneration(
         address _monsterAddress,
         address _generalAddress,
         address _owner,
@@ -437,6 +464,48 @@ contract MonsterManagerment is
     }
 
     /*
+     * Create monster from general hash
+     * @param _owner: address of owner
+     * @param _monsterAddress: address of monster contract
+     * @param _generalAddress: address of genesis contract
+     * @param _generalId: genesis tokenId fusion
+     */
+    function createMonsterFromGeneralHash(
+        address _monsterAddress,
+        address _generalAddress,
+        address _owner,
+        uint256 _generalId
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(
+            IERC721(_generalAddress).ownerOf(_generalId) == _owner,
+            "The owner is not correct"
+        );
+        uint256 tokenId = Monster(_monsterAddress).createNFT(_owner);
+        GeneralHash(_generalAddress).fusionRegeneration(_generalId);
+        emit createMonsterFromGeneral(_owner, _generalId, tokenId);
+    }
+    /*
+     * Create monster from general hash
+     * @param _owner: address of owner
+     * @param _monsterAddress: address of monster contract
+     * @param _generalAddress: address of genesis contract
+     * @param _generalId: genesis tokenId fusion
+     */
+    function createMonsterFromNFT(
+        address _monsterAddress,
+        address _nftAddress,
+        address _owner,
+        uint256 _nftTokenId
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(
+            IERC721(_nftAddress).ownerOf(_nftTokenId) == _owner,
+            "The owner is not correct"
+        );
+        uint256 tokenId = Monster(_monsterAddress).createNFT(_owner);
+        emit createMonsterFromNFTs(_nftAddress, _owner, _nftTokenId, tokenId);
+    }
+
+    /*
      * Create Accessories
      * @param _owner: address of owner
      * @param _accessoriesAddress: address of Accessories contract
@@ -445,15 +514,19 @@ contract MonsterManagerment is
      */
     function createAccessories(
         address _accessoriesAddress,
-        address _owner
+        address _owner,
+        address _materialAddress ,
+        uint256 _materialId,
+        uint256 _number
     )
         external
-        // address _materialAddress ,
-        // uint256 _materialId,
         nonReentrant
         whenNotPaused
         onlyRole(MANAGERMENT_ROLE)
     {
-        Accessories(_accessoriesAddress).mintAccessories(_owner);
+        uint256 tokenId = Accessories(_accessoriesAddress).mintAccessories(_owner);
+        MonsterItem(_materialAddress).burnMonsterItem(_owner,_materialId, _number);
+        emit createAccessoriesNFT(_owner, _materialId, tokenId);
     }
+
 }

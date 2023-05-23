@@ -24,7 +24,7 @@ contract Coach is
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
     bytes32 public constant MANAGERMENT_NFT_ROLE =
-        keccak256("MANAGERMENT_ROLE");
+        keccak256("MANAGERMENT_NFT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
