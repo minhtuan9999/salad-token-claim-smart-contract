@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Coach is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,54 +17,32 @@ contract Coach is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // count token id
     Counters.Counter private _tokenIds;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE =
-        keccak256("MANAGERMENT_NFT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setRoleAdmin(MANAGERMENT_NFT_ROLE, MANAGERMENT_NFT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-    mapping(address => EnumerableSet.UintSet) private _holderTokens;
-    mapping(uint256 => uint256) private _countMint;
-    mapping(uint256 => infoCoach) private _coach;
+    // Mapping list token of address
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
+    // Mapping info Coach
+    mapping(uint256 => coachDetail) private _coach;
 
-    // struc if coach
-    struct infoCoach {
+    // struc if coach, if free => true
+    struct coachDetail {
         bool isFree;
     }
+    // Event create Coach
+    event createCoachNFT(address _address, uint256 _tokenId, uint256 _typeNFT);
 
-    // Event create Monster
-    event createCoachNFT(address _address, uint256 _typeNFT);
-
-    // Get holder Tokens
-    function getHolderToken(
+    // Get list token of address
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _holderTokens[_address].values();
-    }
-
-    // Set managerment role
-    function setManagermentRole(address _address) external onlyOwner {
-        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
-        _setupRole(MANAGERMENT_ROLE, _address);
-    }
-
-    // Set managerment nft role
-    function setManagermentNFTRole(address _address) external onlyOwner {
-        require(
-            !hasRole(MANAGERMENT_NFT_ROLE, _address),
-            "Monster: Readly Role"
-        );
-        _setupRole(MANAGERMENT_NFT_ROLE, _address);
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -79,8 +55,8 @@ contract Coach is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _holderTokens[to].add(firstTokenId);
-        _holderTokens[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -108,21 +84,26 @@ contract Coach is
         _unpause();
     }
 
-    /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
-     * @param _address: owner of NFT
-     */
-
-    function createNFT(
-        address _address,
-        uint256 _typeNFT
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    // Base mint NFT
+    function _createNFT(address _address) internal returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        emit createCoachNFT(_address, _typeNFT);
+        _listTokensOfAddress[_address].add(tokenId);
+        return tokenId;
+    }
+
+    /*
+     * mint a Coach
+     * @param _uri: _uri of NFT
+     * @param _address: owner of NFT
+     */
+    function createNFT(
+        address _address,
+        uint256 _typeNFT
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 tokenId = _createNFT(_address);
+        emit createCoachNFT(_address, tokenId, _typeNFT);
     }
 
     /*
@@ -131,19 +112,12 @@ contract Coach is
      * @param _address: owner of NFT
      */
 
-    function mintCoach(
+    function mint(
         address _address,
         bool _status
-    ) external returns (uint256) {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
+    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+        uint256 tokenId = _createNFT(_address);
         _coach[tokenId].isFree = _status;
-        _holderTokens[_address].add(tokenId);
         return tokenId;
     }
 
@@ -151,11 +125,7 @@ contract Coach is
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burnCoach(uint256 _tokenId) external {
-        require(
-            hasRole(MANAGERMENT_NFT_ROLE, msg.sender),
-            "Monster: Not permission"
-        );
+    function burn(uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 
@@ -163,8 +133,8 @@ contract Coach is
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function isFeeCoach(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster: Monster not exists");
+    function isFreeCoach(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Coach:: isFreeCoach: Monster not exists");
         return _coach[tokenId].isFree;
     }
 }

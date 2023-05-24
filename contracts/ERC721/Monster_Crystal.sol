@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MonsterCrystal is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,55 +17,35 @@ contract MonsterCrystal is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // Count token id
     Counters.Counter private _tokenIds;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_NFT_ROLE =
-        keccak256("MANAGERMENT_NFT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setRoleAdmin(MANAGERMENT_NFT_ROLE, MANAGERMENT_NFT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_NFT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-    mapping(address => EnumerableSet.UintSet) private _holderTokens;
-    mapping(uint256 => uint256) private _countMint;
-    mapping(uint256 => infoCrystal) private _crystal;
-    // address Feature monster contract
-    address private addressManagermentNFT;
+    // mapping list token of address
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
+    mapping(uint256 => crystalDetail) private _crystal;
     // stuct of monster crystal
-    struct infoCrystal {
+    struct crystalDetail {
         bool isFree;
     }
 
     // Event create Monster Crystal
-    event createNFTMonsterCrystal(address _address, uint256 _typeNFT);
+    event createNFTMonsterCrystal(
+        address _address,
+        uint256 _tokenId,
+        uint256 _typeNFT
+    );
 
-    // Get holder Tokens
-    function getHolderToken(
+    // Get list Tokens of address
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _holderTokens[_address].values();
-    }
-
-    // Set managerment role
-    function setManagermentRole(address _address) external onlyOwner {
-        require(!hasRole(MANAGERMENT_ROLE, _address), "Monster: Readly Role");
-        _setupRole(MANAGERMENT_ROLE, _address);
-    }
-
-    // Set managerment nft role
-    function setManagermentNFTRole(address _address) external onlyOwner {
-        require(
-            !hasRole(MANAGERMENT_NFT_ROLE, _address),
-            "Monster: Readly Role"
-        );
-        _setupRole(MANAGERMENT_NFT_ROLE, _address);
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -80,8 +58,8 @@ contract MonsterCrystal is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _holderTokens[to].add(firstTokenId);
-        _holderTokens[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -110,41 +88,43 @@ contract MonsterCrystal is
     }
 
     /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
+     * base mint a Monster Crystal
+     * @param _address: owner of NFT
+     */
+
+    function _createNFT(address _address) private returns (uint256) {
+        uint256 tokenId = _tokenIds.current();
+        _mint(_address, tokenId);
+        _tokenIds.increment();
+        _listTokensOfAddress[_address].add(tokenId);
+        return tokenId;
+    }
+
+    /*
+     * mint a Monster Crystal
      * @param _address: owner of NFT
      */
 
     function createNFT(
         address _address,
         uint256 _typeNFT
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _holderTokens[_address].add(tokenId);
-        emit createNFTMonsterCrystal(_address, _typeNFT);
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 tokenId = _createNFT(_address);
+        emit createNFTMonsterCrystal(_address, tokenId, _typeNFT);
     }
 
     /*
-     * mint a Coach
-     * @param _uri: _uri of NFT
+     * mint a Crystal
      * @param _address: owner of NFT
+     * @param _status: status free of NFT
      */
 
-    function mintMonsterCrystal(
+    function mint(
         address _address,
         bool _status
-    ) external returns (uint256) {
-        require(
-            address(this) == addressManagermentNFT,
-            "Monster: Not permission"
-        );
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
+    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+        uint256 tokenId = _createNFT(_address);
         _crystal[tokenId].isFree = _status;
-        _holderTokens[_address].add(tokenId);
         return tokenId;
     }
 
@@ -152,9 +132,9 @@ contract MonsterCrystal is
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burnMonsterCrystal(
+    function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 
