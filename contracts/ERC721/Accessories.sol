@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Accessories is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -28,16 +26,16 @@ contract Accessories is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdress;
-    // Event create Monster Crystal
-    event createAccessories(address _address, uint256 _tokenId);
+    // Mapping list token of address
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    // Event create Accessories
+    event createAccessories(address _address, uint256 _tokenId, uint256 _type);
 
     // Get holder Tokens
     function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdress[_address].values();
+        return _listTokensOfAdrress[_address].values();
     }
 
     /**
@@ -50,8 +48,8 @@ contract Accessories is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdress[to].add(firstTokenId);
-        _listTokensOfAdress[from].remove(firstTokenId);
+        _listTokensOfAdrress[to].add(firstTokenId);
+        _listTokensOfAdrress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -80,33 +78,31 @@ contract Accessories is
     }
 
     /*
-     * mint a Accessories
-     * @param _uri: _uri of NFT
+     * base mint a Accessories
      * @param _address: owner of NFT
      */
-    function _createNFT(address _address) internal returns (uint256) {
+    function _createNFT(address _address) private returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAdress[_address].add(tokenId);
+        _listTokensOfAdrress[_address].add(tokenId);
         return tokenId;
     }
 
     /*
      * mint a Accessories
-     * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
     function createNFT(
-        address _address
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        address _address,
+        uint256 _type
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
-        emit createAccessories(_address, tokenId);
+        emit createAccessories(_address, tokenId, _type);
     }
 
     /*
      * mint a Accessories
-     * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
     function mint(
@@ -117,12 +113,12 @@ contract Accessories is
     }
 
     /*
-     * burn a Monster skin
+     * burn Accessories
      * @param _tokenId: tokenId burn
      */
-    function burnMonsterSkin(
+    function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 }

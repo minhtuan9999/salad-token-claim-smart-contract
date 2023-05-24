@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MonsterCrystal is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,7 +17,7 @@ contract MonsterCrystal is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // Count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
@@ -28,12 +26,11 @@ contract MonsterCrystal is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
+    // mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
-    mapping(uint256 => uint256) private _countMint;
-    mapping(uint256 => infoCrystal) private _crystal;
+    mapping(uint256 => crystalDetail) private _crystal;
     // stuct of monster crystal
-    struct infoCrystal {
+    struct crystalDetail {
         bool isFree;
     }
 
@@ -44,8 +41,8 @@ contract MonsterCrystal is
         uint256 _typeNFT
     );
 
-    // Get holder Tokens
-    function getHolderToken(
+    // Get list Tokens of address
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();
@@ -91,8 +88,7 @@ contract MonsterCrystal is
     }
 
     /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
+     * base mint a Monster Crystal
      * @param _address: owner of NFT
      */
 
@@ -105,8 +101,7 @@ contract MonsterCrystal is
     }
 
     /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
+     * mint a Monster Crystal
      * @param _address: owner of NFT
      */
 
@@ -119,9 +114,9 @@ contract MonsterCrystal is
     }
 
     /*
-     * mint a Coach
-     * @param _uri: _uri of NFT
+     * mint a Crystal
      * @param _address: owner of NFT
+     * @param _status: status free of NFT
      */
 
     function mint(

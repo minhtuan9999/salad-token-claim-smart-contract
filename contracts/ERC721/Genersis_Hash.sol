@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract GenesisHash is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,7 +17,7 @@ contract GenesisHash is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // Count token Id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
@@ -28,14 +26,14 @@ contract GenesisHash is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
+    // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
     // Event create Genesishash
     event createGenesisHash(address _address, uint256 _tokenId, uint256 _type);
 
-    // Get holder Tokens
-    function getHolderToken(
+    // Get list Tokens of address
+    function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();
@@ -81,11 +79,9 @@ contract GenesisHash is
     }
 
     /*
-     * mint a Genesishash
-     * @param _uri: _uri of NFT
+     * base mint a Genesishash
      * @param _address: owner of NFT
      */
-
     function _createNFT(address _address) private returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
@@ -99,7 +95,6 @@ contract GenesisHash is
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
-
     function createNFT(
         address _address,
         uint256 _type
@@ -112,8 +107,9 @@ contract GenesisHash is
      * mint a Genesishash
      * @param _address: owner of NFT
      */
-
-    function mintGenesishash(address _address) external returns (uint256) {
+    function mint(
+        address _address
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) returns (uint256) {
         return _createNFT(_address);
     }
 
@@ -124,7 +120,6 @@ contract GenesisHash is
     function burn(
         uint256 _tokenId
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(_tokenId), "Token id not exist");
         _burn(_tokenId);
     }
 }

@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Monster is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,7 +17,7 @@ contract Monster is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // Count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
@@ -28,10 +26,11 @@ contract Monster is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
-    mapping(address => EnumerableSet.UintSet) private _listTokenIdOfAddress;
-    mapping(uint256 => uint256) private _countMint;
+    // Mapping list token of owner
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    // Infor monster 
     mapping(uint256 => monsterDetail) public _monster;
+    // check status mint nft free of address
     mapping(address => bool) private _realdyFreeNFT;
 
     //struct Monster
@@ -44,19 +43,12 @@ contract Monster is
     event createNFTMonster(address _address, uint256 _tokenId, uint256 _type);
     // Event create Monster Free
     event createNFTMonsterFree(address _address, uint256 _tokenDi);
-    // Event fusion Monster
-    event fusionNFTMonster(
-        address _address,
-        uint256 _newNFTMonster,
-        uint256 _firstTokenId,
-        uint256 _lastTokenId
-    );
 
-    // Get list Tokens
+    // Get list Tokens of address
     function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokenIdOfAddress[_address].values();
+        return _listTokensOfAdrress[_address].values();
     }
 
     /**
@@ -69,8 +61,8 @@ contract Monster is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokenIdOfAddress[to].add(firstTokenId);
-        _listTokenIdOfAddress[from].remove(firstTokenId);
+        _listTokensOfAdrress[to].add(firstTokenId);
+        _listTokensOfAdrress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -99,8 +91,7 @@ contract Monster is
     }
 
     /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
+     * base mint a Monster
      * @param _address: owner of NFT
      */
 
@@ -108,7 +99,7 @@ contract Monster is
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokenIdOfAddress[_address].add(tokenId);
+        _listTokensOfAdrress[_address].add(tokenId);
         _monster[tokenId].lifeSpan = true;
         return tokenId;
     }
@@ -122,7 +113,7 @@ contract Monster is
     function createNFT(
         address _address,
         uint256 _type
-    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE)  {
         uint256 tokenId = _createNFT(_address);
         emit createNFTMonster(_address, tokenId, _type);
     }
@@ -135,7 +126,7 @@ contract Monster is
     function createFreeNFT(
         address _address
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(!_realdyFreeNFT[_address], "Exist NFT Free of address");
+        require(!_realdyFreeNFT[_address], "Monster:: CreateFreeNFT: Exist NFT Free of address");
         uint256 tokenId = _createNFT(_address);
         _monster[tokenId].isFree = true;
         _realdyFreeNFT[_address] = true;
@@ -143,13 +134,13 @@ contract Monster is
     }
 
     /*
-     * fusion a Monster
+     * mint a Monster
      * @param _address: address of owner
      * @param _firstTokenId: first tokenId fusion => burn
      * @param _lastTokenId: last tokenId fusion => burn
      */
 
-    function fusionNFT(
+    function mint(
         address _address
     ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
         return _createNFT(_address);
@@ -168,7 +159,7 @@ contract Monster is
      * @param _tokenId: tokenId
      */
     function getStatusMonster(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster: Monster not exists");
+        require(_exists(tokenId), "Monster:: GetStatusMonster: Monster not exists");
         return _monster[tokenId].lifeSpan;
     }
 
@@ -180,7 +171,7 @@ contract Monster is
         uint256 tokenId,
         bool status
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(tokenId), "Monster: Monster not exists");
+        require(_exists(tokenId), "Monster:: setStatusMonster: Monster not exists");
         _monster[tokenId].lifeSpan = status;
     }
 
@@ -189,7 +180,7 @@ contract Monster is
      * @param _tokenId: tokenId
      */
     function isFreeMonster(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster: Monster not exists");
+        require(_exists(tokenId), "Monster:: isFreeMonster: Monster not exists");
         return _monster[tokenId].isFree;
     }
 }

@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract GeneralHash is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,7 +17,7 @@ contract GeneralHash is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // Count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
@@ -28,10 +26,10 @@ contract GeneralHash is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
+    // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
-    // Event create Monster
+    // Event create General Hash
     event createGeneralHash(address _address, uint256 _tokenId, uint256 _type);
 
     // Get list Tokens of address
@@ -81,8 +79,7 @@ contract GeneralHash is
     }
 
     /*
-     * mint a Genesishash
-     * @param _uri: _uri of NFT
+     * base mint a General hash
      * @param _address: owner of NFT
      */
 
@@ -95,38 +92,36 @@ contract GeneralHash is
     }
 
     /*
-     * mint a Genesishash
-     * @param _uri: _uri of NFT
+     * mint a General hash
      * @param _address: owner of NFT
      */
 
     function createNFT(
         address _address,
         uint256 _type
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         emit createGeneralHash(_address, tokenId, _type);
     }
 
     /*
-     * mint a Genesishash
+     * mint a General hash
      * @param _address: owner of NFT
      */
 
-    function mintGeneralhash(
+    function mint(
         address _address
     ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
         return _createNFT(_address);
     }
 
     /*
-     * burn a Genesishash
+     * burn a General hash
      * @param _tokenId: tokenId burn
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(_tokenId), "Token id not exist");
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 }

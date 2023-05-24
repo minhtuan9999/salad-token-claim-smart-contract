@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Coach is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
@@ -19,7 +17,7 @@ contract Coach is
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
@@ -28,16 +26,16 @@ contract Coach is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
+    // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
-    mapping(uint256 => infoCoach) private _coach;
+    // Mapping info Coach
+    mapping(uint256 => coachDetail) private _coach;
 
-    // struc if coach
-    struct infoCoach {
+    // struc if coach, if free => true
+    struct coachDetail {
         bool isFree;
     }
-
-    // Event create Monster
+    // Event create Coach
     event createCoachNFT(address _address, uint256 _tokenId, uint256 _typeNFT);
 
     // Get list token of address
@@ -86,22 +84,24 @@ contract Coach is
         _unpause();
     }
 
+    // Base mint NFT
     function _createNFT(address _address) internal returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
         _listTokensOfAddress[_address].add(tokenId);
+        return tokenId;
     }
 
     /*
-     * mint a Monster
+     * mint a Coach
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
     function createNFT(
         address _address,
         uint256 _typeNFT
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         emit createCoachNFT(_address, tokenId, _typeNFT);
     }
@@ -133,8 +133,8 @@ contract Coach is
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function isFeeCoach(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster: Monster not exists");
+    function isFreeCoach(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Coach:: isFreeCoach: Monster not exists");
         return _coach[tokenId].isFree;
     }
 }

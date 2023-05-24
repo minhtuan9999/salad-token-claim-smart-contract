@@ -7,22 +7,17 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract MonsterMemory is
     Ownable,
-    ReentrancyGuard,
     ERC721Enumerable,
     AccessControl,
     Pausable
 {
     using Counters for Counters.Counter;
-    using Strings for uint256;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // Count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
@@ -31,10 +26,10 @@ contract MonsterMemory is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // Optional mapping for token URIs
-    mapping(address => EnumerableSet.UintSet) private _listTokenOfAddress;
+    // List token of address
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
 
-    // Event create Monster
+    // Event create Monster memory
     event createNFTMonsterMemory(
         address _address,
         uint256 _tokenId,
@@ -45,7 +40,7 @@ contract MonsterMemory is
     function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokenOfAddress[_address].values();
+        return _listTokensOfAdrress[_address].values();
     }
 
     /**
@@ -58,8 +53,8 @@ contract MonsterMemory is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokenOfAddress[to].add(firstTokenId);
-        _listTokenOfAddress[from].remove(firstTokenId);
+        _listTokensOfAdrress[to].add(firstTokenId);
+        _listTokensOfAdrress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -88,8 +83,7 @@ contract MonsterMemory is
     }
 
     /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
+     * base mint a Monster Memory
      * @param _address: owner of NFT
      */
 
@@ -97,12 +91,12 @@ contract MonsterMemory is
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokenOfAddress[_address].add(tokenId);
+        _listTokensOfAdrress[_address].add(tokenId);
         return tokenId;
     }
 
     /*
-     * mint a Monster
+     * mint a Monster memory
      * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
@@ -117,7 +111,6 @@ contract MonsterMemory is
 
     /*
      * mint a Monster Memory
-     * @param _uri: _uri of NFT
      * @param _address: owner of NFT
      */
 
@@ -128,13 +121,12 @@ contract MonsterMemory is
     }
 
     /*
-     * burn a Monster
+     * burn a Monster Memory
      * @param _tokenId: tokenId burn
      */
-    function burnMonsterMemory(
+    function burn(
         uint256 _tokenId
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(_tokenId), "Monster: Monster not exists");
         _burn(_tokenId);
     }
 }
