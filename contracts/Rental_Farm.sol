@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 // import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./Farm.sol";
+import "./ERC721/Farm.sol";
 
 contract RentalFarm is Ownable, AccessControl {
     using SafeMath for uint256;

@@ -7,32 +7,44 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract RemonsterItem is ERC1155, AccessControl, Ownable {
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
-    bytes32 public constant MANAGERMENT_ITEM_ROLE =
-        keccak256("MANAGERMENT_ITEM_ROLE");
 
     using Strings for uint256;
+    uint256 private constant COLLECTION_TYPE_OFFSET = 10000; // Offset for collection types
+
+    uint256 public constant TRAINING_ITEM = 1; // Training item collection
+    uint256 public constant ENHANCE_ITEM = 2; // Enhance item collection
+    uint256 public constant FUSION_ITEM = 3; // Fusion item collection
+    uint256 public constant REGENERATION_ITEM = 4; // Regeneration item collection
 
     constructor(string memory _baseMetadata) ERC1155(_baseMetadata) {
-        //"https://gateway.pinata.cloud/ipfs/QmTN32qBKYqnyvatqfnU8ra6cYUGNxpYziSddCatEmopLR/metadata/api/item/{id}.json"
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        _setRoleAdmin(MANAGERMENT_ITEM_ROLE, MANAGERMENT_ITEM_ROLE);
-        _setupRole(MANAGERMENT_ITEM_ROLE, _msgSender());
         baseMetadata = _baseMetadata;
     }
-
+    // base metadata
     string public baseMetadata;
-
+    // detail tokenId
+    mapping (uint256 => detail) public _tokenDetail;
+    // get tokenid of collectionType & itemType 
+    mapping (uint256 => mapping(uint256 => uint256)) public _tokenIdOfType;
+    
+    // struct detail tokenId
+    struct detail {
+        uint256 collectionType;
+        uint256 itemType;
+    }
     // EVENT
     event mintMonsterItems(
         address _addressTo,
-        uint256 _tokenId,
+        uint256 _itemId,
+        uint256 _itemType,
+        uint256 _collectionType,
         uint256 _number,
-        bytes _metadata
+        bytes _data
     );
-
+    event burnItem(address _from, uint256 _id, uint256 _amount);
+    event burnBathItem(address _from, uint256[] _id, uint256[] _amount);
     /**
      * @dev See {IERC1155MetadataURI-uri}.
      *
@@ -62,29 +74,35 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
     /*
      * mint a Training item
      * @param addressTo: owner of NFT
-     * @oaram tokenId: id of item
+     * @oaram _itemType: id of item
+     * @oaram _collectionType: id of collection
      * @param number: number NFT
      * @param data: information of NFT
-     * List tokenId:
-     *      TRAINING_ITEM = 0;
-     *      REGENERATION_ITEM= 1;
-     *      FUSION_ITEM = 2;
-     *      MATERIAL_ITEM = 3;
-     *      EXPEDITION_TICKET = 5;
-     *      TOURNAMENT_TICKET = 6;
      */
     function mint(
         address _addressTo,
-        uint256 _tokenId,
+        uint256 _itemType,
+        uint256 _collectionType,
         uint256 _number,
         bytes memory _data
-    ) public onlyRole(MANAGERMENT_ROLE) {
-        _mint(_addressTo, _tokenId, _number, _data);
-        emit mintMonsterItems(_addressTo, _tokenId, _number, _data);
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        uint256 collectionId = _collectionType * COLLECTION_TYPE_OFFSET;
+        uint256 itemId = collectionId + _itemType;
+        _mint(_addressTo, itemId, _number, _data);
+        _tokenDetail[itemId].collectionType = _collectionType;
+        _tokenDetail[itemId].itemType = _itemType;
+        _tokenIdOfType[_collectionType][_itemType] = itemId;
+        emit mintMonsterItems(_addressTo, itemId, _itemType, _collectionType, _number, _data);
     }
 
-    function burn(address _from, uint256 _id, uint256 _amount) external {
-        require(hasRole(MANAGERMENT_ITEM_ROLE, msg.sender), "Not permission");
+    function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGERMENT_ROLE) {
         _burn(_from, _id, _amount);
+        emit burnItem(_from, _id, _amount);
     }
+    
+    function burnMultipleItem(address _from, uint256[] memory _id, uint256[] memory _amount) external {
+        _burnBatch(_from, _id, _amount);
+        emit burnBathItem(_from, _id, _amount);
+    }
+    
 }
