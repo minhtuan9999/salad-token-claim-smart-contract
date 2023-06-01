@@ -33,7 +33,7 @@ contract GenesisHash is
     event createGenesisHash(address _address, uint256 _tokenId, uint256 _type);
 
     // Get list Tokens of address
-    function getListTokenOfAddress(
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();

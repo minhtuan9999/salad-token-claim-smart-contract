@@ -29,7 +29,7 @@ contract Skin is
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
     // Event create Monster Skin
-    event createNFTMonsterSkin(address _address, uint256 _tokenId, uint256 _type);
+    event createMonsterSkin(address _address, uint256 _tokenId, uint256 _type);
 
     // Get list token of address
     function getListTokensOfAddress(
@@ -98,7 +98,7 @@ contract Skin is
         uint256 _type
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
-        emit createNFTMonsterSkin(_address, tokenId, _type);
+        emit createMonsterSkin(_address, tokenId, _type);
     }
 
     /*

@@ -40,12 +40,13 @@ contract Monster is
     }
 
     // Event create Monster
-    event createNFTMonster(address _address, uint256 _tokenId, uint256 _type);
+    event createMonster(address _address, uint256 _tokenId, uint256 _type);
     // Event create Monster Free
-    event createNFTMonsterFree(address _address, uint256 _tokenDi);
-
+    event createMonsterFree(address _address, uint256 _tokenDi);
+    // status life span
+    event statusLifeSpan(uint256 _tokenId, bool _status);
     // Get list Tokens of address
-    function getListTokenOfAddress(
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAdrress[_address].values();
@@ -115,7 +116,7 @@ contract Monster is
         uint256 _type
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE)  {
         uint256 tokenId = _createNFT(_address);
-        emit createNFTMonster(_address, tokenId, _type);
+        emit createMonster(_address, tokenId, _type);
     }
 
     /*
@@ -125,12 +126,12 @@ contract Monster is
      */
     function createFreeNFT(
         address _address
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused {
         require(!_realdyFreeNFT[_address], "Monster:: CreateFreeNFT: Exist NFT Free of address");
         uint256 tokenId = _createNFT(_address);
         _monster[tokenId].isFree = true;
         _realdyFreeNFT[_address] = true;
-        emit createNFTMonsterFree(_address, tokenId);
+        emit createMonsterFree(_address, tokenId);
     }
 
     /*
@@ -158,8 +159,8 @@ contract Monster is
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function getStatusMonster(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster:: GetStatusMonster: Monster not exists");
+    function getLifeSpan(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Monster:: getLifeSpan: Monster not exists");
         return _monster[tokenId].lifeSpan;
     }
 
@@ -167,20 +168,21 @@ contract Monster is
      * set staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function setStatusMonster(
+    function setStatusLifeSpan(
         uint256 tokenId,
         bool status
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(tokenId), "Monster:: setStatusMonster: Monster not exists");
+        require(_exists(tokenId), "Monster:: setStatusLifeSpan: Monster not exists");
         _monster[tokenId].lifeSpan = status;
+        emit statusLifeSpan(tokenId, status);
     }
 
     /*
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function isFreeMonster(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster:: isFreeMonster: Monster not exists");
+    function isFree(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Monster:: isFree: Monster not exists");
         return _monster[tokenId].isFree;
     }
 }

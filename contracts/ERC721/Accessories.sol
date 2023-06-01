@@ -32,7 +32,7 @@ contract Accessories is
     event createAccessories(address _address, uint256 _tokenId, uint256 _type);
 
     // Get holder Tokens
-    function getListTokenOfAddress(
+    function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAdrress[_address].values();

@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract MonsterMemory is
+contract HashChipNFT is
     Ownable,
     ERC721Enumerable,
     AccessControl,
@@ -26,21 +26,17 @@ contract MonsterMemory is
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
 
-    // List token of address
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    // Mapping list token of address
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
-    // Event create Monster memory
-    event createMonsterMemory(
-        address _address,
-        uint256 _tokenId,
-        uint256 _typeNFT
-    );
+    // Event create General Hash
+    event createGeneralHash(address _address, uint256 _tokenId, uint256 _type);
 
-    // Get holder Tokens
+    // Get list Tokens of address
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdrress[_address].values();
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -53,8 +49,8 @@ contract MonsterMemory is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdrress[to].add(firstTokenId);
-        _listTokensOfAdrress[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -83,7 +79,7 @@ contract MonsterMemory is
     }
 
     /*
-     * base mint a Monster Memory
+     * base mint a General hash
      * @param _address: owner of NFT
      */
 
@@ -91,26 +87,36 @@ contract MonsterMemory is
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAdrress[_address].add(tokenId);
+        _listTokensOfAddress[_address].add(tokenId);
         return tokenId;
     }
 
     /*
-     * mint a Monster memory
-     * @param _uri: _uri of NFT
+     * mint a General hash
      * @param _address: owner of NFT
      */
 
     function createNFT(
         address _address,
-        uint256 _typeNFT
+        uint256 _type
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
-        emit createMonsterMemory(_address, tokenId, _typeNFT);
+        emit createGeneralHash(_address, tokenId, _type);
     }
 
     /*
-     * burn a Monster Memory
+     * mint a General hash
+     * @param _address: owner of NFT
+     */
+
+    function mint(
+        address _address
+    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
+        return _createNFT(_address);
+    }
+
+    /*
+     * burn a General hash
      * @param _tokenId: tokenId burn
      */
     function burn(
