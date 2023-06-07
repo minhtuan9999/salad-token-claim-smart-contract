@@ -84,15 +84,6 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 amount
     );
 
-    event OrderSuccessful(
-        bytes32 orderId,
-        uint256 indexed tokenId,
-        address indexed seller,
-        address nftAddress,
-        uint256 priceInWei,
-        address indexed buyer
-    );
-
     event ChangedAddressReceive(address addressReceive);
 
     /**
