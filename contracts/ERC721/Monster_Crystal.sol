@@ -35,7 +35,7 @@ contract MonsterCrystal is
     }
 
     // Event create Monster Crystal
-    event createNFTMonsterCrystal(
+    event createMonsterCrystal(
         address _address,
         uint256 _tokenId,
         uint256 _typeNFT
@@ -110,7 +110,7 @@ contract MonsterCrystal is
         uint256 _typeNFT
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
-        emit createNFTMonsterCrystal(_address, tokenId, _typeNFT);
+        emit createMonsterCrystal(_address, tokenId, _typeNFT);
     }
 
     /*
@@ -142,8 +142,8 @@ contract MonsterCrystal is
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function isFeeCrystal(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster: Monster not exists");
+    function isFree(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Monster Crystal:: isFree: Monster not exists");
         return _crystal[tokenId].isFree;
     }
 }

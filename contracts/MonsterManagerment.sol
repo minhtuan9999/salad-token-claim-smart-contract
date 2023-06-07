@@ -13,16 +13,16 @@ interface IMonster {
     //burn monster
     function burn(uint256 _tokenId) external;
 
-    //get lifeSpan monster
-    function getStatusMonster(uint256 tokenId) external view returns (bool);
+    //check lifeSpan monster
+    function getLifeSpan(uint256 tokenId) external view returns (bool);
 
-    // check monster is free?
-    function isFreeMonster(uint256 tokenId) external view returns (bool);
+    //check monster is free
+    function isFree(uint256 tokenId) external view returns (bool);
 }
 
 interface IMonsterMemory {
     // mint monster memory
-    function mint(address _address) external returns (uint256);
+    function createNFT(address _address, uint256 _type) external;
 }
 
 interface ICoach {
@@ -53,6 +53,14 @@ interface IAccessories {
 interface IMonsterItem {
     // burn item from tokenid
     function burn(address _from, uint256 _id, uint256 _amount) external;
+    function mint(
+        address _addressTo,
+        uint256 _itemType,
+        uint256 _collectionType,
+        uint256 _number,
+        bytes memory _data
+    ) external ;
+    function burnMultipleItem(address _from, uint256[] memory _id, uint256[] memory _amount) external;
 }
 
 contract MonsterManagerment is Ownable, AccessControl, Pausable {
@@ -93,47 +101,32 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     }
 
     // count regeration General limit
-    mapping(uint256 => uint256) private _countGeneral;
+    mapping(uint256 => uint256) public _countGeneral;
 
     // regeration General limit
-    uint256 private generalLimit;
-    // Fusion 2 monster, monster lifeSpan == false => mint 2 monster memory
-    event fusionNFTMonsterMemorys(
-        address _owner,
-        uint256 _newMonster,
-        uint256 _firstTokenId,
-        uint256 _lastTokenId,
-        uint256 _firstMemory,
-        uint256 _lastMemory
-    );
-    // Fusion 2 monster, monster lifeSpan == true => not mint monster memory
-    event fusionNFTMonsterNotMemory(
+    uint256 public generalLimit = 3;
+    // rate convert hash fragment to regeneration hash
+    uint256[] public hashFragmentRate = [5,1];
+    // rate convert hash fragment to regeneration hash
+    uint256 public regenerationToMonster = 1;
+    // Fusion 2 monster
+    event fusionNFTMonsterMemory(
         address _owner,
         uint256 _newMonster,
         uint256 _firstTokenId,
         uint256 _lastTokenId
     );
-    // Fusion 2 monster,first monster lifeSpan == true && last monster lifespan == false => mint 1 memory
-    event fusionNFTMonsterMemory(
-        address _owner,
-        uint256 _newMonster,
-        uint256 _firstTokenId,
-        uint256 _lastTokenId,
-        uint256 _memoryId
-    );
     // Create coach from monster
     event createCoachByMonster(
         address _owner,
         uint256 _newCoach,
-        uint256 _tokenBurn,
-        uint256 _newMonsterMemory
+        uint256 _tokenBurn
     );
     // Create Crystal from monster
     event createCrystalByMonster(
         address _owner,
         uint256 _newCrystal,
-        uint256 _tokenBurn,
-        uint256 _newMonsterMemory
+        uint256 _tokenBurn
     );
     // Fusion 2 genesishash => monster
     event fusionGenesisHashNFT(
@@ -200,11 +193,57 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
         uint256 _newTokenId
     );
 
+    // Create monster from NFTs
+    event createMonsterFromRegenerationItem(
+        address _owner,
+        uint256 _materialId,
+        uint256 _tokenId
+    );
+    // Create monster from NFTs
+    event createRegenerationNFT(
+        address _owner,
+        uint256 _itemType,
+        uint256 _collectionType,
+        uint256 _fragmentId
+    );
+
     // Set mint limit
     function setMintLimit(uint256 _number) public onlyOwner {
         generalLimit = _number;
     }
-
+    // Set rate fragment to regeneration
+    function setHashFragmentRate(uint256 _fragment, uint256 _regeneration) public onlyOwner {
+        hashFragmentRate = [_fragment, _regeneration];
+    }
+    // Set rate regeneration to Monster
+    function setRegenerationRate(uint256 _rate) public onlyOwner {
+        regenerationToMonster = _rate;
+    }
+    // fusion 2 Monster
+    function _fusionNFT(address _owner, uint256 _firstTokenId,uint256 _lastTokenId) private returns(uint256) {
+        bool lifeSpanFistMonster = monsterContract.getLifeSpan(
+            _firstTokenId
+        );
+        bool lifeSpanLastMonster = monsterContract.getLifeSpan(
+            _lastTokenId
+        );
+        if (!lifeSpanFistMonster && !lifeSpanLastMonster) {
+            // mint monster memory
+            monsterMemory.createNFT(_owner,0);
+            monsterMemory.createNFT(_owner,0);
+        } 
+        if (
+            (!lifeSpanFistMonster && lifeSpanLastMonster) ||
+            (lifeSpanFistMonster && !lifeSpanLastMonster)
+        ) {
+            // mint monster memory
+            monsterMemory.createNFT(_owner,0);
+        } 
+        uint256 newTokenId = monsterContract.mint(_owner);
+        monsterContract.burn(_firstTokenId);
+        monsterContract.burn(_lastTokenId);
+        return newTokenId;
+    }
     /*
      * fusion a Monster
      * @param _address: address of owner
@@ -214,119 +253,24 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     function fusionMonsterNFT(
         address _owner,
         uint256 _firstTokenId,
-        uint256 _lastTokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 _lastTokenId,
+        uint256[] memory _itemId,// if dont using fusiong item: [0]
+        uint256[] memory _amount
+    ) external whenNotPaused {
         require(
             IERC721(address(monsterContract)).ownerOf(_firstTokenId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionMonsterNFT: The owner is not correct"
         );
         require(
             IERC721(address(monsterContract)).ownerOf(_lastTokenId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionMonsterNFT:The owner is not correct"
         );
-        uint256 newTokenId = monsterContract.mint(_owner);
-        bool lifeSpanFistMonster = monsterContract.getStatusMonster(
-            _firstTokenId
-        );
-        bool lifeSpanLastMonster = monsterContract.getStatusMonster(
-            _lastTokenId
-        );
-        monsterContract.burn(_firstTokenId);
-        monsterContract.burn(_lastTokenId);
-        if (!lifeSpanFistMonster && !lifeSpanLastMonster) {
-            // mint monster memory
-            uint256 firstMemory = monsterMemory.mint(_owner);
-            uint256 lastMemory = monsterMemory.mint(_owner);
-            emit fusionNFTMonsterMemorys(
-                _owner,
-                newTokenId,
-                _firstTokenId,
-                _lastTokenId,
-                firstMemory,
-                lastMemory
-            );
-        } else if (
-            (!lifeSpanFistMonster && lifeSpanLastMonster) ||
-            (lifeSpanFistMonster && !lifeSpanLastMonster)
-        ) {
-            // mint monster memory
-            uint256 memoryId = monsterMemory.mint(_owner);
-            emit fusionNFTMonsterMemory(
-                _owner,
-                newTokenId,
-                _firstTokenId,
-                _lastTokenId,
-                memoryId
-            );
-        } else {
-            emit fusionNFTMonsterNotMemory(
-                _owner,
-                newTokenId,
-                _firstTokenId,
-                _lastTokenId
-            );
+        require(_itemId.length == _amount.length, "MonsterManagerment: fusionMonsterNFT: Invalid input");
+        if(_itemId[0] != 0) {
+            item.burnMultipleItem(_owner, _itemId, _amount);
         }
-    }
-
-    /*
-     * Create coach from Monster
-     * @param _owner: first tokenId fusion => burn
-     * @param _idBurn: last tokenId fusion => burn
-     */
-    function createCoachNFT(
-        address _owner,
-        uint256 _idBurn
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(
-            IERC721(address(monsterContract)).ownerOf(_idBurn) == _owner,
-            "The owner is not correct"
-        );
-        bool isStatusMonster = monsterContract.getStatusMonster(_idBurn);
-        require(
-            !isStatusMonster,
-            "MonsterManagerment: createCoachNFT: The monster is alive"
-        );
-        bool isFreeMonster = monsterContract.isFreeMonster(_idBurn);
-        monsterContract.burn(_idBurn);
-        uint256 tokenId;
-        if (isFreeMonster) {
-            tokenId = coach.mint(_owner, true);
-        } else {
-            tokenId = coach.mint(_owner, false);
-        }
-        uint256 newMonsterMemory = monsterMemory.mint(_owner);
-        emit createCoachByMonster(_owner, tokenId, _idBurn, newMonsterMemory);
-    }
-
-    /*
-     * Create crystal from Monster
-     * @param _address: address of owner
-     * @param _firstTokenId: first tokenId fusion => burn
-     * @param _lastTokenId: last tokenId fusion => burn
-     */
-    function createMonsterCrystalNFT(
-        address _owner,
-        uint256 _idBurn
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-         require(
-            IERC721(address(monsterContract)).ownerOf(_idBurn) == _owner,
-            "The owner is not correct"
-        );
-        bool isStatusMonster = monsterContract.getStatusMonster(_idBurn);
-        require(
-            !isStatusMonster,
-            "MonsterManagerment: createCoachNFT: The monster is alive"
-        );
-        bool isFreeMonster = monsterContract.isFreeMonster(_idBurn);
-        monsterContract.burn(_idBurn);
-        uint256 tokenId;
-        if (isFreeMonster) {
-            tokenId = crystal.mint(_owner, true);
-        } else {
-            tokenId = crystal.mint(_owner, false);
-        }
-        uint256 newMonsterMemory = monsterMemory.mint(_owner);
-        emit createCrystalByMonster(_owner, tokenId, _idBurn, newMonsterMemory);
+        uint256 tokenId = _fusionNFT(_owner,_firstTokenId,_lastTokenId);
+        emit fusionNFTMonsterMemory(_owner, tokenId, _firstTokenId, _lastTokenId);
     }
 
     /*
@@ -338,16 +282,22 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     function fusionGenesisHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 _lastId,
+        uint256[] memory _itemId,// if dont using fusiong item: [0]
+        uint256[] memory _amount
+    ) external whenNotPaused {
         require(
             IERC721(address(genesis)).ownerOf(_firstId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionGenesisHash: The owner is not correct"
         );
         require(
             IERC721(address(genesis)).ownerOf(_lastId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionGenesisHash: The owner is not correct"
         );
+        require(_itemId.length == _amount.length, "MonsterManagerment: fusionGenesisHash: Invalid input");
+        if(_itemId[0] != 0) {
+            item.burnMultipleItem(_owner, _itemId, _amount);
+        }
         uint256 newTokenId = monsterContract.mint(_owner);
         emit fusionGenesisHashNFT(_owner, _firstId, _lastId, newTokenId);
     }
@@ -361,25 +311,31 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     function fusionGeneralHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 _lastId,
+        uint256[] memory _itemId,// if dont using fusiong item: [0]
+        uint256[] memory _amount
+    ) external whenNotPaused {
         require(
             IERC721(address(general)).ownerOf(_firstId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionGeneralHash: The owner is not correct"
         );
         require(
             IERC721(address(general)).ownerOf(_lastId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionGeneralHash: The owner is not correct"
         );
+        require(_itemId.length == _amount.length, "MonsterManagerment: fusionGeneralHash: Invalid input");
+        if(_itemId[0] != 0) {
+            item.burnMultipleItem(_owner, _itemId, _amount);
+        }
         uint256 newTokenId = monsterContract.mint(_owner);
-        _countGeneral[_firstId]++;
-        _countGeneral[_lastId]++;
         if (_countGeneral[_firstId] == generalLimit) {
             general.burn(_firstId);
         }
         if (_countGeneral[_lastId] == generalLimit) {
             general.burn(_lastId);
         }
+        _countGeneral[_firstId]++;
+        _countGeneral[_lastId]++;
         emit fusionGeneralHashNFT(_owner, _firstId, _lastId, newTokenId);
     }
 
@@ -395,21 +351,88 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     function fusionMultipleHash(
         address _owner,
         uint256 _genesisId,
-        uint256 _generalId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 _generalId,
+        uint256[] memory _itemId,// if dont using fusiong item: [0]
+        uint256[] memory _amount
+    ) external whenNotPaused{
         require(
             IERC721(address(genesis)).ownerOf(_genesisId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionMultipleHash: The owner is not correct"
         );
         require(
             IERC721(address(general)).ownerOf(_generalId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: fusionMultipleHash: The owner is not correct"
         );
+        require(_itemId.length == _amount.length, "MonsterManagerment: fusionMultipleHash: Invalid input");
+        if(_itemId[0] != 0) {
+            item.burnMultipleItem(_owner, _itemId, _amount);
+        }
         uint256 newTokenId = monsterContract.mint(_owner);
         if (_countGeneral[_generalId] == generalLimit) {
             general.burn(_generalId);
         }
         emit fusionMultipleHashNFT(_owner, _genesisId, _generalId, newTokenId);
+    }
+
+    /*
+     * Create coach from Monster
+     * @param _owner: first tokenId fusion => burn
+     * @param _idBurn: last tokenId fusion => burn
+     */
+    function createCoachNFT(
+        address _owner,
+        uint256 _idBurn
+    ) external whenNotPaused {
+        require(
+            IERC721(address(monsterContract)).ownerOf(_idBurn) == _owner,
+            "MonsterManagerment: createCoachNFT: The owner is not correct"
+        );
+        bool isStatusMonster = monsterContract.getLifeSpan(_idBurn);
+        require(
+            !isStatusMonster,
+            "MonsterManagerment: createCoachNFT: The monster is alive"
+        );
+        bool isFreeMonster = monsterContract.isFree(_idBurn);
+        monsterContract.burn(_idBurn);
+        uint256 tokenId;
+        if (isFreeMonster) {
+            tokenId = coach.mint(_owner, true);
+        } else {
+            tokenId = coach.mint(_owner, false);
+        }
+        monsterMemory.createNFT(_owner,0);
+        emit createCoachByMonster(_owner, tokenId, _idBurn);
+    }
+
+    /*
+     * Create crystal from Monster
+     * @param _address: address of owner
+     * @param _firstTokenId: first tokenId fusion => burn
+     * @param _lastTokenId: last tokenId fusion => burn
+     */
+    function createMonsterCrystalNFT(
+        address _owner,
+        uint256 _idBurn
+    ) external whenNotPaused {
+         require(
+            IERC721(address(monsterContract)).ownerOf(_idBurn) == _owner,
+            "MonsterManagerment: createMonsterCrystalNFT: The owner is not correct"
+        );
+        bool isStatusMonster = monsterContract.getLifeSpan(_idBurn);
+        require(
+            !isStatusMonster,
+            "MonsterManagerment: createMonsterCrystalNFT: The monster is alive"
+        );
+        bool isFreeMonster = monsterContract.isFree(_idBurn);
+        monsterContract.burn(_idBurn);
+        uint256 tokenId;
+        if (isFreeMonster) {
+            tokenId = crystal.mint(_owner, true);
+        } else {
+            tokenId = crystal.mint(_owner, false);
+        }
+        monsterMemory.createNFT(_owner,0);
+        emit createCrystalByMonster(_owner, tokenId, _idBurn);
     }
 
     /*
@@ -422,10 +445,10 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     function createMonsterFromGenesisHash(
         address _owner,
         uint256 _genesisId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused {
         require(
             IERC721(address(genesis)).ownerOf(_genesisId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: createMonsterFromGenesisHash: The owner is not correct"
         );
         uint256 tokenId = monsterContract.mint(_owner);
         emit createMonsterFromGenesis(_owner, _genesisId, tokenId);
@@ -441,10 +464,10 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
     function createMonsterFromGeneralHash(
         address _owner,
         uint256 _generalId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused{
         require(
             IERC721(address(general)).ownerOf(_generalId) == _owner,
-            "The owner is not correct"
+            "MonsterManagerment: createMonsterFromGeneralHash: The owner is not correct"
         );
         uint256 tokenId = monsterContract.mint(_owner);
         if (_countGeneral[_generalId] == generalLimit) {
@@ -464,7 +487,7 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
         address _nftAddress,
         address _owner,
         uint256 _nftTokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused{
         require(
             IERC721(_nftAddress).ownerOf(_nftTokenId) == _owner,
             "The owner is not correct"
@@ -484,9 +507,41 @@ contract MonsterManagerment is Ownable, AccessControl, Pausable {
         address _owner,
         uint256 _materialId,
         uint256 _number
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 tokenId = accessories.mint(_owner);
+    ) external whenNotPaused{
         item.burn(_owner, _materialId, _number);
+        uint256 tokenId = accessories.mint(_owner);
         emit createAccessoriesNFT(_owner, _materialId, tokenId);
+    }
+
+    /*
+     * Create monster from regeneration item
+     * @param _owner: address of owner
+     * @param _materialId: id of regeneration item
+     */
+    function createMonsterFromRegeneration(
+        address _owner,
+        uint256 _materialId
+    ) external whenNotPaused {
+        item.burn(_owner, _materialId, regenerationToMonster);
+        uint256 tokenId = monsterContract.mint(_owner);
+        emit createMonsterFromRegenerationItem(_owner, _materialId, tokenId);
+    }
+    /*
+     * Create Accessories
+     * @param _owner: address of owner
+     * @param _accessoriesAddress: address of Accessories contract
+     * @param _materialAddress: address of material contract
+     * @param _generalId: id of material
+     */
+    function createRegeneration(
+        address _owner,
+        uint256 _itemType,
+        uint256 _collectionType,
+        uint256 _hashFragment, 
+        bytes memory _data
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        item.mint(_owner, _itemType,_collectionType, hashFragmentRate[0], _data);
+        item.burn(_owner, _hashFragment, hashFragmentRate[1]);
+        emit createRegenerationNFT(_owner, _itemType, _collectionType, _hashFragment);
     }
 }

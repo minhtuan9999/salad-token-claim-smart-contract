@@ -36,7 +36,7 @@ contract Coach is
         bool isFree;
     }
     // Event create Coach
-    event createCoachNFT(address _address, uint256 _tokenId, uint256 _typeNFT);
+    event createCoach(address _address, uint256 _tokenId, uint256 _typeNFT);
 
     // Get list token of address
     function getListTokensOfAddress(
@@ -103,7 +103,7 @@ contract Coach is
         uint256 _typeNFT
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
-        emit createCoachNFT(_address, tokenId, _typeNFT);
+        emit createCoach(_address, tokenId, _typeNFT);
     }
 
     /*
@@ -133,8 +133,8 @@ contract Coach is
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function isFreeCoach(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Coach:: isFreeCoach: Monster not exists");
+    function isFree(uint256 tokenId) external view returns (bool) {
+        require(_exists(tokenId), "Coach:: isFree: Monster not exists");
         return _coach[tokenId].isFree;
     }
 }
