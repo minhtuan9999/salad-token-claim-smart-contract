@@ -3,51 +3,63 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-
-interface IT2WebERC721 {
-    function setBaseURI(string memory baseTokenURI) external;
-
-    function mint(address to) external returns (uint256);
-
-    function burn(uint256 tokenId) external;
-
-    function maxSupply() external view returns (uint256);
-
-    function totalSupply() external view returns (uint256);
-}
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract BridgeHashChipNFT is AccessControl, Pausable {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    IT2WebERC721 private hashChipNFT;
+    address public validator;
+    mapping(address => mapping (bytes => bool)) private userBridged;
 
-    /**
-     * @dev Initialize this contract. Acts as a constructor
-     * @param addressHashChip - token OAS address
-
-     
-     */
-    constructor(address addressHashChip) {
+    constructor() {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
-
-        hashChipNFT = IT2WebERC721(addressHashChip);
+        validator = _msgSender();
     }
 
-        /**
-     * @dev Creates a new market item.
-     * @param tokenId: token ID of haschip NFT
-     */
-    function deposit(
-        uint256 tokenId
-    )
-        public
-        whenNotPaused
-        onlyRole(MANAGERMENT_ROLE)
-    {
-        hashChipNFT.burn(tokenId);
+    function encodeBridge(
+        address to,
+        uint256 tokenId,
+        uint256 chainId,
+        uint256 deadline
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encode(to, tokenId, chainId, deadline));
+    }
+
+    function recoverBridge(
+        address to,
+        uint256 tokenId,
+        uint256 chainId,
+        uint256 deadline,
+        bytes calldata sig
+    ) public pure returns (address) {
+        return
+            ECDSA.recover(
+                ECDSA.toEthSignedMessageHash(
+                    encodeBridge(to, tokenId, chainId, deadline)
+                ),
+                sig
+            );
+    }
+
+    function bridgeHashChipNFT(
+        address to,
+        uint256 tokenId,
+        uint256 deadline,
+        bytes calldata sig
+    ) public whenNotPaused onlyRole(ADMIN_ROLE) {
+        require(deadline > block.timestamp, "Deadline exceeded");
+        require(!userBridged[_msgSender()][sig], "Bridged Hash Chip");
+        address signer = recoverBridge(
+            to,
+            tokenId,
+            block.chainid,
+            deadline,
+            sig
+        );
+        require(signer == validator, "Validator fail signature");
+        //Mint NFT
+
+        userBridged[_msgSender()][sig] = true;
     }
 }

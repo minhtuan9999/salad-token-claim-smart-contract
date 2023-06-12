@@ -7,19 +7,74 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract Monster is
-    Ownable,
-    ERC721Enumerable,
-    AccessControl,
-    Pausable
-{
+interface IGeneralHash {
+    //Increased Index
+    function increasedIndex(uint256 tokenId) external;
+
+    //Burn General Hash
+    function burn(uint256 _tokenId) external;
+
+    //Get Index General Hash
+    function getIndexOfTokenID(uint256 tokenId) external view returns (bool);
+
+    /**
+     * @dev Returns the owner of the `tokenId` token.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     */
+    function ownerOf(uint256 tokenId) external view returns (address owner);
+}
+
+interface IGenesisHash {
+    //Increased Index
+    function increasedIndex(uint256 tokenId) external;
+
+    //Burn Genesis Hash
+    function burn(uint256 _tokenId) external;
+
+    //Get Index Genesis Hash
+    function getIndexOfTokenID(uint256 tokenId) external view returns (bool);
+
+    /**
+     * @dev Returns the owner of the `tokenId` token.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     */
+    function ownerOf(uint256 tokenId) external view returns (address owner);
+}
+
+contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
+
+    // type 0: GENERAL_HASH
+    // type 1: GENESIS_HASH
+    // type 2: EXTERNAL_NFT
+    // type 3: REGENERATION_ITEM
+    enum TypeMint {
+        GENERAL_HASH,
+        GENESIS_HASH,
+        EXTERNAL_NFT,
+        REGENERATION_ITEM
+    }
+
+    IGeneralHash generalHashContract;
+    IGenesisHash genesisHashContract;
+    IERC20 tokenBaseContract;
 
     // Count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    // Base URI
+    string private _baseURIextended;
+    // Fee genesis hash
+    uint256 feeGenesisInWei = 0;
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
@@ -28,7 +83,11 @@ contract Monster is
 
     // Mapping list token of owner
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
-    // Infor monster 
+
+    // Mapping type of Monster
+    mapping(uint256 => TypeMint) public typeOfMonster;
+
+    // Infor monster
     mapping(uint256 => monsterDetail) public _monster;
     // check status mint nft free of address
     mapping(address => bool) private _realdyFreeNFT;
@@ -40,16 +99,43 @@ contract Monster is
     }
 
     // Event create Monster
-    event createMonster(address _address, uint256 _tokenId, uint256 _type);
+    event createNFTMonster(address _address, uint256 _tokenId, uint256 _type);
     // Event create Monster Free
-    event createMonsterFree(address _address, uint256 _tokenDi);
-    // status life span
-    event statusLifeSpan(uint256 _tokenId, bool _status);
+    event createNFTMonsterFree(address _address, uint256 _tokenDi);
+
     // Get list Tokens of address
-    function getListTokensOfAddress(
+    function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAdrress[_address].values();
+    }
+
+    // Set contract General Hash
+    function setGeneralHash(
+        IGeneralHash generalHash
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        generalHashContract = generalHash;
+    }
+
+    // Set contract Genesis Hash
+    function setGenesisHash(
+        IGenesisHash genesisHash
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        genesisHashContract = genesisHash;
+    }
+
+    // Set contract token OAS
+    function setTokenBase(
+        IERC20 _tokenBase
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        tokenBaseContract = _tokenBase;
+    }
+
+    // Set fee mint from genesis hash
+    function setFeeGenesis(
+        uint256 feeInWei
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        feeGenesisInWei = feeInWei;
     }
 
     /**
@@ -65,9 +151,6 @@ contract Monster is
         _listTokensOfAdrress[to].add(firstTokenId);
         _listTokensOfAdrress[from].remove(firstTokenId);
     }
-
-    // Base URI
-    string private _baseURIextended;
 
     function setBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
@@ -91,32 +174,75 @@ contract Monster is
         _unpause();
     }
 
+    function mintMonsterFromBox(
+        TypeMint _type,
+        uint256 _tokenId,
+        address _nftAddressExternal
+    ) external whenNotPaused {
+        uint256 tokenId;
+        if (_type == TypeMint.GENERAL_HASH) {
+            require(
+                generalHashContract.ownerOf(_tokenId) == msg.sender,
+                "Monster::mintMonsterFromBox::GENERAL_HASH The owner is not correct"
+            );
+            generalHashContract.increasedIndex(_tokenId);
+            uint8 indexHash = getIndexOfTokenID(_tokenId);
+            tokenId = _createNFT(msg.sender, TypeMint.GENERAL_HASH);
+            if (indexHash == 5) {
+                generalHashContract.burn(_tokenId);
+            }
+        } else if (_type == TypeMint.GENESIS_HASH) {
+            require(
+                genesisHashContract.ownerOf(_tokenId) == msg.sender,
+                "Monster::mintMonsterFromBox::GENESIS_HASH The owner is not correct"
+            );
+            uint8 indexHash = getIndexOfTokenID(_tokenId);
+            if (indexHash > 5 && feeGenesis > 0) {
+                // Transfer OAS amount to contract
+                require(
+                    tokenBaseContract.transferFrom(
+                        msg.sender,
+                        address(this),
+                        feeGenesisInWei
+                    ),
+                    "Monster::mintMonsterFromBox::GENESIS_HASH: Transfering to the contract failed"
+                );
+            }
+            genesisHashContract.increasedIndex(_tokenId);
+
+            tokenId = _createNFT(msg.sender, TypeMint.GENESIS_HASH);
+        } else if (_type == TypeMint.EXTERNAL_NFT) {
+            require(
+                IERC721(_nftAddressExternal).ownerOf(_tokenId) == msg.sender,
+                "Monster::mintMonsterFromBox::EXTERNAL_NFT The owner is not correct"
+            );
+            generalHashContract.increasedIndex(_tokenId);
+            uint8 indexHash = getIndexOfTokenID(_tokenId);
+            tokenId = _createNFT(msg.sender, TypeMint.EXTERNAL_NFT);
+        } else if (_type == TypeMint.REGENERATION_ITEM) {
+            //
+        } else {
+            revert("Monster::mintMonsterFromBox: Unsupported type");
+        }
+        emit createNFTMonster(msg.sender, tokenId, _type);
+    }
+
     /*
      * base mint a Monster
      * @param _address: owner of NFT
      */
 
-    function _createNFT(address _address) private returns (uint256) {
+    function _createNFT(
+        address _address,
+        TypeMint _type
+    ) private returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
-        _tokenIds.increment();
         _listTokensOfAdrress[_address].add(tokenId);
         _monster[tokenId].lifeSpan = true;
+        typeOfMonster[tokenId] = _type;
+        _tokenIds.increment();
         return tokenId;
-    }
-
-    /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
-     * @param _address: owner of NFT
-     */
-
-    function createNFT(
-        address _address,
-        uint256 _type
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE)  {
-        uint256 tokenId = _createNFT(_address);
-        emit createMonster(_address, tokenId, _type);
     }
 
     /*
@@ -126,12 +252,15 @@ contract Monster is
      */
     function createFreeNFT(
         address _address
-    ) external whenNotPaused {
-        require(!_realdyFreeNFT[_address], "Monster:: CreateFreeNFT: Exist NFT Free of address");
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(
+            !_realdyFreeNFT[_address],
+            "Monster:: CreateFreeNFT: Exist NFT Free of address"
+        );
         uint256 tokenId = _createNFT(_address);
         _monster[tokenId].isFree = true;
         _realdyFreeNFT[_address] = true;
-        emit createMonsterFree(_address, tokenId);
+        emit createNFTMonsterFree(_address, tokenId);
     }
 
     /*
@@ -159,8 +288,11 @@ contract Monster is
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function getLifeSpan(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster:: getLifeSpan: Monster not exists");
+    function getStatusMonster(uint256 tokenId) external view returns (bool) {
+        require(
+            _exists(tokenId),
+            "Monster:: GetStatusMonster: Monster not exists"
+        );
         return _monster[tokenId].lifeSpan;
     }
 
@@ -168,21 +300,26 @@ contract Monster is
      * set staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function setStatusLifeSpan(
+    function setStatusMonster(
         uint256 tokenId,
         bool status
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_exists(tokenId), "Monster:: setStatusLifeSpan: Monster not exists");
+        require(
+            _exists(tokenId),
+            "Monster:: setStatusMonster: Monster not exists"
+        );
         _monster[tokenId].lifeSpan = status;
-        emit statusLifeSpan(tokenId, status);
     }
 
     /*
      * staus lifespan a Monster
      * @param _tokenId: tokenId
      */
-    function isFree(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster:: isFree: Monster not exists");
+    function isFreeMonster(uint256 tokenId) external view returns (bool) {
+        require(
+            _exists(tokenId),
+            "Monster:: isFreeMonster: Monster not exists"
+        );
         return _monster[tokenId].isFree;
     }
 }

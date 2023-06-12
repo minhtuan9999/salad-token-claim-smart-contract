@@ -8,15 +8,13 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract GeneralHash is
-    Ownable,
-    ERC721Enumerable,
-    AccessControl,
-    Pausable
-{
+contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
+    enum RootNFT {
+        SHOP
+    }
     // Count token id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
@@ -29,14 +27,27 @@ contract GeneralHash is
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
+    // Mapping root of token ID
+    mapping(uint256 => RootNFT) public rootTokenId;
+
+    // Mapping index of token ID
+    mapping(uint256 => uint256) public indexTokenId;
+
     // Event create General Hash
     event createGeneralHash(address _address, uint256 _tokenId, uint256 _type);
 
     // Get list Tokens of address
     function getListTokensOfAddress(
         address _address
-    ) public view returns (uint256[] memory) {
+    ) external view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();
+    }
+
+    // Get index of token ID
+    function getIndexOfTokenID(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return indexTokenId[tokenId];
     }
 
     /**
@@ -83,7 +94,7 @@ contract GeneralHash is
      * @param _address: owner of NFT
      */
 
-    function _createNFT(address _address) private returns (uint256) {
+    function _createNFT(address _address) internal returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
@@ -92,27 +103,31 @@ contract GeneralHash is
     }
 
     /*
-     * mint a General hash
-     * @param _address: owner of NFT
+     * Increased Index
+     * @param tokenId: tokenId of NFT
      */
-
-    function createNFT(
-        address _address,
-        uint256 _type
+    function increasedIndex(
+        uint256 tokenId
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 tokenId = _createNFT(_address);
-        emit createGeneralHash(_address, tokenId, _type);
+        indexTokenId[tokenId].increment();
     }
 
     /*
      * mint a General hash
      * @param _address: owner of NFT
      */
-
-    function mint(
-        address _address
-    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        return _createNFT(_address);
+    function createNFT(
+        address _address,
+        uint256 _type
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        uint256 tokenId;
+        if (_type == RootNFT.SHOP) {
+            tokenId = _createNFT(_address);
+            rootTokenId[tokenId] = RootNFT.SHOP;
+        } else {
+            revert("Gereral_Hash::createNFT: Unsupported type");
+        }
+        emit createGeneralHash(_address, tokenId, _type);
     }
 
     /*

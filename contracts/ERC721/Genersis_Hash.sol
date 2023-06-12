@@ -8,18 +8,19 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract GenesisHash is
-    Ownable,
-    ERC721Enumerable,
-    AccessControl,
-    Pausable
-{
+contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
+
+    enum RootNFT {
+        SHOP
+    }
 
     // Count token Id
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    // Base URI
+    string private _baseURIextended;
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
@@ -28,6 +29,9 @@ contract GenesisHash is
 
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
+    
+    // Mapping root of token ID
+    mapping(uint256 => RootNFT) public rootTokenId;
 
     // Event create Genesishash
     event createGenesisHash(address _address, uint256 _tokenId, uint256 _type);
@@ -52,9 +56,6 @@ contract GenesisHash is
         _listTokensOfAddress[to].add(firstTokenId);
         _listTokensOfAddress[from].remove(firstTokenId);
     }
-
-    // Base URI
-    string private _baseURIextended;
 
     function setBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
@@ -99,18 +100,15 @@ contract GenesisHash is
         address _address,
         uint256 _type
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 tokenId = _createNFT(_address);
-        emit createGenesisHash(_address, tokenId, _type);
-    }
+        uint256 tokenId;
+        if (_type == RootNFT.SHOP) {
+            tokenId = _createNFT(_address);
+            rootTokenId[tokenId] = RootNFT.SHOP;
+        } else {
+            revert("Gereral_Hash::createNFT: Unsupported type");
+        }
 
-    /*
-     * mint a Genesishash
-     * @param _address: owner of NFT
-     */
-    function mint(
-        address _address
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        return _createNFT(_address);
+        emit createGenesisHash(_address, tokenId, _type);
     }
 
     /*
