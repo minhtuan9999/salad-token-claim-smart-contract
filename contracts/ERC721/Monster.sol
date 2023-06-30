@@ -9,46 +9,23 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 interface IGeneralHash {
     //Increased Index
     function increasedIndex(uint256 tokenId) external;
-
-    //Burn General Hash
-    function burn(uint256 _tokenId) external;
-
-    //Get Index General Hash
-    function getIndexOfTokenID(uint256 tokenId) external view returns (bool);
-
-    /**
-     * @dev Returns the owner of the `tokenId` token.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
-     */
-    function ownerOf(uint256 tokenId) external view returns (address owner);
 }
-
 interface IGenesisHash {
     //Increased Index
     function increasedIndex(uint256 tokenId) external;
-
-    //Burn Genesis Hash
-    function burn(uint256 _tokenId) external;
-
-    //Get Index Genesis Hash
-    function getIndexOfTokenID(uint256 tokenId) external view returns (bool);
-
-    /**
-     * @dev Returns the owner of the `tokenId` token.
-     *
-     * Requirements:
-     *
-     * - `tokenId` must exist.
-     */
-    function ownerOf(uint256 tokenId) external view returns (address owner);
 }
+
+interface IERC1155Item {
+     function burn(address _from, uint256 _id, uint256 _amount) external;
+} 
+interface IHashChip {
+     function burn(address _from, uint256 _id, uint256 _amount) external;
+} 
 
 contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
@@ -64,17 +41,18 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
         EXTERNAL_NFT,
         GENESIS_HASH,
         GENERAL_HASH,
-        HASH_CHIP_NFT
+        HASH_CHIP_NFT,
         REGENERATION_ITEM,
-        FREE
-    }
+        FREE,
+        FUSION
+    } 
 
     IERC20 tokenBaseContract;
     IERC721 externalNFTContract;
     IGenesisHash genesisHashContract;
     IGeneralHash generalHashContract;
     IERC721 hashChipNFTContract;
-    IERC1155 regenerationItemContract;
+    IERC1155Item regenerationContract;
 
     // Count token id
     Counters.Counter private _tokenIds;
@@ -83,6 +61,8 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
     string private _baseURIextended;
     // Fee genesis hash
     uint256 feeGenesisInWei = 0;
+    // Payable address can receive Ether
+    address payable public _treasuryAddress;
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
@@ -104,12 +84,9 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
         TypeMint typeMint;
     }
 
-
     // Event create Monster
-    event createNFTMonster(address _address, uint256 _tokenId, uint256 _type);
-    // Event create Monster Free
-    event createNFTMonsterFree(address _address, uint256 _tokenDi);
-
+    event createNFTMonster(address _address, uint256 _tokenId, TypeMint _type);
+    
     // Get list Tokens of address
     function getListTokenOfAddress(
         address _address
@@ -117,6 +94,13 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
         return _listTokensOfAdrress[_address].values();
     }
 
+    // Set contract token OAS
+    function setTreasuryAdress(
+        address _address
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        _treasuryAddress = payable(_address);
+    }    
+    
     // Set contract token OAS
     function setTokenBase(
         IERC20 _tokenBase
@@ -144,7 +128,12 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
     ) external onlyRole(MANAGERMENT_ROLE) {
         genesisHashContract = genesisHash;
     }
-
+    // Set contract Genesis Hash
+    function setRegenerationItem(
+        IERC1155Item _regenerationContract
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        regenerationContract = _regenerationContract;
+    }
     // Set contract Hash Chip NFT
     function setHashChip(
         IERC721 hashChip
@@ -195,69 +184,12 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
 
     function unpause() public onlyRole(MANAGERMENT_ROLE) {
         _unpause();
-    }
-
-    function mintMonsterFromBox(
-        TypeMint _type,
-        uint256 _tokenId
-    ) external whenNotPaused {
-        uint256 tokenId;
-        if (_type == TypeMint.GENERAL_HASH) {
-            require(
-                generalHashContract.ownerOf(_tokenId) == msg.sender,
-                "Monster::mintMonsterFromBox::GENERAL_HASH The owner is not correct"
-            );
-            generalHashContract.increasedIndex(_tokenId);
-            uint8 indexHash = getIndexOfTokenID(_tokenId);
-            tokenId = _createNFT(msg.sender, TypeMint.GENERAL_HASH);
-            if (indexHash == 5) {
-                generalHashContract.burn(_tokenId);
-            }
-        } else if (_type == TypeMint.GENESIS_HASH) {
-            require(
-                genesisHashContract.ownerOf(_tokenId) == msg.sender,
-                "Monster::mintMonsterFromBox::GENESIS_HASH The owner is not correct"
-            );
-            uint8 indexHash = getIndexOfTokenID(_tokenId);
-            if (indexHash > 5 && feeGenesis > 0) {
-                // Transfer OAS amount to contract
-                require(
-                    tokenBaseContract.transferFrom(
-                        msg.sender,
-                        address(this),
-                        feeGenesisInWei
-                    ),
-                    "Monster::mintMonsterFromBox::GENESIS_HASH: Transfering to the contract failed"
-                );
-            }
-            genesisHashContract.increasedIndex(_tokenId);
-
-            tokenId = _createNFT(msg.sender, TypeMint.GENESIS_HASH);
-        } else if (_type == TypeMint.EXTERNAL_NFT) {
-            require(
-                externalNFTContract.ownerOf(_tokenId) == msg.sender,
-                "Monster::mintMonsterFromBox::EXTERNAL_NFT The owner is not correct"
-            );
-            generalHashContract.increasedIndex(_tokenId);
-            uint8 indexHash = getIndexOfTokenID(_tokenId);
-            tokenId = _createNFT(msg.sender, TypeMint.EXTERNAL_NFT);
-        } else if (_type == TypeMint.REGENERATION_ITEM) {
-            //
-        } else if (_type == TypeMint.HASH_CHIP_NFT) {
-            //
-        } else if (_type == TypeMint.Free) {
-            //
-        }  else {
-            revert("Monster::mintMonsterFromBox: Unsupported type");
-        }
-        emit createNFTMonster(msg.sender, tokenId, _type);
-    }
+    }   
 
     /*
      * base mint a Monster
      * @param _address: owner of NFT
-     */
-
+     */  
     function _createNFT(
         address _address,
         TypeMint _type
@@ -271,35 +203,88 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
         return tokenId;
     }
 
-    /*
-     * mint a Monster
-     * @param _uri: _uri of NFT
-     * @param _address: owner of NFT
-     */
-    function createFreeNFT(
-        address _address
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    // mint monster from GeneralHash
+    function _fromGeneralHash(uint256 _tokenId) public returns(uint256)  {
         require(
-            !_realdyFreeNFT[_address],
-            "Monster:: CreateFreeNFT: Exist NFT Free of address"
+            IERC721(address(generalHashContract)).ownerOf(_tokenId) == msg.sender,
+            "Monster::mintMonsterFromBox::GENERAL_HASH The owner is not correct"
         );
-        uint256 tokenId = _createNFT(_address);
-        _monster[tokenId].isFree = true;
-        _realdyFreeNFT[_address] = true;
-        emit createNFTMonsterFree(_address, tokenId);
+        generalHashContract.increasedIndex(_tokenId);
+        uint256 tokenId = _createNFT(msg.sender, TypeMint.GENERAL_HASH);
+        return tokenId;
+    }
+
+    // mint monster from GeneralHash
+    function _fromGenesisHash(uint256 _tokenId) public returns (uint256) {
+        require(
+            IERC721(address(genesisHashContract)).ownerOf(_tokenId) == msg.sender,
+            "Monster::mintMonsterFromBox::GENESIS_HASH The owner is not correct"
+        );
+        uint256 tokenId = _createNFT(msg.sender, TypeMint.GENESIS_HASH);
+        return tokenId;
+    }
+    // mint monster from GeneralHash
+    function _fromExternalNFT(uint256 _tokenId) public returns (uint256) {
+        require(externalNFTContract.ownerOf(_tokenId) == msg.sender,
+            "Monster::mintMonsterFromBox::EXTERNAL_NFT The owner is not correct");
+        uint256 tokenId = _createNFT(msg.sender, TypeMint.EXTERNAL_NFT);
+        return  tokenId;
+    }
+    // mint monster from GeneralHash
+    function _fromRegenerationNFT(uint256 _tokenId) public returns (uint256) {
+        regenerationContract.burn(msg.sender, _tokenId, 1);
+        uint256 tokenId = _createNFT(msg.sender, TypeMint.REGENERATION_ITEM);
+        return tokenId;
+    }
+    // mint monster from GeneralHash
+    function _fromHashChipNFT(uint256 _tokenId) public returns (uint256) {
+        require(externalNFTContract.ownerOf(_tokenId) == msg.sender,
+            "Monster::mintMonsterFromBox::HASHCHIP_NFT The owner is not correct");
+        uint256 tokenId = _createNFT(msg.sender, TypeMint.REGENERATION_ITEM);
+        return tokenId;
+    }
+    // mint monster from GeneralHash
+    function _fromFreeNFT() public returns (uint256) {
+        require(!_realdyFreeNFT[msg.sender], "Monster::mintMonsterFromBox::FREE You have created free NFT");
+        uint256 tokenId = _createNFT(msg.sender, TypeMint.FREE);
+        _realdyFreeNFT[msg.sender] == true;
+        return  tokenId;
+    }
+
+    function mintMonster(
+        TypeMint _type,
+        uint256 _tokenId
+    ) external whenNotPaused {
+        uint256 tokenId;
+        if (_type == TypeMint.GENERAL_HASH) {
+            tokenId = _fromGeneralHash(_tokenId);
+        } else if (_type == TypeMint.GENESIS_HASH) {
+            tokenId = _fromGenesisHash(_tokenId);
+        } else if (_type == TypeMint.EXTERNAL_NFT) {
+            tokenId = _fromExternalNFT(_tokenId);
+        } else if (_type == TypeMint.REGENERATION_ITEM) {
+            tokenId = _fromRegenerationNFT(_tokenId);
+        } else if (_type == TypeMint.HASH_CHIP_NFT) {
+            tokenId = _fromHashChipNFT(_tokenId);
+        } else if (_type == TypeMint.FREE) {
+            tokenId = _fromFreeNFT();
+        }  else {
+            revert("Monster::mintMonsterFromBox: Unsupported type");
+        }
+        emit createNFTMonster(msg.sender, tokenId, _type);
     }
 
     /*
      * mint a Monster
      * @param _address: address of owner
-     * @param _firstTokenId: first tokenId fusion => burn
+     * @param _firstTokenId: first tokenId fusion => burn 
      * @param _lastTokenId: last tokenId fusion => burn
      */
 
-    function mint(
+    function mintFusion(
         address _address
     ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        return _createNFT(_address);
+        return _createNFT(_address, TypeMint.FUSION);
     }
 
     /*
@@ -346,6 +331,9 @@ contract Monster is Ownable, ERC721Enumerable, AccessControl, Pausable {
             _exists(tokenId),
             "Monster:: isFreeMonster: Monster not exists"
         );
-        return _monster[tokenId].isFree;
+        if(_monster[tokenId].typeMint == TypeMint.FREE) {
+            return true;
+        }
+        return false;
     }
 }

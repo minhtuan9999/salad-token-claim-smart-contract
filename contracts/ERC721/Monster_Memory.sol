@@ -25,7 +25,8 @@ contract MonsterMemory is
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
-
+    // mapping memory detail: monsterId => memoryId
+    mapping (uint256 => uint256 ) public _memoryOfMonster;
     // List token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
 
@@ -33,7 +34,7 @@ contract MonsterMemory is
     event createMonsterMemory(
         address _address,
         uint256 _tokenId,
-        uint256 _typeNFT
+        uint256 _monsterId
     );
 
     // Get holder Tokens
@@ -101,14 +102,15 @@ contract MonsterMemory is
      * @param _address: owner of NFT
      */
 
-    function createNFT(
+    function mint(
         address _address,
-        uint256 _typeNFT
+        uint256 _monsterId
     ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
-        emit createMonsterMemory(_address, tokenId, _typeNFT);
+        _memoryOfMonster[_monsterId] = tokenId;
+        emit createMonsterMemory(_address, tokenId, _monsterId);
     }
-
+    
     /*
      * burn a Monster Memory
      * @param _tokenId: tokenId burn

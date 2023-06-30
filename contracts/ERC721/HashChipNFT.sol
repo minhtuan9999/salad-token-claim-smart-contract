@@ -4,21 +4,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract HashChipNFT is
-    Ownable,
-    ERC721Enumerable,
-    AccessControl,
-    Pausable
-{
-    using Counters for Counters.Counter;
+contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // Count token id
-    Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
@@ -29,13 +20,13 @@ contract HashChipNFT is
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
-    // Event create General Hash
-    event createGeneralHash(address _address, uint256 _tokenId, uint256 _type);
+    // Event create HashChipNFT
+    event createHashChipNFT(address _address, uint256 _tokenId);
 
     // Get list Tokens of address
     function getListTokensOfAddress(
         address _address
-    ) public view returns (uint256[] memory) {
+    ) external view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();
     }
 
@@ -79,44 +70,16 @@ contract HashChipNFT is
     }
 
     /*
-     * base mint a General hash
+     * base mint a hash chip nft
      * @param _address: owner of NFT
      */
-
-    function _createNFT(address _address) private returns (uint256) {
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _listTokensOfAddress[_address].add(tokenId);
-        return tokenId;
+    function createNFT(address _address, uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE)  {
+        _mint(_address, _tokenId);
+        _listTokensOfAddress[_address].add(_tokenId);
+        emit createHashChipNFT(_address, _tokenId);
     }
-
     /*
-     * mint a General hash
-     * @param _address: owner of NFT
-     */
-
-    function createNFT(
-        address _address,
-        uint256 _type
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        uint256 tokenId = _createNFT(_address);
-        emit createGeneralHash(_address, tokenId, _type);
-    }
-
-    /*
-     * mint a General hash
-     * @param _address: owner of NFT
-     */
-
-    function mint(
-        address _address
-    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        return _createNFT(_address);
-    }
-
-    /*
-     * burn a General hash
+     * burn a HashChipNFT
      * @param _tokenId: tokenId burn
      */
     function burn(
