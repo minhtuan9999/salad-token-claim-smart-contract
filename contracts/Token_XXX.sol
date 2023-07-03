@@ -18,13 +18,15 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
     }
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+
     address public validator;
     IERC20 public tokenBase;
 
     mapping(address => mapping(bytes => bool)) private usedSignature;
 
     event ChangeValidatorAddress(address validatorAddress);
-    event MintToken(address account, uint256 amount);
+    event BuyToken(TypeBuy typeBuy, address account, uint256 amount);
     event BurnToken(address account, uint256 amount);
 
     constructor(
@@ -34,7 +36,9 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
     ) ERC20(name_, symbol_) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
-        _setupRole(ADMIN_ROLE, address(this));
+
+        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
+        _setupRole(MANAGERMENT_ROLE, _msgSender());
         validator = _msgSender();
         // token init
         tokenBase = IERC20(addressTokenBase);
@@ -46,14 +50,14 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
      */
     function setValidator(address _validatorAddress)
         external
-        onlyRole(ADMIN_ROLE)
+        onlyRole(MANAGERMENT_ROLE)
     {
         // verify new exchange value
         validator = _validatorAddress;
         emit ChangeValidatorAddress(_validatorAddress);
     }
 
-    function setTokenBase(IERC20 addressTokenBase) public onlyRole(ADMIN_ROLE) {
+    function setTokenBase(IERC20 addressTokenBase) public onlyRole(MANAGERMENT_ROLE) {
         tokenBase = addressTokenBase;
     }
 
@@ -111,8 +115,14 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
         uint256 deadline,
         bytes calldata sig
     ) public whenNotPaused {
-        require(deadline > block.timestamp, "Deadline exceeded");
-        require(!usedSignature[account][sig], "Used signature!");
+        require(
+            deadline > block.timestamp,
+            "TokenXXX::buyToken: Deadline exceeded"
+        );
+        require(
+            !usedSignature[account][sig],
+            "TokenXXX::buyToken: Used signature!"
+        );
         address signer = recoverData(
             typeBuy,
             block.chainid,
@@ -122,35 +132,52 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
             deadline,
             sig
         );
-        require(signer == validator, "Validator fail signature");
-        uint256 totalPrice = amountInWei.mul(ratio).div(10**18);
-
-        // Transfer amount for Owner
         require(
-            tokenBase.transferFrom(account, address(this), totalPrice),
-            "Transfering the cut to the owner failed"
+            signer == validator,
+            "TokenXXX::buyToken: Validator fail signature"
         );
-        // _mint(account, amountInWei);
-        this.mintToken(account, amountInWei);
-    }
 
-    function mintToken(address _address, uint256 _amount) public onlyRole(ADMIN_ROLE){
-        _mint(_address, _amount);
+        if (typeBuy == TypeBuy.OAS) {
+            uint256 totalPrice = amountInWei.mul(ratio).div(10**18);
+
+            // Transfer amount for Owner
+            require(
+                tokenBase.transferFrom(account, address(this), totalPrice),
+                "TokenXXX::buyToken: Transfering the cut to the owner failed"
+            );
+            usedSignature[account][sig] = true;
+            _mint(account, amountInWei);
+        } else if (typeBuy == TypeBuy.FIAT) {
+            usedSignature[account][sig] = true;
+            _mint(account, amountInWei);
+        } else {
+            revert("TokenXXX::buyToken: Unsupported typeBuy");
+        }
+        emit BuyToken(typeBuy, account, amountInWei);
     }
 
     function burnToken(address account, uint256 amount)
         public
         whenNotPaused
-        onlyRole(ADMIN_ROLE)
+        onlyRole(MANAGERMENT_ROLE)
     {
         _burn(account, amount);
+        emit BurnToken(account, amount);
     }
 
-    function _beforeTokenTransfer(
+    function _transfer(
         address from,
         address to,
         uint256 amount
     ) internal virtual override onlyRole(ADMIN_ROLE) {
-        super._beforeTokenTransfer(from, to, amount);
+        super._transfer(from, to, amount);
+    }
+
+    /**
+     * Withdraw all ERC-20 token base balance of this contract
+     */
+    function withdrawToken(address tokenAddress) external onlyRole(ADMIN_ROLE) {
+        uint256 balance = IERC20(tokenAddress).balanceOf(address(this));
+        IERC20(tokenAddress).transfer(msg.sender, balance);
     }
 }
