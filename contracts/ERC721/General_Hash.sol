@@ -13,6 +13,11 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
+    // Detail of Group
+    struct GroupDetail {
+        uint256 totalSupply;
+        uint256 remaining;
+    }
     // Detail type of Group
     struct SpeciesDetail {
         uint256 issueLimit;
@@ -31,9 +36,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     string private _baseURIextended;
     // Validator signtransaction
     address public validator;
-    //limit regeneration
-    uint256 limitRegeneration;
-    
+
     constructor(string memory name, string memory symbol) ERC721(name, symbol) {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
@@ -42,27 +45,28 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
 
     //=======================================MAPPING=======================================//
     // Mapping SpeciesDetail (group => (type => SpeciesDetail))
-    mapping (uint256 => mapping (uint256 => SpeciesDetail)) public _species;
+    mapping(uint256 => mapping(uint256 => SpeciesDetail)) public _species;
     // Mapping tokenId detail
-    mapping (uint256 => GeneralDetail ) public _generalDetail;
+    mapping(uint256 => GeneralDetail) public _generalDetail;
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
     // Status of signature code
     mapping(bytes => bool) public _signed;
     // Mint limit of group
-    mapping (uint256 => uint256) public _mintLimitOfGroup;
-    // Status mint nft marketing of group
-    mapping (uint256 => mapping (uint256 => bool)) public _isRealdyMarketing;
-    // Mapping index of token ID
-    mapping(uint256 => uint256) public indexTokenId;
+    mapping(uint256 => GroupDetail) public _groupDetail;
 
     //=======================================EVENT=======================================//
     // Event create Genesishash with group
     event createGenesisHash(address _address, uint256 _tokenId, uint256 _group);
-    // Event random type of Group 
+    // Event random type of Group
     event openGenesisBox(uint256 _tokenId, uint256 _group, uint256 _type);
     // Event create Genesishash for marketing
-    event generalForMarketing(address _address, uint256[] _listToken, uint256 _group);
+    event generalForMarketing(
+        address _address,
+        uint256[] _listToken,
+        uint256 _group
+    );
+
     //=======================================FUNCTION=======================================//
     // Get list Tokens of address
     function getListTokensOfAddress(
@@ -70,25 +74,33 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     ) public view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();
     }
-    // Get index of token ID
-    function getIndexOfTokenID(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return indexTokenId[tokenId];
-    }
 
     //set initialization limit of group
-    function initSetMintLimitOfGroup(uint256 _group, uint256 _limit) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        _mintLimitOfGroup[_group] = _limit;
-    }
-    // Set Validator
-    function initSetValidator(address _address) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        validator = _address;
+    function initSetDetailGroup(
+        uint256 _group,
+        uint256 _limit
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        _groupDetail[_group].totalSupply = _limit;
+        _groupDetail[_group].remaining = _limit;
     }
 
-    //Set limit Regeneration
-    function initSetRegenerationLimit(uint256 _limit) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        limitRegeneration = _limit;
+    // set detail type of group
+    function initSetSpecieDetail(
+        uint256 _group,
+        uint256 _specie,
+        uint256 _limit
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        _species[_group][_specie].issueLimit = _limit;
+        _species[_group][_specie].remaining =
+            _limit -
+            _species[_group][_specie].issueAmount;
+    }
+
+    // Set Validator
+    function initSetValidator(
+        address _address
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        validator = _address;
     }
 
     /**
@@ -104,7 +116,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         _listTokensOfAddress[to].add(firstTokenId);
         _listTokensOfAddress[from].remove(firstTokenId);
     }
-    
+
     // Set base uri
     function initSetBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
@@ -134,14 +146,20 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
      * @param _address: owner of NFT
      * @param _group: group of NFT
      */
-    function _createNFT(address _address, uint256 _group) private returns (uint256) {
-        require(_mintLimitOfGroup[_group] > 0, "General_Hash::_createNFT: Exceeding");
+    function _createNFT(
+        address _address,
+        uint256 _group
+    ) private returns (uint256) {
+        require(
+            _groupDetail[_group].remaining > 0,
+            "General_Hash::_createNFT: Exceeding"
+        );
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
         _listTokensOfAddress[_address].add(tokenId);
         _generalDetail[tokenId].group = _group;
-        _mintLimitOfGroup[_group]--;
+        _groupDetail[_group].remaining--;
         return tokenId;
     }
 
@@ -152,9 +170,20 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
      * @param deadline: deadline using signature
      * @param sig: signature
      */
-    function randomSpecies(uint256 _tokenId, uint256 _type,uint256 deadline, bytes calldata sig ) external {
-        require(deadline > block.timestamp, "General Hash:: randomSpecies:Deadline exceeded");
-        require(!_signed[sig], "General Hash:: randomSpecies: Signature has been used");
+    function randomSpecies(
+        uint256 _tokenId,
+        uint256 _type,
+        uint256 deadline,
+        bytes calldata sig
+    ) external {
+        require(
+            deadline > block.timestamp,
+            "General Hash:: randomSpecies:Deadline exceeded"
+        );
+        require(
+            !_signed[sig],
+            "General Hash:: randomSpecies: Signature has been used"
+        );
         uint256 group = _generalDetail[_tokenId].group;
 
         address signer = recoverBridge(
@@ -165,12 +194,20 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
             deadline,
             sig
         );
-        require(signer == validator, "General Hash:: randomSpecies:Validator fail signature");
-        require(_species[group][_type].remaining > 0, "General Hash:: randomSpecies: Exceeding");
+        require(
+            signer == validator,
+            "General Hash:: randomSpecies:Validator fail signature"
+        );
+        require(
+            _species[group][_type].remaining > 0,
+            "General Hash:: randomSpecies: Exceeding"
+        );
 
         _generalDetail[_tokenId].species = _type;
         _species[group][_type].issueAmount += 1;
-        _species[group][_type].remaining = _species[group][_type].issueLimit - _species[group][_type].issueAmount;
+        _species[group][_type].remaining =
+            _species[group][_type].issueLimit -
+            _species[group][_type].issueAmount;
         _signed[sig] = true;
         emit openGenesisBox(_tokenId, group, _type);
     }
@@ -194,16 +231,26 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
      * @param _group: group of general hash
      * @param _type: type of group
      */
-    function createMultipleGenesisHash(address _address, uint256 _number, uint256 _group) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        require(_number <= _mintLimitOfGroup[_group], "Genesis Hash::createMultipleNFT: Exceeding");
+    function createMultipleGenesisHash(
+        address _address,
+        uint256 _number,
+        uint256 _group
+    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+        require(
+            _number <= _groupDetail[_group].remaining,
+            "Genesis Hash::createMultipleNFT: Exceeding"
+        );
         uint256[] memory listToken = new uint256[](_number);
-        for(uint256 i=0; i < _number;i++){
+        for (uint256 i = 0; i < _number; i++) {
             uint256 tokenId = _createNFT(_address, _group);
             listToken[i] = tokenId;
         }
-        _mintLimitOfGroup[_group] = _mintLimitOfGroup[_group] - _number;
-        emit generalForMarketing(_address, listToken,_group);
+        _groupDetail[_group].remaining =
+            _groupDetail[_group].remaining -
+            _number;
+        emit generalForMarketing(_address, listToken, _group);
     }
+
     /*
      * burn a Genesishash
      * @param _tokenId: tokenId burn
@@ -218,25 +265,6 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         _species[_group][_type].remaining++;
     }
 
-    // set detail type of group
-    function setGroupDetail(uint256 _group,uint256 _specie, uint256 _limit) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        _species[_group][_specie].issueLimit = _limit;
-        _species[_group][_specie].remaining = _limit - _species[_group][_specie].issueAmount;
-    }
-    
-    /*
-     * Increased Index
-     * @param tokenId: tokenId of NFT
-     */
-    function increasedIndex(
-        uint256 tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        indexTokenId[tokenId]++;
-        if(indexTokenId[tokenId] >= limitRegeneration) {
-            _burn(tokenId);
-        }
-    }
-
     function encodeBridge(
         uint256 _tokenId,
         uint256 _group,
@@ -244,7 +272,8 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 _chainId,
         uint256 _deadline
     ) public pure returns (bytes32) {
-        return keccak256(abi.encode(_tokenId, _group, _type, _chainId, _deadline));
+        return
+            keccak256(abi.encode(_tokenId, _group, _type, _chainId, _deadline));
     }
 
     function recoverBridge(
@@ -263,5 +292,4 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
                 _sig
             );
     }
-
 }

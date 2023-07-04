@@ -8,12 +8,22 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract MonsterCrystal is
-    Ownable,
-    ERC721Enumerable,
-    AccessControl,
-    Pausable
-{
+interface IMonster {
+    function burn(uint256 _tokenId) external;
+
+    function getStatusMonster(uint256 _tokenId) external view returns (bool);
+
+    function isFreeMonster(uint256 _tokenId) external view returns (bool);
+}
+
+interface IMonsterMemory {
+    function mint(address _address, uint256 _monsterId) external;
+}
+
+contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
+    IMonster monsterContract;
+    IMonsterMemory monsterMemory;
+
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -40,12 +50,32 @@ contract MonsterCrystal is
         uint256 _tokenId,
         uint256 _typeNFT
     );
+    // Create coach from monster
+    event createCrystalByMonster(
+        address _owner,
+        uint256 _newCoach,
+        uint256 _tokenBurn
+    );
 
     // Get list Tokens of address
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
         return _listTokensOfAddress[_address].values();
+    }
+
+    // Set monster contract address
+    function setMonsterContract(
+        IMonster _monster
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        monsterContract = _monster;
+    }
+
+    // Set monster contract address
+    function setMonsterMemory(
+        IMonsterMemory _monsterMemory
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        monsterMemory = _monsterMemory;
     }
 
     /**
@@ -119,13 +149,32 @@ contract MonsterCrystal is
      * @param _status: status free of NFT
      */
 
-    function mint(
-        address _address,
-        bool _status
-    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        uint256 tokenId = _createNFT(_address);
-        _crystal[tokenId].isFree = _status;
-        return tokenId;
+    /*
+     * Create coach from Monster
+     * @param _owner: address of owner
+     * @param _monsterId: last tokenId monster fusion
+     */
+    function createCrystalFromMonster(
+        address _owner,
+        uint256 _monsterId
+    ) external whenNotPaused {
+        require(
+            IERC721(address(monsterContract)).ownerOf(_monsterId) == _owner,
+            "MonsterManagerment: createCoachNFT: The owner is not correct"
+        );
+        bool isStatusMonster = monsterContract.getStatusMonster(_monsterId);
+        require(
+            !isStatusMonster,
+            "MonsterManagerment: createCoachNFT: The monster is alive"
+        );
+        bool isFreeMonster = monsterContract.isFreeMonster(_monsterId);
+        uint256 tokenId = _createNFT(msg.sender);
+        if (isFreeMonster) {
+            _crystal[tokenId].isFree = true;
+        }
+        monsterContract.burn(_monsterId);
+        monsterMemory.mint(_owner, _monsterId);
+        emit createCrystalByMonster(_owner, tokenId, _monsterId);
     }
 
     /*
@@ -143,7 +192,10 @@ contract MonsterCrystal is
      * @param _tokenId: tokenId
      */
     function isFree(uint256 tokenId) external view returns (bool) {
-        require(_exists(tokenId), "Monster Crystal:: isFree: Monster not exists");
+        require(
+            _exists(tokenId),
+            "Monster Crystal:: isFree: Monster not exists"
+        );
         return _crystal[tokenId].isFree;
     }
 }

@@ -45,6 +45,12 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
     );
     event burnItem(address _from, uint256 _id, uint256 _amount);
     event burnBathItem(address _from, uint256[] _id, uint256[] _amount);
+    event createRegenerationNFT(
+        address _owner,
+        uint256 _itemId,
+        uint256 _fragmentId
+    );
+    
     /**
      * @dev See {IERC1155MetadataURI-uri}.
      *
@@ -79,6 +85,29 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
      * @param number: number NFT
      * @param data: information of NFT
      */
+    function _mintItem(
+        address _addressTo,
+        uint256 _itemType,
+        uint256 _collectionType,
+        uint256 _number,
+        bytes memory _data
+    ) private returns (uint256) {
+        uint256 collectionId = _collectionType * COLLECTION_TYPE_OFFSET;
+        uint256 itemId = collectionId + _itemType;
+        _mint(_addressTo, itemId, _number, _data);
+        _tokenDetail[itemId].collectionType = _collectionType;
+        _tokenDetail[itemId].itemType = _itemType;
+        _tokenIdOfType[_collectionType][_itemType] = itemId;
+        return itemId;
+    }
+    /*
+     * mint a Training item
+     * @param addressTo: owner of NFT
+     * @oaram _itemType: id of item
+     * @oaram _collectionType: id of collection
+     * @param number: number NFT
+     * @param data: information of NFT
+     */
     function mint(
         address _addressTo,
         uint256 _itemType,
@@ -86,15 +115,9 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGERMENT_ROLE) {
-        uint256 collectionId = _collectionType * COLLECTION_TYPE_OFFSET;
-        uint256 itemId = collectionId + _itemType;
-        _mint(_addressTo, itemId, _number, _data);
-        _tokenDetail[itemId].collectionType = _collectionType;
-        _tokenDetail[itemId].itemType = _itemType;
-        _tokenIdOfType[_collectionType][_itemType] = itemId;
+        uint256 itemId = _mintItem(_addressTo,_itemType,_collectionType,_number,_data);
         emit mintMonsterItems(_addressTo, itemId, _itemType, _collectionType, _number, _data);
     }
-
     function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGERMENT_ROLE) {
         _burn(_from, _id, _amount);
         emit burnItem(_from, _id, _amount);
@@ -105,4 +128,24 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
         emit burnBathItem(_from, _id, _amount);
     }
     
+    /*
+     * Create Regeneration
+     * @param _itemType: type of item
+     * @param _collectionType: type of collection
+     * @param _hashFragmentId: id of fragment
+     * @param _amount: number of fragment
+     * @param _data: data of Regeneration
+     */
+    function createRegeneration(
+        uint256 _itemType,
+        uint256 _collectionType,
+        uint256 _hashFragmentId, 
+        uint256 _amount, 
+        bytes memory _data
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        uint256 itemId = _mintItem(msg.sender, _itemType, _collectionType, _amount, _data);
+        _burn(msg.sender, _hashFragmentId, _amount);
+        emit createRegenerationNFT(msg.sender, itemId, _hashFragmentId);
+    } 
+
 }

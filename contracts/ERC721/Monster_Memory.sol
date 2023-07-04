@@ -8,12 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-contract MonsterMemory is
-    Ownable,
-    ERC721Enumerable,
-    AccessControl,
-    Pausable
-{
+contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -25,8 +20,9 @@ contract MonsterMemory is
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
+
     // mapping memory detail: monsterId => memoryId
-    mapping (uint256 => uint256 ) public _memoryOfMonster;
+    mapping(uint256 => uint256) public _memoryOfMonster;
     // List token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
 
@@ -110,7 +106,7 @@ contract MonsterMemory is
         _memoryOfMonster[_monsterId] = tokenId;
         emit createMonsterMemory(_address, tokenId, _monsterId);
     }
-    
+
     /*
      * burn a Monster Memory
      * @param _tokenId: tokenId burn

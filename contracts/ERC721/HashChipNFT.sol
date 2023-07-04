@@ -73,11 +73,15 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable {
      * base mint a hash chip nft
      * @param _address: owner of NFT
      */
-    function createNFT(address _address, uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE)  {
+    function createNFT(
+        address _address,
+        uint256 _tokenId
+    ) external onlyRole(MANAGERMENT_ROLE) {
         _mint(_address, _tokenId);
         _listTokensOfAddress[_address].add(_tokenId);
         emit createHashChipNFT(_address, _tokenId);
     }
+
     /*
      * burn a HashChipNFT
      * @param _tokenId: tokenId burn
