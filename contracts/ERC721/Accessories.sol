@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IMonsterItem {
     // burn item from tokenid
@@ -27,32 +28,32 @@ interface IMonsterItem {
     ) external;
 }
 
-contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     IMonsterItem item;
 
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
-    // stored current packageId
+    // stored current tokenId
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     constructor() ERC721("Accessories", "Accessories") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
 
     // Mapping list token of address
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     // Event create Accessories
     event createAccessories(address _address, uint256 _tokenId, uint256 _type);
     /*
-     * create Accessories From material
+     * create Accessories by material
      * @param _owner: address of owner
      * @param _materialId: id of material item
      * @param _newTokenId: new tokenId of Accessories
      */
-    event createAccessoriesNFT(
+    event createAccessoriesByItems(
         address _owner,
         uint256[] _materialId,
         uint256 _newTokenId
@@ -62,13 +63,13 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdrress[_address].values();
+        return _listTokensOfAddress[_address].values();
     }
 
     // Set monster contract address
     function setMonsterItem(
         IMonsterItem _item
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         item = _item;
     }
 
@@ -82,8 +83,8 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdrress[to].add(firstTokenId);
-        _listTokensOfAdrress[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -103,11 +104,11 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -119,7 +120,7 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAdrress[_address].add(tokenId);
+        _listTokensOfAddress[_address].add(tokenId);
         return tokenId;
     }
 
@@ -130,27 +131,27 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
     function createNFT(
         address _address,
         uint256 _type
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         emit createAccessories(_address, tokenId, _type);
     }
 
     /*
-     * mint a Accessories
+     * mint a Accessories by item material
      * @param _materialId: list material id
      * @param _number: number of material id
      */
     function createAccessoriesByItem(
         uint256[] memory _materialId,
         uint256[] memory _number
-    ) external whenNotPaused {
+    ) external nonReentrant whenNotPaused {
         require(
             _materialId.length == _number.length,
             "Accessories::createAccessoriesByItem: Invalid input"
         );
         item.burnMultipleItem(msg.sender, _materialId, _number);
         uint256 tokenId = _createNFT(msg.sender);
-        emit createAccessoriesNFT(msg.sender, _materialId, tokenId);
+        emit createAccessoriesByItems(msg.sender, _materialId, tokenId);
     }
 
     /*
@@ -159,7 +160,7 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable {
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
     }
 }

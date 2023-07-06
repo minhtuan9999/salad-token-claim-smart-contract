@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -37,7 +38,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     // Validator signtransaction
     address public validator;
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor() ERC721("General Hash", "GeneralHash") {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
         validator = _msgSender();
@@ -49,19 +50,19 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     // Mapping tokenId detail
     mapping(uint256 => GeneralDetail) public _generalDetail;
     // Mapping list token of address
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
+    mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     // Status of signature code
     mapping(bytes => bool) public _signed;
-    // Mint limit of group
+    // Detail of group
     mapping(uint256 => GroupDetail) public _groupDetail;
 
     //=======================================EVENT=======================================//
-    // Event create Genesishash with group
-    event createGenesisHash(address _address, uint256 _tokenId, uint256 _group);
+    // Event create General hash with group
+    event createGeneralHash(address _address, uint256 _tokenId, uint256 _group);
     // Event random type of Group
-    event openGenesisBox(uint256 _tokenId, uint256 _group, uint256 _type);
-    // Event create Genesishash for marketing
-    event generalForMarketing(
+    event openGeneralBox(uint256 _tokenId, uint256 _group, uint256 _type);
+    // Event create multiple General hash
+    event createMultipleGeneral(
         address _address,
         uint256[] _listToken,
         uint256 _group
@@ -142,7 +143,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     }
 
     /*
-     * base mint a Genesishash
+     * base mint a General hash
      * @param _address: owner of NFT
      * @param _group: group of NFT
      */
@@ -175,7 +176,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 _type,
         uint256 deadline,
         bytes calldata sig
-    ) external {
+    ) external whenNotPaused nonReentrant {
         require(
             deadline > block.timestamp,
             "General Hash:: randomSpecies:Deadline exceeded"
@@ -209,33 +210,33 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
             _species[group][_type].issueLimit -
             _species[group][_type].issueAmount;
         _signed[sig] = true;
-        emit openGenesisBox(_tokenId, group, _type);
+        emit openGeneralBox(_tokenId, group, _type);
     }
 
     /*
-     * mint a Genesishash
+     * mint a General hash
      * @param _address: owner of NFT
      * @param _group: group of general hash
      */
     function createNFT(
         address _address,
         uint256 _group
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address, _group);
-        emit createGenesisHash(_address, tokenId, _group);
+        emit createGeneralHash(_address, tokenId, _group);
     }
 
     /*
      * create NFT marketing
      * @param _address: owner of NFT
      * @param _group: group of general hash
-     * @param _type: type of group
+     * @param _number: _number
      */
-    function createMultipleGenesisHash(
+    function createMultipleGeneralHash(
         address _address,
         uint256 _number,
         uint256 _group
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         require(
             _number <= _groupDetail[_group].remaining,
             "Genesis Hash::createMultipleNFT: Exceeding"
@@ -248,16 +249,16 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
             _number;
-        emit generalForMarketing(_address, listToken, _group);
+        emit createMultipleGeneral(_address, listToken, _group);
     }
 
     /*
-     * burn a Genesishash
+     * burn a General hash
      * @param _tokenId: tokenId burn
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
         uint256 _type = _generalDetail[_tokenId].species;
         uint256 _group = _generalDetail[_tokenId].group;

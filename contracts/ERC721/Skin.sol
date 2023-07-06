@@ -7,12 +7,14 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Skin is
     Ownable,
     ERC721Enumerable,
     AccessControl,
-    Pausable
+    Pausable,
+    ReentrancyGuard
 {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -21,7 +23,7 @@ contract Skin is
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor() ERC721("Monster Skin", "Skin") {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
@@ -81,7 +83,7 @@ contract Skin is
      * base mint a Skin
      * @param _address: owner of NFT
      */
-    function _createNFT(address _address) private returns (uint256) {
+    function _createNFT(address _address) private nonReentrant returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
@@ -92,6 +94,7 @@ contract Skin is
     /*
      * mint a Skin
      * @param _address: owner of NFT
+     * @param _type: type of NFT
      */
     function createNFT(
         address _address,
@@ -118,7 +121,7 @@ contract Skin is
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 }

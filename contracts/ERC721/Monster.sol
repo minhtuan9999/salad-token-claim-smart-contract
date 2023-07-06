@@ -26,30 +26,30 @@ contract Monster is MonsterCore {
         TypeMint _type,
         uint256 _tokenId,
         bool _isOAS,
-        uint256 _cost,
-        uint256 _deadline,
-        bytes calldata _sig
-    ) external whenNotPaused {
-        require(
-            _deadline > block.timestamp,
-            "Monster:::Monster::mintMonster: Deadline exceeded"
-        );
-        require(
-            !_isSigned[_sig],
-            "Monster:::Monster::mintMonster: Signature used"
-        );
-        address signer = recoverOAS(
-            _type,
-            _cost,
-            _tokenId,
-            block.chainid,
-            _deadline,
-            _sig
-        );
-        require(
-            signer == validator,
-            "Monster:::Monster::mintMonster: Validator fail signature"
-        );
+        uint256 _cost
+        // uint256 _deadline,
+        // bytes calldata _sig
+    ) external nonReentrant payable whenNotPaused {
+        // require(
+        //     _deadline > block.timestamp,
+        //     "Monster:::Monster::mintMonster: Deadline exceeded"
+        // );
+        // require(
+        //     !_isSigned[_sig],
+        //     "Monster:::Monster::mintMonster: Signature used"
+        // );
+        // address signer = recoverOAS(
+        //     _type,
+        //     _cost,
+        //     _tokenId,
+        //     block.chainid,
+        //     _deadline,
+        //     _sig
+        // );
+        // require(
+        //     signer == validator,
+        //     "Monster:::Monster::mintMonster: Validator fail signature"
+        // );
         uint256 tokenId = _mintMonster(_type, _tokenId, _isOAS, _cost);
         emit createNFTMonster(msg.sender, tokenId, _type);
     }
@@ -68,7 +68,7 @@ contract Monster is MonsterCore {
         uint256 _lastTokenId,
         uint256[] memory _itemId,
         uint256[] memory _amount
-    ) external whenNotPaused {
+    ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionMonsterNFT(
             _owner,
             _firstTokenId,
@@ -98,7 +98,7 @@ contract Monster is MonsterCore {
         uint256 _lastId,
         uint256[] memory _itemId,
         uint256[] memory _amount
-    ) external {
+    ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionGenesisHash(
             _owner,
             _firstId,
@@ -123,7 +123,7 @@ contract Monster is MonsterCore {
         uint256 _lastId,
         uint256[] memory _itemId,
         uint256[] memory _amount
-    ) external whenNotPaused {
+    ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionGeneralHash(
             _owner,
             _firstId,
@@ -148,7 +148,7 @@ contract Monster is MonsterCore {
         uint256 _generalId,
         uint256[] memory _itemId,
         uint256[] memory _amount
-    ) external whenNotPaused {
+    ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionMultipleHash(
             _owner,
             _genesisId,
@@ -174,7 +174,7 @@ contract Monster is MonsterCore {
         uint256 _cost,
         uint256 _deadline,
         bytes calldata _sig
-    ) external whenNotPaused {
+    ) external nonReentrant payable whenNotPaused {
         require(
             _deadline > block.timestamp,
             "Monster:::Monster::mintMonster: Deadline exceeded"

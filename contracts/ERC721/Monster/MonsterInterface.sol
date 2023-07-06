@@ -62,56 +62,56 @@ contract MonsterInterface is MonsterBase {
     IMonsterItem item;
 
     // Set contract token OAS
-    function initSetTokenBase(
+    function initSetTokenBaseContract (
         IToken _tokenBase
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         tokenBaseContract = _tokenBase;
     }
 
     // Set contract External NFT
-    function initSetExternalNFT(
+    function initSetExternalContract(
         IERC721 externalNFT
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         externalNFTContract = externalNFT;
     }
 
     // Set contract General Hash
-    function initSetGeneralHash(
+    function initSetGeneralHashContract(
         IGeneralHash generalHash
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         generalHashContract = generalHash;
     }
 
     // Set contract Genesis Hash
-    function initSetGenesisHash(
+    function initSetGenesisHashContract(
         IGenesisHash genesisHash
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         genesisHashContract = genesisHash;
     }
 
     // Set contract Genesis Hash
-    function initSetRegenerationItem(
+    function initSetRegenerationContract(
         IERC1155Item _regenerationContract
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         regenerationContract = _regenerationContract;
     }
 
     // Set contract Hash Chip NFT
-    function initSetHashChip(IERC721 hashChip) external onlyRole(MANAGERMENT_ROLE) {
+    function initSetHashChipContract(IERC721 hashChip) external onlyRole(MANAGEMENT_ROLE ) {
         hashChipNFTContract = hashChip;
     }
 
     // Set contract Monster memory
-    function initSetMonsterMemory(
+    function initSetMonsterMemoryContract(
         IMonsterMemory _monsterMemory
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         monsterMemory = _monsterMemory;
     }
 
     // Set contract Monster Item
-    function initSetMonsterItem(
+    function initSetMonsterItemContract(
         IMonsterItem _monsterItem
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE ) {
         item = _monsterItem;
     }
 }

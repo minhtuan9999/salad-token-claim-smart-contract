@@ -6,13 +6,14 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     using EnumerableSet for EnumerableSet.UintSet;
 
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor() ERC721("HashChip NFT", "HashChipNFT") {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
@@ -76,7 +77,7 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable {
     function createNFT(
         address _address,
         uint256 _tokenId
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant onlyRole(MANAGERMENT_ROLE) {
         _mint(_address, _tokenId);
         _listTokensOfAddress[_address].add(_tokenId);
         emit createHashChipNFT(_address, _tokenId);
@@ -88,7 +89,7 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable {
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 }

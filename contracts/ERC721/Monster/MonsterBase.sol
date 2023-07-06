@@ -7,35 +7,37 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./MonsterEDCSA.sol";
+import "./MonsterEvent.sol";
 
 contract MonsterBase is
     Ownable,
     ERC721Enumerable,
     AccessControl,
     Pausable,
-    EDCSA
+    ReentrancyGuard,
+    EDCSA,
+    MonsterEvent
 {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
     // Count token id
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE  = keccak256("MANAGEMENT_ROLE");
     // Base URI
     string private _baseURIextended;
 
     constructor() ERC721("Monster", "Monster") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE , MANAGEMENT_ROLE );
+        _setupRole(MANAGEMENT_ROLE , _msgSender());
     }
 
     // Mapping list token of owner
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
     // Infor monster
     mapping(uint256 => MonsterDetail) public _monster;
-    // Check status mint nft free of address
-    mapping(address => bool) private _realdyFreeNFT;
     //struct Monster
     struct MonsterDetail {
         bool lifeSpan;
@@ -46,7 +48,7 @@ contract MonsterBase is
     function getListTokenOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdrress[_address].values();
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -64,29 +66,45 @@ contract MonsterBase is
         );
 
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdrress[to].add(firstTokenId);
-        _listTokensOfAdrress[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
+    /*
+     * setBase URI
+     * @param baseURI_: baseURI_ of NFT
+     */
     function setBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
     }
 
+    /*
+     * base URI
+     */
     function _baseURI() internal view virtual override returns (string memory) {
         return _baseURIextended;
     }
 
+    /*
+     * supports Interface
+     */
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(AccessControl, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    /*
+     * pause contract ny Management 
+     */
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
-
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    
+    /*
+     * unpause contract ny Management 
+     */
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -100,7 +118,7 @@ contract MonsterBase is
     ) internal returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
-        _listTokensOfAdrress[_address].add(tokenId);
+        _listTokensOfAddress[_address].add(tokenId);
         _monster[tokenId].lifeSpan = true;
         _monster[tokenId].typeMint = _type;
         _tokenIds.increment();
@@ -119,8 +137,9 @@ contract MonsterBase is
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burn(uint256 _tokenId) external onlyRole(MANAGERMENT_ROLE) {
+    function burn(uint256 _tokenId) external nonReentrant onlyRole(MANAGEMENT_ROLE ) {
         _burn(_tokenId);
+        emit burnMonster(_tokenId);
     }
 
     /*
@@ -143,12 +162,13 @@ contract MonsterBase is
     function setStatusMonster(
         uint256 _tokenId,
         bool _status
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE ) {
         require(
             _exists(_tokenId),
             "Monster:::MonsterBase::setStatusMonster: Monster not exists"
         );
         _monster[_tokenId].lifeSpan = _status;
+        emit setStatusMonsters(_tokenId,_status);
     }
 
     /*

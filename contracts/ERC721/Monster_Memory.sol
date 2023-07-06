@@ -7,8 +7,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -16,7 +17,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable {
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor() ERC721("Monster Memory", "Memory") {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
@@ -33,7 +34,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 _monsterId
     );
 
-    // Get holder Tokens
+    // Get list Tokens of address
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
@@ -94,14 +95,14 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable {
 
     /*
      * mint a Monster memory
-     * @param _uri: _uri of NFT
      * @param _address: owner of NFT
+     * @param _monsterId: monsterId of memory
      */
 
     function mint(
         address _address,
         uint256 _monsterId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         _memoryOfMonster[_monsterId] = tokenId;
         emit createMonsterMemory(_address, tokenId, _monsterId);
@@ -113,7 +114,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable {
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 }

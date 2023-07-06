@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
 
@@ -37,7 +38,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     // Validator signtransaction
     address public validator;
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor() ERC721("Genesis Hash", "GenesisHash") {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
         validator = _msgSender();
@@ -187,7 +188,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 _type,
         uint256 deadline,
         bytes calldata sig
-    ) external {
+    ) external nonReentrant whenNotPaused {
         require(
             deadline > block.timestamp,
             "Genesis Hash:: randomSpecies: dealine exceeded"
@@ -232,14 +233,15 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
     function createNFT(
         address _address,
         uint256 _group
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address, _group);
         emit createGenesisHash(_address, tokenId, _group);
     }
 
     /*
-     * create NFT marketing
+     * create Multiple NFT with Type
      * @param _address: owner of NFT
+     * @param _number: number 
      * @param _group: group of genesis hash
      * @param _type: type of group
      */
@@ -248,7 +250,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         uint256 _number,
         uint256 _group,
         uint256 _type
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256[] memory listToken = new uint256[](_number);
         for (uint8 i = 0; i < _number; i++) {
             uint256 tokenId = _createNFT(_address, _group);
@@ -277,7 +279,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
         address _address,
         uint256 _number,
         uint256 _group
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         require(
             _number <= _groupDetail[_group].remaining,
             "Genesis Hash::createMultipleNFT: Exceeding"
@@ -299,7 +301,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable {
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 

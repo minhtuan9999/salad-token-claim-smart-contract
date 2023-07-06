@@ -19,6 +19,14 @@ contract EDCSA {
         FUSION
     }
 
+    /*
+     * encode data 
+     * @param _type: type mint Monster
+     * @param cost: fee mint NFT
+     * @param tokenId: tokenId of nft
+     * @param chainId: chainId mint NFT
+     * @param deadline: deadline using signature
+     */
     function encodeOAS(
         TypeMint _type,
         uint256 cost,
@@ -29,20 +37,29 @@ contract EDCSA {
         return keccak256(abi.encode(_type, cost, tokenId, chainId, deadline));
     }
 
+    /*
+     * recover data 
+     * @param _type: type mint Monster
+     * @param cost: fee mint NFT
+     * @param tokenId: tokenId of nft
+     * @param chainId: chainId mint NFT
+     * @param deadline: deadline using signature
+     * @param signature: signature encode data
+     */
     function recoverOAS(
         TypeMint _type,
         uint256 cost,
         uint256 tokenId,
         uint256 chainId,
         uint256 deadline,
-        bytes calldata sig
+        bytes calldata signature 
     ) public pure returns (address) {
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
                     encodeOAS(_type, cost, tokenId, chainId, deadline)
                 ),
-                sig
+                signature 
             );
     }
 }

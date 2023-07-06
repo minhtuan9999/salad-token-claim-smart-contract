@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IMonster {
     function burn(uint256 _tokenId) external;
@@ -20,7 +21,7 @@ interface IMonsterMemory {
     function mint(address _address, uint256 _monsterId) external;
 }
 
-contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
+contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     IMonster monsterContract;
     IMonsterMemory monsterMemory;
 
@@ -31,7 +32,7 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
     Counters.Counter private _tokenIds;
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    constructor(string memory name, string memory symbol) ERC721(name, symbol) {
+    constructor() ERC721("Monster Crystal", "Crystal") {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(MANAGERMENT_ROLE, _msgSender());
     }
@@ -53,8 +54,8 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
     // Create coach from monster
     event createCrystalByMonster(
         address _owner,
-        uint256 _newCoach,
-        uint256 _tokenBurn
+        uint256 _crystalId,
+        uint256 _monsterId
     );
 
     // Get list Tokens of address
@@ -65,14 +66,14 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
     }
 
     // Set monster contract address
-    function setMonsterContract(
+    function initSetMonsterContract(
         IMonster _monster
     ) external onlyRole(MANAGERMENT_ROLE) {
         monsterContract = _monster;
     }
 
     // Set monster contract address
-    function setMonsterMemory(
+    function initSetMonsterMemory(
         IMonsterMemory _monsterMemory
     ) external onlyRole(MANAGERMENT_ROLE) {
         monsterMemory = _monsterMemory;
@@ -133,21 +134,16 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
     /*
      * mint a Monster Crystal
      * @param _address: owner of NFT
+     * @param _typeNFT: owner of NFT
      */
 
     function createNFT(
         address _address,
         uint256 _typeNFT
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         emit createMonsterCrystal(_address, tokenId, _typeNFT);
     }
-
-    /*
-     * mint a Crystal
-     * @param _address: owner of NFT
-     * @param _status: status free of NFT
-     */
 
     /*
      * Create coach from Monster
@@ -155,11 +151,10 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
      * @param _monsterId: last tokenId monster fusion
      */
     function createCrystalFromMonster(
-        address _owner,
         uint256 _monsterId
-    ) external whenNotPaused {
+    ) external nonReentrant whenNotPaused {
         require(
-            IERC721(address(monsterContract)).ownerOf(_monsterId) == _owner,
+            IERC721(address(monsterContract)).ownerOf(_monsterId) == msg.sender,
             "MonsterManagerment: createCoachNFT: The owner is not correct"
         );
         bool isStatusMonster = monsterContract.getStatusMonster(_monsterId);
@@ -173,8 +168,8 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
             _crystal[tokenId].isFree = true;
         }
         monsterContract.burn(_monsterId);
-        monsterMemory.mint(_owner, _monsterId);
-        emit createCrystalByMonster(_owner, tokenId, _monsterId);
+        monsterMemory.mint(msg.sender, _monsterId);
+        emit createCrystalByMonster(msg.sender, tokenId, _monsterId);
     }
 
     /*
@@ -183,7 +178,7 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable {
      */
     function burn(
         uint256 _tokenId
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
         _burn(_tokenId);
     }
 
