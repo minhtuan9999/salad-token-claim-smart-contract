@@ -26,32 +26,49 @@ contract Monster is MonsterCore {
         TypeMint _type,
         uint256 _tokenId,
         bool _isOAS,
-        uint256 _cost
-        // uint256 _deadline,
-        // bytes calldata _sig
+        uint256 _cost,
+        uint256 _deadline,
+        bytes calldata _sig
     ) external nonReentrant payable whenNotPaused {
-        // require(
-        //     _deadline > block.timestamp,
-        //     "Monster:::Monster::mintMonster: Deadline exceeded"
-        // );
-        // require(
-        //     !_isSigned[_sig],
-        //     "Monster:::Monster::mintMonster: Signature used"
-        // );
-        // address signer = recoverOAS(
-        //     _type,
-        //     _cost,
-        //     _tokenId,
-        //     block.chainid,
-        //     _deadline,
-        //     _sig
-        // );
-        // require(
-        //     signer == validator,
-        //     "Monster:::Monster::mintMonster: Validator fail signature"
-        // );
+        require(
+            _deadline > block.timestamp,
+            "Monster:::Monster::mintMonster: Deadline exceeded"
+        );
+        require(
+            !_isSigned[_sig],
+            "Monster:::Monster::mintMonster: Signature used"
+        );
+        
+        address signer = recoverOAS(
+            _type,
+            _cost,
+            _tokenId,
+            block.chainid,
+            _deadline,
+            _sig
+        );
+        require(
+            signer == validator,
+            "Monster:::Monster::mintMonster: Validator fail signature"
+        );
         uint256 tokenId = _mintMonster(_type, _tokenId, _isOAS, _cost);
         emit createNFTMonster(msg.sender, tokenId, _type);
+    }
+
+    /*
+     * Create a Monster by type Free
+     */
+    function mintMonsterFree() external nonReentrant whenNotPaused {
+        uint256 tokenId = _fromFreeNFT();
+        emit createNFTMonster(msg.sender, tokenId, TypeMint.FREE);
+    }
+
+    /*
+     * Create a Monster by type Free
+     */
+    function mintMonsterFromRegeneration(uint256 _tokenId) external nonReentrant whenNotPaused {
+        uint256 tokenId = _fromRegenerationNFT(_tokenId);
+        emit createNFTMonster(msg.sender, tokenId, TypeMint.REGENERATION_ITEM);
     }
 
     /*

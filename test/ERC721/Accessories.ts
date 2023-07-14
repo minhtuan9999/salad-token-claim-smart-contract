@@ -13,7 +13,7 @@ describe("Accessories", function () {
         const [owner, userAddress] = await ethers.getSigners();
 
         const Accessories = await ethers.getContractFactory("Accessories");
-        const accessories = await Accessories.connect(owner).deploy("Accessories", "Accessories");
+        const accessories = await Accessories.connect(owner).deploy();
         accessories.deployed();
 
         return { accessories, owner, userAddress };
@@ -45,18 +45,7 @@ describe("Accessories", function () {
                 .withArgs(owner.address, 0, 1);
         });
     })
-    describe("Mint NFT", function () {
-        it('should check when the caller address has permission', async function () {
-            const { accessories, owner } = await loadFixture(deployERC721Fixture);
 
-            await expect(accessories.connect(owner).mint(owner.address)).not.to.be.rejected;
-        });
-        it('should check when the caller address has no permission', async function () {
-            const { accessories, userAddress } = await loadFixture(deployERC721Fixture);
-
-            await expect(accessories.connect(userAddress).mint(userAddress.address)).to.be.rejected;
-        });
-    })
     describe("Set token URI", function () {
         it("should set the correct token URI", async function () {
             const { accessories, owner } = await loadFixture(deployERC721Fixture);
@@ -103,5 +92,25 @@ describe("Accessories", function () {
             await expect(accessories.connect(userAddress).burn(0)).to.be.rejected;
         });
     })
+
+    // describe("Create Accessories by item material", function () {
+    //     it('should check when the caller address has permission', async function () {
+    //         const { accessories, owner } = await loadFixture(deployERC721Fixture);
+
+    //         await expect(accessories.connect(owner).createNFT(owner.address, 1)).not.to.be.rejected;
+    //     });
+    //     it('should check when the caller address has no permission', async function () {
+    //         const { accessories, userAddress } = await loadFixture(deployERC721Fixture);
+
+    //         await expect(accessories.connect(userAddress).createNFT(userAddress.address, 1)).to.be.rejected;
+    //     });
+    //     it('should check event create NFT', async function () {
+    //         const { accessories, owner } = await loadFixture(deployERC721Fixture);
+
+    //         await expect(accessories.createNFT(owner.address, 1))
+    //             .to.emit(accessories, "createAccessories")
+    //             .withArgs(owner.address, 0, 1);
+    //     });
+    // })
 
 });

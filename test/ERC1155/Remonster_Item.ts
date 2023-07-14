@@ -29,20 +29,23 @@ describe("Remonster Item", function () {
     describe("Create item", function () {
         it('should check when the caller address has permission', async function () {
             const { remonsterItem, owner } = await loadFixture(deployERC721Fixture);
-
-            await expect(remonsterItem.connect(owner).mint(owner.address,1, 0, 1, "0x32")).not.to.be.rejected;
+            const collectionId = 1;
+            const typeId = 2;
+            await expect(remonsterItem.connect(owner).mint(owner.address,typeId, collectionId, 1, "")).not.to.be.reverted;
         });
         it('should check when the caller address has no permission', async function () {
             const { remonsterItem, userAddress } = await loadFixture(deployERC721Fixture);
-
-            await expect(remonsterItem.connect(userAddress).mint(userAddress.address,1, 0, 1,"0x32")).to.be.rejected;
+            const collectionId = 1;
+            const typeId = 2;
+            await expect(remonsterItem.connect(userAddress).mint(userAddress.address,typeId, collectionId, 1, "")).to.be.reverted;
         });
         it('should check event create NFT', async function () {
             const { remonsterItem, owner } = await loadFixture(deployERC721Fixture);
-
-            await expect(remonsterItem.connect(owner).mint(owner.address,1, 0, 1, "0x32"))
+            const collectionId = 1;
+            const typeId = 2;
+            await expect(remonsterItem.connect(owner).mint(owner.address,typeId, collectionId, 1, ""))
                 .to.emit(remonsterItem, "mintMonsterItems")
-                .withArgs(owner.address, 0, 1,"0x32");
+                .withArgs(owner.address, 0, 1,"");
         });
     })
     describe("should check balance item of address", function () {
@@ -68,7 +71,7 @@ describe("Remonster Item", function () {
             const { remonsterItem, owner, userAddress } = await loadFixture(deployERC721Fixture);
 
             await remonsterItem.connect(owner).mint(owner.address,1, 0, 1, "0x32");
-            await expect(remonsterItem.connect(userAddress).burn(owner.address, 0, 1)).to.be.rejected;
+            await expect(remonsterItem.connect(userAddress).burn(owner.address, 0, 1)).to.be.reverted;
 
         });
     })

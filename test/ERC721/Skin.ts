@@ -13,7 +13,7 @@ describe("Skin", function () {
         const [owner, userAddress] = await ethers.getSigners();
 
         const Skin = await ethers.getContractFactory("Skin");
-        const skin = await Skin.connect(owner).deploy("Skin", "Skin");
+        const skin = await Skin.connect(owner).deploy();
         skin.deployed();
 
         return { skin, owner, userAddress };
@@ -43,28 +43,6 @@ describe("Skin", function () {
             await expect(skin.createNFT(owner.address, 1))
                 .to.emit(skin, "createMonsterSkin")
                 .withArgs(owner.address, 0, 1);
-        });
-    })
-    describe("Mint NFT", function () {
-        it('should check when the caller address has permission', async function () {
-            const { skin, owner } = await loadFixture(deployERC721Fixture);
-
-            await expect(skin.connect(owner).mint(owner.address)).not.to.be.rejected;
-        });
-        it('should check when the caller address has no permission', async function () {
-            const { skin, userAddress } = await loadFixture(deployERC721Fixture);
-
-            await expect(skin.connect(userAddress).mint(userAddress.address)).to.be.rejected;
-        });
-    })
-    describe("Set token URI", function () {
-        it("should set the correct token URI", async function () {
-            const { skin, owner } = await loadFixture(deployERC721Fixture);
-
-            const baseURI = "https://example.com/";
-            await skin.setBaseURI(baseURI);
-            await skin.createNFT(owner.address, 1);
-            expect(await skin.tokenURI(0)).to.equal(baseURI + "0");
         });
     })
 

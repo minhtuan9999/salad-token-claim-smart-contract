@@ -22,7 +22,7 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
     // Event create HashChipNFT
-    event createHashChipNFT(address _address, uint256 _tokenId);
+    event createHashChipNFT(address _address, uint256 tokenId);
 
     // Get list Tokens of address
     function getListTokensOfAddress(
