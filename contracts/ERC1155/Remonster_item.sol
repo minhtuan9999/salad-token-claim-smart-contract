@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract RemonsterItem is ERC1155, AccessControl, Ownable {
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     using Strings for uint256;
     uint256 private constant COLLECTION_TYPE_OFFSET = 10000; // Offset for collection types
@@ -18,8 +18,8 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
     uint256 public constant REGENERATION_ITEM = 4; // Regeneration item collection
 
     constructor(string memory _baseMetadata) ERC1155(_baseMetadata) {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
         baseMetadata = _baseMetadata;
     }
     // base metadata
@@ -37,11 +37,11 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
     // EVENT
     event mintMonsterItems(
         address _addressTo,
-        uint256 _itemId,
-        uint256 _itemType,
-        uint256 _collectionType,
-        uint256 _number,
-        bytes _data
+        uint256 itemId,
+        uint256 itemType,
+        uint256 collectionType,
+        uint256 number,
+        bytes data
     );
     event burnItem(address _from, uint256 _id, uint256 _amount);
     event burnBathItem(address _from, uint256[] _id, uint256[] _amount);
@@ -114,11 +114,11 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
         uint256 _collectionType,
         uint256 _number,
         bytes memory _data
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         uint256 itemId = _mintItem(_addressTo,_itemType,_collectionType,_number,_data);
         emit mintMonsterItems(_addressTo, itemId, _itemType, _collectionType, _number, _data);
     }
-    function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGERMENT_ROLE) {
+    function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGEMENT_ROLE) {
         _burn(_from, _id, _amount);
         emit burnItem(_from, _id, _amount);
     }
@@ -142,7 +142,7 @@ contract RemonsterItem is ERC1155, AccessControl, Ownable {
         uint256 _hashFragmentId, 
         uint256 _amount, 
         bytes memory _data
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         uint256 itemId = _mintItem(msg.sender, _itemType, _collectionType, _amount, _data);
         _burn(msg.sender, _hashFragmentId, _amount);
         emit createRegenerationNFT(msg.sender, itemId, _hashFragmentId);

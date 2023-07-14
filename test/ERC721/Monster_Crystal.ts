@@ -13,7 +13,7 @@ describe("MonsterCrystal", function () {
         const [owner, userAddress] = await ethers.getSigners();
 
         const MonsterCrystal = await ethers.getContractFactory("MonsterCrystal");
-        const monsterCrystal = await MonsterCrystal.connect(owner).deploy("MonsterCrystal", "MonsterCrystal");
+        const monsterCrystal = await MonsterCrystal.connect(owner).deploy();
         monsterCrystal.deployed();
 
         return { monsterCrystal, owner, userAddress };
@@ -43,28 +43,6 @@ describe("MonsterCrystal", function () {
             await expect(monsterCrystal.createNFT(owner.address, 1))
                 .to.emit(monsterCrystal, "createMonsterCrystal")
                 .withArgs(owner.address, 0, 1);
-        });
-    })
-    describe("Mint NFT", function () {
-        it('should check when the caller address has permission', async function () {
-            const { monsterCrystal, owner } = await loadFixture(deployERC721Fixture);
-
-            await expect(monsterCrystal.connect(owner).mint(owner.address, true)).not.to.be.rejected;
-        });
-        it('should check when the caller address has no permission', async function () {
-            const { monsterCrystal, userAddress } = await loadFixture(deployERC721Fixture);
-
-            await expect(monsterCrystal.connect(userAddress).mint(userAddress.address, true)).to.be.rejected;
-        });
-    })
-    describe("Set token URI", function () {
-        it("should set the correct token URI", async function () {
-            const { monsterCrystal, owner } = await loadFixture(deployERC721Fixture);
-
-            const baseURI = "https://example.com/";
-            await monsterCrystal.setBaseURI(baseURI);
-            await monsterCrystal.createNFT(owner.address, 1);
-            expect(await monsterCrystal.tokenURI(0)).to.equal(baseURI + "0");
         });
     })
 
@@ -104,14 +82,14 @@ describe("MonsterCrystal", function () {
 
         });
     })
-    describe("should check isFree", function () {
-        it('should check status isFree', async function () {
-            const { monsterCrystal, owner, userAddress } = await loadFixture(deployERC721Fixture);
+    // describe("createCrystalFromMonster", function () {
+    //     it('should check status isFree', async function () {
+    //         const { monsterCrystal, owner, userAddress } = await loadFixture(deployERC721Fixture);
 
-            await monsterCrystal.connect(owner).mint(userAddress.address, true)
-            expect(( await monsterCrystal.connect(owner).isFree(0)).toString()).to.equals("true")
-            await expect(monsterCrystal.connect(owner).isFree(1)).to.be.rejectedWith("Monster Crystal:: isFree: Monster not exists");
-        });
-    })
+    //         await monsterCrystal.connect(owner).mint(userAddress.address, true)
+    //         expect(( await monsterCrystal.connect(owner).isFree(0)).toString()).to.equals("true")
+    //         await expect(monsterCrystal.connect(owner).isFree(1)).to.be.rejectedWith("Monster Crystal:: isFree: Monster not exists");
+    //     });
+    // })
 
 });

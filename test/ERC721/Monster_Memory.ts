@@ -13,7 +13,7 @@ describe("MonsterMemory", function () {
         const [owner, userAddress] = await ethers.getSigners();
 
         const MonsterMemory = await ethers.getContractFactory("MonsterMemory");
-        const monsterMemory = await MonsterMemory.connect(owner).deploy("MonsterMemory", "MonsterMemory");
+        const monsterMemory = await MonsterMemory.connect(owner).deploy();
         monsterMemory.deployed();
 
         return { monsterMemory, owner, userAddress };
@@ -26,41 +26,33 @@ describe("MonsterMemory", function () {
             expect(await monsterMemory.owner()).to.equal(owner.address);
         });
     })
-    describe("Create NFT", function () {
+    describe("Mint NFT", function () {
         it('should check when the caller address has permission', async function () {
             const { monsterMemory, owner } = await loadFixture(deployERC721Fixture);
-
-            await expect(monsterMemory.connect(owner).createNFT(owner.address, 1)).not.to.be.rejected;
+            const monsterId = 1;
+            await expect(monsterMemory.connect(owner).mint(owner.address,monsterId)).not.to.be.rejected;
         });
         it('should check when the caller address has no permission', async function () {
             const { monsterMemory, userAddress } = await loadFixture(deployERC721Fixture);
+            const monsterId = 1;
 
-            await expect(monsterMemory.connect(userAddress).createNFT(userAddress.address, 1)).to.be.rejected;
+            await expect(monsterMemory.connect(userAddress).mint(userAddress.address,monsterId)).to.be.rejected;
         });
         it('should check event create NFT', async function () {
             const { monsterMemory, owner } = await loadFixture(deployERC721Fixture);
+            const monsterId = 1;
 
-            await expect(monsterMemory.createNFT(owner.address, 1))
+            await expect(monsterMemory.mint(owner.address,monsterId))
                 .to.emit(monsterMemory, "createMonsterMemory")
                 .withArgs(owner.address, 0, 1);
-        });
-    })
-    describe("Set token URI", function () {
-        it("should set the correct token URI", async function () {
-            const { monsterMemory, owner } = await loadFixture(deployERC721Fixture);
-
-            const baseURI = "https://example.com/";
-            await monsterMemory.setBaseURI(baseURI);
-            await monsterMemory.createNFT(owner.address, 1);
-            expect(await monsterMemory.tokenURI(0)).to.equal(baseURI + "0");
         });
     })
 
     describe("Get list tokens of address", function () {
         it("should mint a new token and update the token lists", async function () {
             const { monsterMemory, owner } = await loadFixture(deployERC721Fixture);
-
-            await monsterMemory.createNFT(owner.address, 1);
+            const monsterId = 1;
+            await monsterMemory.mint(owner.address, monsterId);
 
             const tokenIds = await monsterMemory.getListTokensOfAddress(owner.address);
             expect(tokenIds.length).to.equal(1);
@@ -75,7 +67,8 @@ describe("MonsterMemory", function () {
         it("should burn a token with caller address has permission ", async function () {
             const { monsterMemory, owner } = await loadFixture(deployERC721Fixture);
 
-            await monsterMemory.createNFT(owner.address, 1);
+            const monsterId = 1;
+            await monsterMemory.mint(owner.address, monsterId);
     
             await monsterMemory.burn(0);
     
@@ -87,9 +80,9 @@ describe("MonsterMemory", function () {
         it("should burn a token with caller address has no permission ", async function () {
             const { monsterMemory, owner, userAddress } = await loadFixture(deployERC721Fixture);
 
-            await monsterMemory.connect(owner).createNFT(owner.address, 1);
+            const monsterId = 1;
+            await monsterMemory.mint(owner.address, monsterId);
             await expect(monsterMemory.connect(userAddress).burn(0)).to.be.rejected;
-
         });
     })
 

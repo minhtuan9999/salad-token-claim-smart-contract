@@ -32,15 +32,15 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     }
     // Count token Id
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     // Base URI
     string private _baseURIextended;
     // Validator signtransaction
     address public validator;
 
     constructor() ERC721("Genesis Hash", "GenesisHash") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
         validator = _msgSender();
     }
 
@@ -58,21 +58,21 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
 
     //=======================================EVENT=======================================//
     // Event create Genesishash with group
-    event createGenesisHash(address _address, uint256 _tokenId, uint256 _group);
+    event createGenesisHash(address _address, uint256 tokenId, uint256 group);
     // Event random type of Group
-    event openGenesisBox(uint256 _tokenId, uint256 _group, uint256 _type);
+    event openGenesisBox(uint256 tokenId, uint256 group, uint256 _type);
     // Event create Genesishash for marketing
     event createMultipleGenesisHashwithType(
         address _address,
-        uint256[] _listToken,
-        uint256 _group,
+        uint256[] listToken,
+        uint256 group,
         uint256 _type
     );
     // Event create Genesishash for marketing
-    event createMultipleGenesisHash(
+    event createMultipleGenesis(
         address _address,
-        uint256[] _listToken,
-        uint256 _group
+        uint256[] listToken,
+        uint256 group
     );
 
     //=======================================FUNCTION=======================================//
@@ -84,10 +84,10 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     }
 
     //set initialization limit of group
-    function initSetGroupDetail(
+    function initSetDetailGroup(
         uint256 _group,
         uint256 _limit
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _groupDetail[_group].totalSupply = _limit;
         _groupDetail[_group].remaining = _limit;
     }
@@ -95,7 +95,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     // Set Validator
     function initSetValidator(
         address _address
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         validator = _address;
     }
 
@@ -109,7 +109,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 _group,
         uint256 _specie,
         uint256 _limit
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _species[_group][_specie].issueLimit = _limit;
         _species[_group][_specie].remaining =
             _limit -
@@ -146,11 +146,11 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -233,7 +233,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     function createNFT(
         address _address,
         uint256 _group
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _createNFT(_address, _group);
         emit createGenesisHash(_address, tokenId, _group);
     }
@@ -250,7 +250,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 _number,
         uint256 _group,
         uint256 _type
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256[] memory listToken = new uint256[](_number);
         for (uint8 i = 0; i < _number; i++) {
             uint256 tokenId = _createNFT(_address, _group);
@@ -279,7 +279,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         address _address,
         uint256 _number,
         uint256 _group
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         require(
             _number <= _groupDetail[_group].remaining,
             "Genesis Hash::createMultipleNFT: Exceeding"
@@ -292,7 +292,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
             _number;
-        emit createMultipleGenesisHash(_address, listToken, _group);
+        emit createMultipleGenesis(_address, listToken, _group);
     }
 
     /*
@@ -301,7 +301,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
     }
 

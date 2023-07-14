@@ -18,10 +18,10 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
     }
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     address public validator;
-    IERC20 public tokenBase;
+    // IERC20 public tokenBase;
 
     mapping(address => mapping(bytes => bool)) private usedSignature;
 
@@ -31,17 +31,18 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
 
     constructor(
         string memory name_,
-        string memory symbol_,
-        address addressTokenBase
+        string memory symbol_
     ) ERC20(name_, symbol_) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
-
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
         validator = _msgSender();
         // token init
-        tokenBase = IERC20(addressTokenBase);
+        // tokenBase = IERC20(addressTokenBase);
+
+        _mint(msg.sender, 10000);
+
     }
 
     /**
@@ -50,16 +51,16 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
      */
     function setValidator(address _validatorAddress)
         external
-        onlyRole(MANAGERMENT_ROLE)
+        onlyRole(MANAGEMENT_ROLE)
     {
         // verify new exchange value
         validator = _validatorAddress;
         emit ChangeValidatorAddress(_validatorAddress);
     }
 
-    function setTokenBase(IERC20 addressTokenBase) public onlyRole(MANAGERMENT_ROLE) {
-        tokenBase = addressTokenBase;
-    }
+    // function setTokenBase(IERC20 addressTokenBase) public onlyRole(MANAGEMENT_ROLE) {
+    //     tokenBase = addressTokenBase;
+    // }
 
     function encodeData(
         TypeBuy typeBuy,
@@ -141,10 +142,10 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
             uint256 totalPrice = amountInWei.mul(ratio).div(10**18);
 
             // Transfer amount for Owner
-            require(
-                tokenBase.transferFrom(account, address(this), totalPrice),
-                "TokenXXX::buyToken: Transfering the cut to the owner failed"
-            );
+            // require(
+            //     tokenBase.transferFrom(account, address(this), totalPrice),
+            //     "TokenXXX::buyToken: Transfering the cut to the owner failed"
+            // );
             usedSignature[account][sig] = true;
             _mint(account, amountInWei);
         } else if (typeBuy == TypeBuy.FIAT) {
@@ -159,7 +160,7 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
     function burnToken(address account, uint256 amount)
         public
         whenNotPaused
-        onlyRole(MANAGERMENT_ROLE)
+        onlyRole(MANAGEMENT_ROLE)
     {
         _burn(account, amount);
         emit BurnToken(account, amount);

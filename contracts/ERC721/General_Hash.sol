@@ -32,15 +32,15 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     }
     // Count token Id
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     // Base URI
     string private _baseURIextended;
     // Validator signtransaction
     address public validator;
 
     constructor() ERC721("General Hash", "GeneralHash") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
         validator = _msgSender();
     }
 
@@ -58,14 +58,14 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
 
     //=======================================EVENT=======================================//
     // Event create General hash with group
-    event createGeneralHash(address _address, uint256 _tokenId, uint256 _group);
+    event createGeneralHash(address _address, uint256 tokenId, uint256 group);
     // Event random type of Group
-    event openGeneralBox(uint256 _tokenId, uint256 _group, uint256 _type);
+    event openGeneralBox(uint256 tokenId, uint256 group, uint256 _type);
     // Event create multiple General hash
     event createMultipleGeneral(
         address _address,
-        uint256[] _listToken,
-        uint256 _group
+        uint256[] listToken,
+        uint256 group
     );
 
     //=======================================FUNCTION=======================================//
@@ -80,7 +80,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     function initSetDetailGroup(
         uint256 _group,
         uint256 _limit
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _groupDetail[_group].totalSupply = _limit;
         _groupDetail[_group].remaining = _limit;
     }
@@ -90,7 +90,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 _group,
         uint256 _specie,
         uint256 _limit
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _species[_group][_specie].issueLimit = _limit;
         _species[_group][_specie].remaining =
             _limit -
@@ -100,7 +100,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     // Set Validator
     function initSetValidator(
         address _address
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         validator = _address;
     }
 
@@ -134,11 +134,11 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -221,7 +221,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     function createNFT(
         address _address,
         uint256 _group
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _createNFT(_address, _group);
         emit createGeneralHash(_address, tokenId, _group);
     }
@@ -236,7 +236,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         address _address,
         uint256 _number,
         uint256 _group
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         require(
             _number <= _groupDetail[_group].remaining,
             "Genesis Hash::createMultipleNFT: Exceeding"
@@ -258,12 +258,15 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
-        _burn(_tokenId);
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 _type = _generalDetail[_tokenId].species;
         uint256 _group = _generalDetail[_tokenId].group;
-        _species[_group][_type].issueAmount--;
-        _species[_group][_type].remaining++;
+        if(_species[_group][_type].issueAmount > 0) {
+            _species[_group][_type].issueAmount--;
+            _species[_group][_type].remaining++;
+        }
+        _groupDetail[_group].remaining++;
+         _burn(_tokenId);
     }
 
     function encodeBridge(

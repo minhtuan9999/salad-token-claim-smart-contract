@@ -105,17 +105,6 @@ contract Skin is
     }
 
     /*
-     * mint a Skin
-     * @param _address: owner of NFT
-     */
-    function mint(
-        address _address
-    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        uint256 tokenId = _createNFT(_address);
-        return tokenId;
-    }
-
-    /*
      * burn Skin
      * @param _tokenId: tokenId burn
      */
