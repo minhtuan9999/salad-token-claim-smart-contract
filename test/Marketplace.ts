@@ -10,18 +10,13 @@ describe("ReMonsterMarketplace", function () {
 
     async function deployMarketplaceFixture() {
         // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount1, ownerNFT, ownerOAS] = await ethers.getSigners();
+        const [owner, ownerNFT, otherAccount1] = await ethers.getSigners();
 
-        const totalSupply = "100000000000000000000000000000";
         const feeSeller = "10000000000000000000"; // 10% * 10^18
         const addressReceiceFee = owner.address;
 
-        const Test20 = await ethers.getContractFactory("Test20");
-        const test20 = await Test20.connect(ownerOAS).deploy(totalSupply);
-        test20.deployed();
-
         const Marketplace = await ethers.getContractFactory("ReMonsterMarketplace");
-        const marketplace = await Marketplace.deploy(feeSeller, addressReceiceFee, test20.address);
+        const marketplace = await Marketplace.deploy(feeSeller, addressReceiceFee);
         marketplace.deployed();
 
         const Test721 = await ethers.getContractFactory("Test721");
@@ -32,7 +27,7 @@ describe("ReMonsterMarketplace", function () {
         const test1155 = await Test1155.connect(ownerNFT).deploy();
         test1155.deployed();
 
-        return { marketplace, test721, test1155, test20, feeSeller, addressReceiceFee, owner, otherAccount1, ownerNFT, ownerOAS };
+        return { marketplace, test721, test1155, feeSeller, addressReceiceFee, owner, otherAccount1, ownerNFT };
     }
 
     describe("Deployment", function () {
@@ -46,12 +41,6 @@ describe("ReMonsterMarketplace", function () {
             const { marketplace, addressReceiceFee } = await loadFixture(deployMarketplaceFixture);
 
             expect(await marketplace.addressReceiveFee()).to.equal(addressReceiceFee);
-        });
-
-        it("Should set the right addressTokenBase", async function () {
-            const { marketplace, test20 } = await loadFixture(deployMarketplaceFixture);
-
-            expect(await marketplace.tokenBase()).to.equal(test20.address);
         });
 
         it("Should set the right owner", async function () {
@@ -161,20 +150,20 @@ describe("ReMonsterMarketplace", function () {
             });
 
             it("Should revert with the right error if called not from Owner NFT 721", async function () {
-                const { marketplace, test721, ownerOAS } = await loadFixture(
+                const { marketplace, test721, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
-                // We use marketplace.connect() to send a transaction from ownerOAS account
-                await expect(marketplace.connect(ownerOAS).createMarketItemSale(test721.address, 0, 1999, 1)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Only the owner can create orders');
+                // We use marketplace.connect() to send a transaction from otherAccount1
+                await expect(marketplace.connect(otherAccount1).createMarketItemSale(test721.address, 0, 1999, 1)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Only the owner can create orders');
             });
 
             it("Should revert with the right error if called not enough NFT 1155", async function () {
-                const { marketplace, test1155, ownerOAS } = await loadFixture(
+                const { marketplace, test1155, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
-                // We use marketplace.connect() to send a transaction from ownerOAS account
-                await expect(marketplace.connect(ownerOAS).createMarketItemSale(test1155.address, 0, 1999, 10)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Insufficient balance');
+                // We use marketplace.connect() to send a transaction from otherAccount1
+                await expect(marketplace.connect(otherAccount1).createMarketItemSale(test1155.address, 0, 1999, 10)).to.be.rejectedWith('ReMonsterMarketplace::createMarketItemSale: Insufficient balance');
             });
 
             it("Should revert with the right error if contract is not authorized to manage the asset 721", async function () {
@@ -287,7 +276,7 @@ describe("ReMonsterMarketplace", function () {
             });
 
             it("Should revert with the right error if called not from Owner NFT 721 or ADMIN", async function () {
-                const { marketplace, test721, ownerNFT, ownerOAS } = await loadFixture(
+                const { marketplace, test721, ownerNFT, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
@@ -300,14 +289,14 @@ describe("ReMonsterMarketplace", function () {
                     const events = receipt.events;
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
-                        // We use marketplace.connect() to send a transaction from ownerOAS account
-                        await expect(marketplace.connect(ownerOAS).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Unauthorized user');
+                        // We use marketplace.connect() to send a transaction from otherAccount1
+                        await expect(marketplace.connect(otherAccount1).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Unauthorized user');
                     }
                 }
             });
 
             it("Should revert with the right error if called not from Owner NFT 1155 or ADMIN", async function () {
-                const { marketplace, test1155, ownerNFT, ownerOAS } = await loadFixture(
+                const { marketplace, test1155, ownerNFT, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
@@ -320,8 +309,8 @@ describe("ReMonsterMarketplace", function () {
                     const events = receipt.events;
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
-                        // We use marketplace.connect() to send a transaction from ownerOAS account
-                        await expect(marketplace.connect(ownerOAS).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Unauthorized user');
+                        // We use marketplace.connect() to send a transaction from otherAccount1
+                        await expect(marketplace.connect(otherAccount1).cancelMarketItemSale(orderCreatedEvent.args.orderId)).to.be.rejectedWith('ReMonsterMarketplace::cancelMarketItemSale: Unauthorized user');
                     }
                 }
             });
@@ -504,14 +493,12 @@ describe("ReMonsterMarketplace", function () {
             });
 
             it("Shouldn't fail if the buyItem 721 has arrived and the buyer calls it", async function () {
-                const { marketplace, test721, test20, ownerNFT, ownerOAS, addressReceiceFee } = await loadFixture(
+                const { marketplace, test721, ownerNFT, otherAccount1, addressReceiceFee } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
                 // Appprove NFT-721 to contract marketplace
                 await expect(test721.connect(ownerNFT).setApprovalForAll(marketplace.address, true)).not.to.be.reverted;
-                // Appprove OAS to contract marketplace
-                await expect(test20.connect(ownerOAS).approve(marketplace.address, "1000000000000000000000000000000000000000000")).not.to.be.reverted;
                 let sendTransaction = await marketplace.connect(ownerNFT).createMarketItemSale(test721.address, 0, "100000000000000000000", 1)
                 const receipt = await sendTransaction.wait();
                 if (receipt && receipt.events) {
@@ -519,24 +506,18 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerNFT account
-                        await marketplace.connect(ownerOAS).buyItem(orderCreatedEvent.args.orderId)
-
-                        await expect(await test20.balanceOf(addressReceiceFee)).to.equal("10000000000000000000");
-                        await expect(await test20.balanceOf(marketplace.address)).to.equal("0");
-                        await expect(await test20.balanceOf(ownerNFT.address)).to.equal("90000000000000000000");
+                        await marketplace.connect(otherAccount1).buyItem(orderCreatedEvent.args.orderId, { value: '100000000000000000000' })
                     }
                 }
             });
 
             it("Shouldn't fail if the buyItem 1155 has arrived and the buyer calls it", async function () {
-                const { marketplace, test1155, test20, ownerNFT, ownerOAS, addressReceiceFee } = await loadFixture(
+                const { marketplace, test1155, ownerNFT, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
                 // Appprove NFT-1155 to contract marketplace
                 await expect(test1155.connect(ownerNFT).setApprovalForAll(marketplace.address, true)).not.to.be.reverted;
-                // Appprove OAS to contract marketplace
-                await expect(test20.connect(ownerOAS).approve(marketplace.address, "1000000000000000000000000000000000000000000")).not.to.be.reverted;
                 let sendTransaction = await marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, "100000000000000000000", 1)
                 const receipt = await sendTransaction.wait();
                 if (receipt && receipt.events) {
@@ -544,11 +525,7 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerNFT account
-                        await marketplace.connect(ownerOAS).buyItem(orderCreatedEvent.args.orderId)
-
-                        await expect(await test20.balanceOf(addressReceiceFee)).to.equal("10000000000000000000");
-                        await expect(await test20.balanceOf(marketplace.address)).to.equal("0");
-                        await expect(await test20.balanceOf(ownerNFT.address)).to.equal("90000000000000000000");
+                        await marketplace.connect(otherAccount1).buyItem(orderCreatedEvent.args.orderId, { value: '100000000000000000000' })
                     }
                 }
             });
@@ -556,14 +533,12 @@ describe("ReMonsterMarketplace", function () {
 
         describe("Events", function () {
             it("Should emit an event on buyItem - 721", async function () {
-                const { marketplace, test721, test20, ownerNFT, ownerOAS } = await loadFixture(
+                const { marketplace, test721, ownerNFT, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
                 // Appprove NFT-721 to contract marketplace
                 await expect(test721.connect(ownerNFT).setApprovalForAll(marketplace.address, true)).not.to.be.reverted;
-                // Appprove OAS to contract marketplace
-                await expect(test20.connect(ownerOAS).approve(marketplace.address, "1000000000000000000000000000000000000000000")).not.to.be.reverted;
                 let sendTransaction = await marketplace.connect(ownerNFT).createMarketItemSale(test721.address, 0, "100000000000000000000", 1)
                 const receipt = await sendTransaction.wait();
                 if (receipt && receipt.events) {
@@ -571,21 +546,19 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerOAS account
-                        await expect(marketplace.connect(ownerOAS).buyItem(orderCreatedEvent.args.orderId)).to.emit(marketplace, "OrderSuccessful")
+                        await expect(marketplace.connect(otherAccount1).buyItem(orderCreatedEvent.args.orderId ,{ value: '100000000000000000000' })).to.emit(marketplace, "OrderSuccessful")
                         // .withArgs(ownerNFT.address);
                     }
                 }
             });
 
             it("Should emit an event on buyItem - 1155", async function () {
-                const { marketplace, test1155, test20, ownerNFT, ownerOAS } = await loadFixture(
+                const { marketplace, test1155, ownerNFT, otherAccount1 } = await loadFixture(
                     deployMarketplaceFixture
                 );
 
                 // Appprove NFT-1155 to contract marketplace
                 await expect(test1155.connect(ownerNFT).setApprovalForAll(marketplace.address, true)).not.to.be.reverted;
-                // Appprove OAS to contract marketplace
-                await expect(test20.connect(ownerOAS).approve(marketplace.address, "1000000000000000000000000000000000000000000")).not.to.be.reverted;
                 let sendTransaction = await marketplace.connect(ownerNFT).createMarketItemSale(test1155.address, 0, "100000000000000000000", 1)
                 const receipt = await sendTransaction.wait();
 
@@ -594,7 +567,7 @@ describe("ReMonsterMarketplace", function () {
                     const orderCreatedEvent = events.find((event) => event.event === "OrderCreated");
                     if (orderCreatedEvent && orderCreatedEvent.args) {
                         // We use marketplace.connect() to send a transaction from ownerOAS account
-                        await expect(marketplace.connect(ownerOAS).buyItem(orderCreatedEvent.args.orderId)).to.emit(marketplace, "OrderSuccessful")
+                        await expect(marketplace.connect(otherAccount1).buyItem(orderCreatedEvent.args.orderId, { value: '100000000000000000000' })).to.emit(marketplace, "OrderSuccessful")
                         // .withArgs(ownerNFT.address);
                     }
                 }

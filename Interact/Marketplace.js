@@ -4,13 +4,11 @@ import Web3 from "web3";
 CHAIN_NETWORK = 29548;
 ADDRESS_MARKETPLACE = "";
 ADDRESS_NFT = "";
-ADDRESS_TOKEN = "";
 PATH_METAMASK = "";
 
 //========CREATE ABI CONTRACT===========================================================
 const ABI_MARKETPLACE = [];
 const ABI_NFT = [];
-const ABI_TOKEN = [];
 
 //========CREATE PROVINDE===============================================================
 if (window.ethereum && ethereum.networkVersion == CHAIN_NETWORK) {
@@ -108,8 +106,6 @@ const changeNetworkInMetamask = async (chainId) => {
 var marketplaceContract = new provider.eth.Contract(ABI_MARKETPLACE, ADDRESS_MARKETPLACE);
 // Prepare the NFT contract obj
 var nftContract = new provider.eth.Contract(ABI_NFT, ADDRESS_NFT);
-// Prepare the OAS contract obj
-var tokenContract = new provider.eth.Contract(ABI_TOKEN, ADDRESS_TOKEN);
 
 //==================MARKETPLACE===========================================
 // Get list sale
@@ -321,41 +317,20 @@ const buyItem = async (orderId, priceInWei) => {
     networkId = await Web3.utils.hexToNumberString(networkId);
 
     if (networkId != CHAIN_NETWORK) return;
+    _buyItem(orderId, priceInWei);
 
-    if (
-      (await tokenContract.methods.allowance(ethereum.selectedAddress, ADDRESS_MARKETPLACE).call()) >= priceInWei
-    ) {
-      _buyItem(orderId);
-    } else {
-      const transactionParametersApprove = {
-        from: ethereum.selectedAddress,
-        to: ADDRESS_NFT,
-        data: tokenContract.methods
-          .approve(ADDRESS_MARKETPLACE, priceInWei)
-          .encodeABI(),
-        chainId: CHAIN_NETWORK,
-      };
-      let txidApprove = await sendTransaction(transactionParametersApprove);
-      console.log("txidApprove: ", txidApprove);
-      await checkTransaction(txidApprove).then((status) => {
-        if (status == true) {
-          _buyItem(orderId);
-        } else if (status == false) {
-          console.log("Fail Transaction");
-        }
-      });
-    }
   } catch (error) {
     console.log(error);
   }
 };
 
-const _buyItem = async (orderId) => {
+const _buyItem = async (orderId, priceInWei) => {
   try {
     const transactionParameters = {
       to: ADDRESS_MARKETPLACE,
       data: marketplaceContract.methods.buyItem(orderId).encodeABI(),
       chainId: CHAIN_NETWORK,
+      value: priceInWei
     };
 
     return sendTransaction(transactionParameters);

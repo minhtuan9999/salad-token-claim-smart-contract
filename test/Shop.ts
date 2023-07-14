@@ -10,17 +10,12 @@ describe("ReMonsterShop", function () {
 
     async function deployShopFixture() {
         // Contracts are deployed using the first signer/account by default
-        const [owner, managerAccount, ownerOAS] = await ethers.getSigners();
+        const [owner, managerAccount, otherAccount1] = await ethers.getSigners();
 
-        const totalSupply = "100000000000000000000000000000";
         const addressReceice = owner.address;
 
-        const Test20 = await ethers.getContractFactory("Test20");
-        const test20 = await Test20.connect(ownerOAS).deploy(totalSupply);
-        test20.deployed();
-
         const Shop = await ethers.getContractFactory("ReMonsterShop");
-        const shop = await Shop.connect(owner).deploy(addressReceice, test20.address);
+        const shop = await Shop.connect(owner).deploy(addressReceice);
         shop.deployed();
 
         const Farm = await ethers.getContractFactory("ReMonsterFarm");
@@ -30,7 +25,7 @@ describe("ReMonsterShop", function () {
         // Set role manager to SHOP
         await farm.connect(owner).grantRole(farm.MANAGERMENT_ROLE(), shop.address)
 
-        return { test20, shop, farm, addressReceice, owner, managerAccount, ownerOAS };
+        return { shop, farm, addressReceice, owner, managerAccount, otherAccount1 };
     }
 
     describe("Deployment", function () {
@@ -39,23 +34,17 @@ describe("ReMonsterShop", function () {
 
             expect(await shop.addressReceive()).to.equal(addressReceice);
         });
-
-        it("Should set the right addressTokenBase", async function () {
-            const { shop, test20 } = await loadFixture(deployShopFixture);
-
-            expect(await shop.tokenBase()).to.equal(test20.address);
-        });
     });
 
     describe("setNewAddressFee", function () {
         describe("Validations", function () {
-            it("Should revert with the right error if called from ownerOAS account", async function () {
-                const { shop, ownerOAS, addressReceice } = await loadFixture(
+            it("Should revert with the right error if called from otherAccount1 account", async function () {
+                const { shop, otherAccount1, addressReceice } = await loadFixture(
                     deployShopFixture
                 );
 
-                // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).setNewAddress(addressReceice)).to.be.rejected;
+                // We use shop.connect() to send a transaction from otherAccount1
+                await expect(shop.connect(otherAccount1).setNewAddress(addressReceice)).to.be.rejected;
             });
 
             it("Shouldn't fail if the setNewAddress has arrived and the owner calls it", async function () {
@@ -88,23 +77,17 @@ describe("ReMonsterShop", function () {
                     deployShopFixture
                 );
 
-                const timeStart = parseInt(String((await time.latest()) / 1000)) + 100;
-                const timeEnd = timeStart + 300;
-
                 // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).createAsset(shop.address, 0, "99000000000000000000", timeStart, timeEnd)).to.be.revertedWith('ReMonsterShop::createAsset: Unsupported contract');
+                await expect(shop.connect(owner).createAsset(shop.address, "99000000000000000000")).to.be.revertedWith('ReMonsterShop::createAsset: Unsupported contract');
             });
 
             it("Should revert with the right error if called not from manager ", async function () {
-                const { shop, farm, ownerOAS } = await loadFixture(
+                const { shop, farm, otherAccount1 } = await loadFixture(
                     deployShopFixture
                 );
 
-                const timeStart = parseInt(String((await time.latest()) / 1000)) + 100;
-                const timeEnd = timeStart + 300;
-
-                // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd)).to.be.reverted;
+                // We use shop.connect() to send a transaction from otherAccount1
+                await expect(shop.connect(otherAccount1).createAsset(farm.address, "99000000000000000000")).to.be.reverted;
             });
 
             it("Should revert with the right error if asset already exists", async function () {
@@ -112,12 +95,9 @@ describe("ReMonsterShop", function () {
                     deployShopFixture
                 );
 
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
-
                 // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
-                await expect(shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd)).to.be.rejectedWith('ReMonsterShop::createAsset: Asset already exists');
+                await shop.connect(owner).createAsset(farm.address, "99000000000000000000");
+                await expect(shop.connect(owner).createAsset(farm.address, "99000000000000000000")).to.be.rejectedWith('ReMonsterShop::createAsset: Asset already exists');
             });
 
             it("Should revert with the right error if price less than or equal to 0", async function () {
@@ -125,47 +105,18 @@ describe("ReMonsterShop", function () {
                     deployShopFixture
                 );
 
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
-
                 // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).createAsset(farm.address, 0, "0", timeStart, timeEnd)).to.be.rejectedWith('ReMonsterShop::createAsset: Price should be bigger than 0');
+                await expect(shop.connect(owner).createAsset(farm.address, "0")).to.be.rejectedWith('ReMonsterShop::createAsset: Price should be bigger than 0');
             });
 
-            it("Should revert with the right error if start time is not now or in the future", async function () {
-                const { shop, farm, owner } = await loadFixture(
-                    deployShopFixture
-                );
-
-                const timeStart = (await time.latest()) - 100;
-                const timeEnd = timeStart + 300;
-
-                // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd)).to.be.rejectedWith('ReMonsterShop::createAsset: Start time must be now or in the future');
-            });
-
-            it("Should revert with the right error if time start after time end", async function () {
-                const { shop, farm, owner } = await loadFixture(
-                    deployShopFixture
-                );
-
-                const timeEnd = (await time.latest()) + 100;
-                const timeStart = timeEnd + 300;
-
-                // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd)).to.be.rejectedWith('ReMonsterShop::createAsset: Start time must be before end time');
-            });
 
             it("Shouldn't fail if the createAsset has arrived and the owner calls it", async function () {
                 const { shop, farm, owner } = await loadFixture(
                     deployShopFixture
                 );
 
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
-
                 // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd)).not.to.be.rejected;
+                await expect(shop.connect(owner).createAsset(farm.address, "99000000000000000000")).not.to.be.rejected;
 
             });
 
@@ -175,11 +126,8 @@ describe("ReMonsterShop", function () {
                         deployShopFixture
                     );
 
-                    const timeStart = (await time.latest()) + 100;
-                    const timeEnd = timeStart + 300;
-
                     // We use shop.connect() to send a transaction from owner account
-                    await expect(shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd)).to.emit(shop, "NewAssetSuccessful")
+                    await expect(shop.connect(owner).createAsset(farm.address, "99000000000000000000")).to.emit(shop, "NewAssetSuccessful")
                     // .withArgs(ownerNFT.address);
                 });
             });
@@ -189,15 +137,12 @@ describe("ReMonsterShop", function () {
     describe("removeAsset", function () {
         describe("Validations", function () {
             it("Should revert with the right error if called not from manager", async function () {
-                const { shop, farm, owner, ownerOAS } = await loadFixture(
+                const { shop, farm, owner, otherAccount1 } = await loadFixture(
                     deployShopFixture
                 );
 
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
-
                 // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
+                await shop.connect(owner).createAsset(farm.address, "99000000000000000000");
 
                 // Time travelling to the future!
                 await network.provider.request({
@@ -205,8 +150,8 @@ describe("ReMonsterShop", function () {
                     params: [100],
                 });
 
-                // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).removeAsset(farm.address, 0)).to.be.rejected;
+                // We use shop.connect() to send a transaction from otherAccount1
+                await expect(shop.connect(otherAccount1).removeAsset(farm.address)).to.be.rejected;
             });
 
             it("Should revert with the right error if asset not exists", async function () {
@@ -215,27 +160,24 @@ describe("ReMonsterShop", function () {
                 );
 
                 // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).removeAsset(farm.address, 0)).to.be.rejectedWith('ReMonsterShop::removeAsset: Asset not exist');
+                await expect(shop.connect(owner).removeAsset(farm.address)).to.be.rejectedWith('ReMonsterShop::removeAsset: Asset not exist');
             });
 
             it("Shouldn't fail if the removeAsset has arrived and ADMIN calls it", async function () {
-                const { shop, farm, owner, ownerOAS } = await loadFixture(
+                const { shop, farm, owner, otherAccount1 } = await loadFixture(
                     deployShopFixture
                 );
 
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
-
                 // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
+                await shop.connect(owner).createAsset(farm.address, "99000000000000000000");
 
                 // Time travelling to the future!
-                await network.provider.request({
-                    method: 'evm_increaseTime',
-                    params: [100],
-                });
+                // await network.provider.request({
+                //     method: 'evm_increaseTime',
+                //     params: [100],
+                // });
 
-                await expect(shop.connect(owner).removeAsset(farm.address, 0)).not.to.be.rejected;
+                await expect(shop.connect(owner).removeAsset(farm.address)).not.to.be.rejected;
             });
         });
 
@@ -245,14 +187,11 @@ describe("ReMonsterShop", function () {
                     deployShopFixture
                 );
 
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
+                // We use shop.connect() to send a transaction from owner account
+                await shop.connect(owner).createAsset(farm.address, "99000000000000000000");
 
                 // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
-
-                // We use shop.connect() to send a transaction from owner account
-                await expect(shop.connect(owner).removeAsset(farm.address, 0)).to.emit(shop, "RemoveAssetSuccessful")
+                await expect(shop.connect(owner).removeAsset(farm.address)).to.emit(shop, "RemoveAssetSuccessful")
                 // .withArgs(ownerNFT.address);
             });
         });
@@ -261,57 +200,29 @@ describe("ReMonsterShop", function () {
     describe("buyItem", function () {
         describe("Validations", function () {
             it("Should revert with the right error if asset is not listed for sale yet ", async function () {
-                const { shop, farm, ownerOAS } = await loadFixture(
+                const { shop, farm, otherAccount1 } = await loadFixture(
                     deployShopFixture
                 );
 
-                // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).buyItem(farm.address, 0, 1)).to.be.rejectedWith('ReMonsterShop::buyAsset: Asset not exists');
+                // We use shop.connect() to send a transaction from otherAccount1
+                await expect(shop.connect(otherAccount1).buyItem(farm.address, 0, 1)).to.be.rejectedWith('ReMonsterShop::buyAsset: Asset not exists');
             });
 
-            it("Should revert with the right error if asset not started", async function () {
-                const { shop, farm, owner, ownerOAS } = await loadFixture(
+            it("Shouldn't fail if the buyItem has arrived and the otherAccount1 calls it", async function () {
+                const { shop, farm, owner } = await loadFixture(
                     deployShopFixture
                 );
-
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
 
                 // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
+                await expect(shop.connect(owner).createAsset(farm.address, "99000000000000000000")).not.to.be.rejected;
 
-                // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).buyItem(farm.address, 0, 1)).to.be.rejectedWith('ReMonsterShop::buyAsset: Asset not started');
             });
-
-
-            it("Should revert with the right error if asset ended", async function () {
-                const { shop, farm, owner, ownerOAS } = await loadFixture(
-                    deployShopFixture
-                );
-
-                const timeStart = (await time.latest()) + 100;
-                const timeEnd = timeStart + 300;
-
-                // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
-
-                // Time travelling to the future!
-                await network.provider.request({
-                    method: 'evm_increaseTime',
-                    params: [500],
-                });
-
-                // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).buyItem(farm.address, 0, 1)).to.be.rejectedWith('ReMonsterShop::buyAsset: Asset ended');
-            });
-
 
         });
 
         describe("Events", function () {
             it("Should emit an event on buyAsset ", async function () {
-                const { shop, farm, test20, owner, ownerOAS } = await loadFixture(
+                const { shop, farm, owner, otherAccount1 } = await loadFixture(
                     deployShopFixture
                 );
 
@@ -319,19 +230,10 @@ describe("ReMonsterShop", function () {
                 const timeEnd = timeStart + 300;
 
                 // We use shop.connect() to send a transaction from owner account
-                await shop.connect(owner).createAsset(farm.address, 0, "99000000000000000000", timeStart, timeEnd);
-
-                // Time travelling to the future!
-                await network.provider.request({
-                    method: 'evm_increaseTime',
-                    params: [100],
-                });
-
-                // Appprove OAS to contract shop
-                await expect(test20.connect(ownerOAS).approve(shop.address, "1000000000000000000000000000000000000000000")).not.to.be.reverted;
-
+                await shop.connect(owner).createAsset(farm.address, "99000000000000000000");
+                
                 // We use shop.connect() to send a transaction from ownerOAS account
-                await expect(shop.connect(ownerOAS).buyItem(farm.address, 0, 1)).to.emit(shop, "BuyAssetSuccessful")
+                await expect(shop.connect(otherAccount1).buyItem(farm.address, 0, 1)).to.emit(shop, "BuyAssetSuccessful")
                 // .withArgs(ownerNFT.address);
             });
         });
