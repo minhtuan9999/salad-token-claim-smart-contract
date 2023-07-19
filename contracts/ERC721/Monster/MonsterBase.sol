@@ -287,12 +287,13 @@ contract MonsterBase is
      */
     function encodeOAS(
         TypeMint _type,
+        address account,
         uint256 cost,
         uint256 tokenId,
         uint256 chainId,
         uint256 deadline
     ) public pure returns (bytes32) {
-        return keccak256(abi.encode(_type, cost, tokenId, chainId, deadline));
+        return keccak256(abi.encode(_type, account, cost, tokenId, chainId, deadline));
     }
 
     /*
@@ -306,6 +307,7 @@ contract MonsterBase is
      */
     function recoverOAS(
         TypeMint _type,
+        address _account,
         uint256 cost,
         uint256 tokenId,
         uint256 chainId,
@@ -315,7 +317,7 @@ contract MonsterBase is
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeOAS(_type, cost, tokenId, chainId, deadline)
+                    encodeOAS(_type, _account, cost, tokenId, chainId, deadline)
                 ),
                 signature 
             );
