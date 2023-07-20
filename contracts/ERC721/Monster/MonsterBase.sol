@@ -151,7 +151,6 @@ contract MonsterBase is
     ) internal returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
-        _listTokensOfAddress[_address].add(tokenId);
         _monster[tokenId].lifeSpan = true;
         _monster[tokenId].typeMint = _type;
         _tokenIds.increment();

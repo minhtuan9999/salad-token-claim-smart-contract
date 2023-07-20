@@ -79,7 +79,6 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 _tokenId
     ) external nonReentrant onlyRole(MANAGEMENT_ROLE) {
         _mint(_address, _tokenId);
-        _listTokensOfAddress[_address].add(_tokenId);
         emit createHashChipNFT(_address, _tokenId);
     }
 

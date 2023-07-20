@@ -127,7 +127,6 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAddress[_address].add(tokenId);
         return tokenId;
     }
 

@@ -25,7 +25,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
     // mapping memory detail: monsterId => memoryId
     mapping(uint256 => uint256) public _memoryOfMonster;
     // List token of address
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
     // Event create Monster memory
     event createMonsterMemory(
@@ -38,7 +38,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdrress[_address].values();
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -51,8 +51,8 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdrress[to].add(firstTokenId);
-        _listTokensOfAdrress[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -89,7 +89,6 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAdrress[_address].add(tokenId);
         return tokenId;
     }
 
