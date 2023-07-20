@@ -29,7 +29,7 @@ contract Skin is
     }
 
     // Mapping list token of address
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
     // Event create Monster Skin
     event createMonsterSkin(address _address, uint256 _tokenId, uint256 _type);
 
@@ -37,7 +37,7 @@ contract Skin is
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdrress[_address].values();
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -50,8 +50,8 @@ contract Skin is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdrress[to].add(firstTokenId);
-        _listTokensOfAdrress[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -87,7 +87,6 @@ contract Skin is
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAdrress[_address].add(tokenId);
         return tokenId;
     }
 

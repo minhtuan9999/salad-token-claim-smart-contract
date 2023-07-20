@@ -158,7 +158,6 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAddress[_address].add(tokenId);
         _generalDetail[tokenId].group = _group;
         _groupDetail[_group].remaining--;
         return tokenId;
