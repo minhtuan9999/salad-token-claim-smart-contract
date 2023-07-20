@@ -105,7 +105,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      * @param _specie: type of group
      * @param _limit: isueLimit of type
      */
-    function initSetSpeciesDetail(
+    function initSetSpecieDetail(
         uint256 _group,
         uint256 _specie,
         uint256 _limit

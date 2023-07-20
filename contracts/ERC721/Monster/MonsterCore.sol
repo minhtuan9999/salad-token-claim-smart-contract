@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "./MonsterInterface.sol";
 
 contract MonsterCore is MonsterInterface {
@@ -25,54 +24,6 @@ contract MonsterCore is MonsterInterface {
     // NFT detail: Season =>( TypeMint => (tokenId => number Of Regenerations))
     mapping(uint256 => mapping(TypeMint => mapping(uint256 => uint256)))
         public _numberOfRegenerations;
-
-    // Set new season
-    function setNewSeason() external onlyRole(MANAGEMENT_ROLE) {
-        season++;
-    }
-
-    // Set fee mint Monster
-    function initSetCostOfType(
-        TypeMint _type,
-        uint256[] memory cost
-    ) external onlyRole(MANAGEMENT_ROLE) {
-        if (_type == TypeMint.GENERAL_HASH) {
-            costOfGeneral = cost;
-        } else if (_type == TypeMint.GENESIS_HASH) {
-            costOfGenesis = cost;
-        } else if (_type == TypeMint.EXTERNAL_NFT) {
-            costOfExternal = cost;
-        } else if (_type == TypeMint.HASH_CHIP_NFT) {
-            costOfHashChip = cost;
-        } else {
-            revert("Monster:::MonsterCore::setCostOfType: Unsupported type");
-        }
-    }
-
-    // Set limit mint Monster
-    function initSetLimitOfType(
-        TypeMint _type,
-        uint256 limit
-    ) external onlyRole(MANAGEMENT_ROLE) {
-        if (_type == TypeMint.GENERAL_HASH) {
-            limitGeneral = limit;
-        } else if (_type == TypeMint.GENESIS_HASH) {
-            limitGenesis = limit;
-        } else if (_type == TypeMint.EXTERNAL_NFT) {
-            limitExternal = limit;
-        } else if (_type == TypeMint.HASH_CHIP_NFT) {
-            limitHashChip = limit;
-        } else {
-            revert("Monster:::MonsterCore::setLimitOfType: Unsupported type");
-        }
-    }
-
-    // Set address Monster Treasury
-    function initSetTreasuryAdress(
-        address _address
-    ) external onlyRole(MANAGEMENT_ROLE) {
-        _treasuryAddress = payable(_address);
-    }
 
     // Mint monster from GeneralHash
     function _fromGeneralHash(
@@ -190,7 +141,7 @@ contract MonsterCore is MonsterInterface {
 
     // mint monster from Regeneration hash
     function _fromRegenerationNFT(uint256 _tokenId) internal returns (uint256) {
-        regenerationContract.burn(msg.sender, _tokenId, 1);
+        item.burn(msg.sender, _tokenId, 1);
         uint256 tokenId = _createNFT(msg.sender, TypeMint.REGENERATION_ITEM);
         return tokenId;
     }
@@ -319,10 +270,10 @@ contract MonsterCore is MonsterInterface {
         uint256[] memory _amount
     ) internal returns (uint256) {
         uint256 timesRegeneration1 = _numberOfRegenerations[season][
-            TypeMint.GENERAL_HASH
+            TypeMint.GENESIS_HASH
         ][_firstId];
         uint256 timesRegeneration2 = _numberOfRegenerations[season][
-            TypeMint.GENERAL_HASH
+            TypeMint.GENESIS_HASH
         ][_lastId];
         require(
             IERC721(address(genesisHashContract)).ownerOf(_firstId) == _owner,
@@ -436,40 +387,6 @@ contract MonsterCore is MonsterInterface {
             generalHashContract.burn(_generalId);
         }
         return newTokenId;
-    }
-
-    /*
-     * get Fee mint Monster by TyMint & tokenId
-     * @param _type: TypeMint
-     * @param _tokenId: tokenId
-     */
-    function getFeeOfTokenId(
-        TypeMint _type,
-        uint256 _tokenId
-    ) external view whenNotPaused returns (uint256 fee) {
-        if (_type == TypeMint.EXTERNAL_NFT) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.EXTERNAL_NFT
-            ][_tokenId];
-            fee = costOfExternal[countRegeneration];
-        } else if (_type == TypeMint.GENESIS_HASH) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.GENESIS_HASH
-            ][_tokenId];
-            fee = costOfExternal[countRegeneration];
-        } else if (_type == TypeMint.GENERAL_HASH) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.GENERAL_HASH
-            ][_tokenId];
-            fee = costOfExternal[countRegeneration];
-        } else if (_type == TypeMint.HASH_CHIP_NFT) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.HASH_CHIP_NFT
-            ][_tokenId];
-            fee = costOfExternal[countRegeneration];
-        } else {
-            revert("Monster:::MonsterCore::getFeeOfTokenId: Unsupported type");
-        }
     }
 
     /*

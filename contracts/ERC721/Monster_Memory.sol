@@ -15,11 +15,11 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
 
     // Count token id
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     constructor() ERC721("Monster Memory", "Memory") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
 
     // mapping memory detail: monsterId => memoryId
@@ -72,11 +72,11 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -102,7 +102,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
     function mint(
         address _address,
         uint256 _monsterId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         _memoryOfMonster[_monsterId] = tokenId;
         emit createMonsterMemory(_address, tokenId, _monsterId);
@@ -114,7 +114,7 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
     }
 }

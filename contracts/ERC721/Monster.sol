@@ -8,6 +8,53 @@ contract Monster is MonsterCore {
     // Status signature
     mapping(bytes => bool) public _isSigned;
 
+    // Set new season
+    function setNewSeason() external onlyRole(MANAGEMENT_ROLE) {
+        season++;
+    }
+
+    // Set fee mint Monster
+    function initSetCostOfType(
+        TypeMint _type,
+        uint256[] memory cost
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        if (_type == TypeMint.GENERAL_HASH) {
+            costOfGeneral = cost;
+        } else if (_type == TypeMint.GENESIS_HASH) {
+            costOfGenesis = cost;
+        } else if (_type == TypeMint.EXTERNAL_NFT) {
+            costOfExternal = cost;
+        } else if (_type == TypeMint.HASH_CHIP_NFT) {
+            costOfHashChip = cost;
+        } else {
+            revert("Monster:::MonsterCore::setCostOfType: Unsupported type");
+        }
+    }
+
+    // Set limit mint Monster
+    function initSetLimitOfType(
+        TypeMint _type,
+        uint256 limit
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        if (_type == TypeMint.GENERAL_HASH) {
+            limitGeneral = limit;
+        } else if (_type == TypeMint.GENESIS_HASH) {
+            limitGenesis = limit;
+        } else if (_type == TypeMint.EXTERNAL_NFT) {
+            limitExternal = limit;
+        } else if (_type == TypeMint.HASH_CHIP_NFT) {
+            limitHashChip = limit;
+        } else {
+            revert("Monster:::MonsterCore::setLimitOfType: Unsupported type");
+        }
+    }
+
+    // Set address Monster Treasury
+    function initSetTreasuryAdress(
+        address _address
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        _treasuryAddress = payable(_address);
+    }
     function initSetValidator(
         address _address
     ) external whenNotPaused onlyOwner {
@@ -213,5 +260,38 @@ contract Monster is MonsterCore {
             "Monster:::Monster::mintMonster: Validator fail signature"
         );
         _refreshTimesOfRegeneration(_type, _tokenId, _isOAS, _cost);
+    }
+    /*
+     * get Fee mint Monster by TyMint & tokenId
+     * @param _type: TypeMint
+     * @param _tokenId: tokenId
+     */
+    function getFeeOfTokenId(
+        TypeMint _type,
+        uint256 _tokenId
+    ) external view whenNotPaused returns (uint256 fee) {
+        if (_type == TypeMint.EXTERNAL_NFT) {
+            uint256 countRegeneration = _numberOfRegenerations[season][
+                TypeMint.EXTERNAL_NFT
+            ][_tokenId];
+            fee = costOfExternal[countRegeneration];
+        } else if (_type == TypeMint.GENESIS_HASH) {
+            uint256 countRegeneration = _numberOfRegenerations[season][
+                TypeMint.GENESIS_HASH
+            ][_tokenId];
+            fee = costOfExternal[countRegeneration];
+        } else if (_type == TypeMint.GENERAL_HASH) {
+            uint256 countRegeneration = _numberOfRegenerations[season][
+                TypeMint.GENERAL_HASH
+            ][_tokenId];
+            fee = costOfExternal[countRegeneration];
+        } else if (_type == TypeMint.HASH_CHIP_NFT) {
+            uint256 countRegeneration = _numberOfRegenerations[season][
+                TypeMint.HASH_CHIP_NFT
+            ][_tokenId];
+            fee = costOfExternal[countRegeneration];
+        } else {
+            revert("Monster:::MonsterCore::getFeeOfTokenId: Unsupported type");
+        }
     }
 }
