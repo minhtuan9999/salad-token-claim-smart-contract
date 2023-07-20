@@ -8,6 +8,69 @@ contract Monster is MonsterCore {
     // Status signature
     mapping(bytes => bool) public _isSigned;
 
+     /*
+     * fusion 2 Monster => monster
+     * @param owner: address of owner
+     * @param newMonster: new tokenId of Monster
+     * @param firstTokenId: tokenId of monster fusion
+     * @param lastTokenId: tokenId of monster fusion
+     */
+    event fusionMultipleMonster(
+        address owner,
+        uint256 newMonster,
+        uint256 firstTokenId,
+        uint256 lastTokenId
+    );
+
+    /*
+     * fusion 2 genesis hash => monster
+     * @param owner: address of owner
+     * @param fistId: first tokenId of genesisHash
+     * @param lastId: last tokenId of genesisHash
+     * @param newTokenId: new tokenId of Monster
+     */
+    event fusionGenesisHashNFT(
+        address owner,
+        uint256 fistId,
+        uint256 lastId,
+        uint256 newTokenId
+    );
+    /*
+     * fusion 2 general hash => monster
+     * @param owner: address of owner
+     * @param fistId: first tokenId of generalHash
+     * @param lastId: last tokenId of generalHash
+     * @param newTokenId: new tokenId of Monster
+     */
+    event fusionGeneralHashNFT(
+        address owner,
+        uint256 fistId,
+        uint256 lastId,
+        uint256 newTokenId
+    );
+    /*
+     * fusion genesishash + generalhash
+     * @param owner: address of owner
+     * @param genesisId: tokenId of genesisHash
+     * @param generalId: tokenId of generalHash
+     * @param newTokenId: new tokenId of Monster
+     */
+    event fusionMultipleHashNFT(
+        address owner,
+        uint256 genesisId,
+        uint256 generalId,
+        uint256 newTokenId
+    );
+    /*
+     * refresh Times Of Regeneration
+     * @param _type: type mint Monster
+     * @param tokenId: tokenId of nft
+     */
+    event refreshTimesRegeneration(
+        TypeMint _type,
+        uint256 tokenId
+    );
+    
     // Set new season
     function setNewSeason() external onlyRole(MANAGEMENT_ROLE) {
         season++;

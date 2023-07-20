@@ -21,10 +21,10 @@ contract MonsterBase is
     using EnumerableSet for EnumerableSet.UintSet;
 
     // Count token id
-    Counters.Counter private _tokenIds;
+    Counters.Counter _tokenIds;
     bytes32 public constant MANAGEMENT_ROLE  = keccak256("MANAGEMENT_ROLE");
     // Base URI
-    string private _baseURIextended;
+    string _baseURIextended;
 
     constructor() ERC721("Monster", "Monster") {
         _setRoleAdmin(MANAGEMENT_ROLE , MANAGEMENT_ROLE );
@@ -48,7 +48,7 @@ contract MonsterBase is
     }
 
     // Mapping list token of owner
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
+    mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     // Infor monster
     mapping(uint256 => MonsterDetail) public _monster;
     //struct Monster
@@ -65,68 +65,6 @@ contract MonsterBase is
      */
     event createNFTMonster(address _address, uint256 tokenId, TypeMint _type);
 
-    /*
-     * fusion 2 Monster => monster
-     * @param owner: address of owner
-     * @param newMonster: new tokenId of Monster
-     * @param firstTokenId: tokenId of monster fusion
-     * @param lastTokenId: tokenId of monster fusion
-     */
-    event fusionMultipleMonster(
-        address owner,
-        uint256 newMonster,
-        uint256 firstTokenId,
-        uint256 lastTokenId
-    );
-
-    /*
-     * fusion 2 genesis hash => monster
-     * @param owner: address of owner
-     * @param fistId: first tokenId of genesisHash
-     * @param lastId: last tokenId of genesisHash
-     * @param newTokenId: new tokenId of Monster
-     */
-    event fusionGenesisHashNFT(
-        address owner,
-        uint256 fistId,
-        uint256 lastId,
-        uint256 newTokenId
-    );
-    /*
-     * fusion 2 general hash => monster
-     * @param owner: address of owner
-     * @param fistId: first tokenId of generalHash
-     * @param lastId: last tokenId of generalHash
-     * @param newTokenId: new tokenId of Monster
-     */
-    event fusionGeneralHashNFT(
-        address owner,
-        uint256 fistId,
-        uint256 lastId,
-        uint256 newTokenId
-    );
-    /*
-     * fusion genesishash + generalhash
-     * @param owner: address of owner
-     * @param genesisId: tokenId of genesisHash
-     * @param generalId: tokenId of generalHash
-     * @param newTokenId: new tokenId of Monster
-     */
-    event fusionMultipleHashNFT(
-        address owner,
-        uint256 genesisId,
-        uint256 generalId,
-        uint256 newTokenId
-    );
-    /*
-     * refresh Times Of Regeneration
-     * @param _type: type mint Monster
-     * @param tokenId: tokenId of nft
-     */
-    event refreshTimesRegeneration(
-        TypeMint _type,
-        uint256 tokenId
-    );
     /*
      * burn monster by id
      * @param tokenId: tokenId of nft
@@ -219,15 +157,7 @@ contract MonsterBase is
         _tokenIds.increment();
         return tokenId;
     }
-
-    /*
-     * mint a Monster by fusion
-     * @param _address: address of owner
-     */
-    function mintFusion(address _address) internal returns (uint256) {
-        return _createNFT(_address, TypeMint.FUSION);
-    }
-
+    
     /*
      * burn a Monster
      * @param _tokenId: tokenId burn
