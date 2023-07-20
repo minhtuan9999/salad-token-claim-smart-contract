@@ -16,7 +16,8 @@ const config: HardhatUserConfig = {
     },
     mchVerseMainnet: {
       url: "https://rpc.oasys.mycryptoheroes.net/",
-      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : []
+      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
     }
   },
   solidity: {

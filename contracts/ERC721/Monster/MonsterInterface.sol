@@ -15,10 +15,6 @@ interface IGenesisHash {
     ) external view returns (uint256);
 }
 
-interface IERC1155Item {
-    function burn(address _from, uint256 _id, uint256 _amount) external;
-}
-
 interface IHashChip {
     function burn(address _from, uint256 _id, uint256 _amount) external;
 }
@@ -57,7 +53,6 @@ contract MonsterInterface is MonsterBase {
     IGenesisHash genesisHashContract;
     IGeneralHash generalHashContract;
     IERC721 hashChipNFTContract;
-    IERC1155Item regenerationContract;
     IMonsterMemory monsterMemory;
     IMonsterItem item;
 
@@ -87,13 +82,6 @@ contract MonsterInterface is MonsterBase {
         IGenesisHash genesisHash
     ) external onlyRole(MANAGEMENT_ROLE) {
         genesisHashContract = genesisHash;
-    }
-
-    // Set contract Genesis Hash
-    function initSetRegenerationContract(
-        IERC1155Item _regenerationContract
-    ) external onlyRole(MANAGEMENT_ROLE) {
-        regenerationContract = _regenerationContract;
     }
 
     // Set contract Hash Chip NFT
