@@ -236,7 +236,7 @@ contract MonsterCore is MonsterInterface {
         if (!lifeSpanLastMonster) {
             monsterMemory.mint(_owner, _lastTokenId);
         }
-        uint256 newTokenId = mintFusion(_owner);
+        uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _burn(_firstTokenId);
         _burn(_lastTokenId);
         return newTokenId;
@@ -295,7 +295,7 @@ contract MonsterCore is MonsterInterface {
         if (_itemId[0] != 0) {
             item.burnMultipleItem(_owner, _itemId, _amount);
         }
-        uint256 newTokenId = mintFusion(_owner);
+        uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_firstId]++;
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_lastId]++;
         return newTokenId;
@@ -335,13 +335,13 @@ contract MonsterCore is MonsterInterface {
         if (_itemId[0] != 0) {
             item.burnMultipleItem(_owner, _itemId, _amount);
         }
-        uint256 newTokenId = mintFusion(_owner);
+        uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_firstId]++;
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_lastId]++;
-        if (timesRegeneration1 == limitGeneral) {
+        if (_numberOfRegenerations[season][TypeMint.GENERAL_HASH][_firstId] == limitGeneral) {
             generalHashContract.burn(_firstId);
         }
-        if (timesRegeneration2 == limitGeneral) {
+        if (_numberOfRegenerations[season][TypeMint.GENERAL_HASH][_lastId] == limitGeneral) {
             generalHashContract.burn(_lastId);
         }
         return newTokenId;
@@ -380,10 +380,10 @@ contract MonsterCore is MonsterInterface {
         if (_itemId[0] != 0) {
             item.burnMultipleItem(_owner, _itemId, _amount);
         }
-        uint256 newTokenId = mintFusion(_owner);
+        uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_genesisId]++;
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_generalId]++;
-        if (timesGeneral == limitGeneral) {
+        if (_numberOfRegenerations[season][TypeMint.GENERAL_HASH][_generalId] == limitGeneral) {
             generalHashContract.burn(_generalId);
         }
         return newTokenId;
