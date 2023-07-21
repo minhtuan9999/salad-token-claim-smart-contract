@@ -5,10 +5,12 @@ import "./Monster/MonsterCore.sol";
 contract Monster is MonsterCore {
     // Validator
     address private validator;
+    // Decimal
+    uint256 public decimal = 10^18;
     // Status signature
     mapping(bytes => bool) public _isSigned;
 
-     /*
+    /*
      * fusion 2 Monster => monster
      * @param owner: address of owner
      * @param newMonster: new tokenId of Monster
@@ -66,11 +68,8 @@ contract Monster is MonsterCore {
      * @param _type: type mint Monster
      * @param tokenId: tokenId of nft
      */
-    event refreshTimesRegeneration(
-        TypeMint _type,
-        uint256 tokenId
-    );
-    
+    event refreshTimesRegeneration(TypeMint _type, uint256 tokenId);
+
     // Set new season
     function setNewSeason() external onlyRole(MANAGEMENT_ROLE) {
         season++;
@@ -118,6 +117,7 @@ contract Monster is MonsterCore {
     ) external onlyRole(MANAGEMENT_ROLE) {
         _treasuryAddress = payable(_address);
     }
+
     function initSetValidator(
         address _address
     ) external whenNotPaused onlyOwner {
@@ -134,34 +134,51 @@ contract Monster is MonsterCore {
      */
     function mintMonster(
         TypeMint _type,
+        address _account,
         uint256 _tokenId,
         bool _isOAS,
         uint256 _cost,
         uint256 _deadline,
         bytes calldata _sig
-    ) external nonReentrant payable whenNotPaused {
-        require(
-            _deadline > block.timestamp,
-            "Monster:::Monster::mintMonster: Deadline exceeded"
-        );
-        require(
-            !_isSigned[_sig],
-            "Monster:::Monster::mintMonster: Signature used"
-        );
-        
-        address signer = recoverOAS(
-            _type,
-            _cost,
-            _tokenId,
-            block.chainid,
-            _deadline,
-            _sig
-        );
-        require(
-            signer == validator,
-            "Monster:::Monster::mintMonster: Validator fail signature"
-        );
-        uint256 tokenId = _mintMonster(_type, _tokenId, _isOAS, _cost);
+    ) external payable nonReentrant whenNotPaused {
+        if (_isOAS) {
+            require(
+                _deadline > block.timestamp,
+                "Monster:::Monster::mintMonster: Deadline exceeded"
+            );
+            require(
+                !_isSigned[_sig],
+                "Monster:::Monster::mintMonster: Signature used"
+            );
+
+            address signer = recoverOAS(
+                _type,
+                _account,
+                _cost,
+                _tokenId,
+                block.chainid,
+                _deadline,
+                _sig
+            );
+            require(
+                signer == validator,
+                "Monster:::Monster::mintMonster: Validator fail signature"
+            );
+            require(
+                msg.value == _cost,
+                "Monster:::MonsterCore::_fromGeneralHash: wrong msg value"
+            );
+            bool sent = _treasuryAddress.send(_cost);
+            require(
+                sent,
+                "Monster:::MonsterCore::_fromGeneralHash: Failed to send Ether"
+            );
+        } else {
+            uint256 cost = getFeeOfTokenId(_type, _tokenId);
+            tokenBaseContract.burnToken(msg.sender, cost*decimal );
+        }
+
+        uint256 tokenId = _mintMonster(_type, _tokenId);
         emit createNFTMonster(msg.sender, tokenId, _type);
     }
 
@@ -176,7 +193,9 @@ contract Monster is MonsterCore {
     /*
      * Create a Monster by type Free
      */
-    function mintMonsterFromRegeneration(uint256 _tokenId) external nonReentrant whenNotPaused {
+    function mintMonsterFromRegeneration(
+        uint256 _tokenId
+    ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fromRegenerationNFT(_tokenId);
         emit createNFTMonster(msg.sender, tokenId, TypeMint.REGENERATION_ITEM);
     }
@@ -296,12 +315,13 @@ contract Monster is MonsterCore {
      */
     function refreshTimesOfRegeneration(
         TypeMint _type,
+        address _account,
         uint256 _tokenId,
         bool _isOAS,
         uint256 _cost,
         uint256 _deadline,
         bytes calldata _sig
-    ) external nonReentrant payable whenNotPaused {
+    ) external payable nonReentrant whenNotPaused {
         require(
             _deadline > block.timestamp,
             "Monster:::Monster::mintMonster: Deadline exceeded"
@@ -312,6 +332,7 @@ contract Monster is MonsterCore {
         );
         address signer = recoverOAS(
             _type,
+            _account,
             _cost,
             _tokenId,
             block.chainid,
@@ -324,6 +345,7 @@ contract Monster is MonsterCore {
         );
         _refreshTimesOfRegeneration(_type, _tokenId, _isOAS, _cost);
     }
+
     /*
      * get Fee mint Monster by TyMint & tokenId
      * @param _type: TypeMint
@@ -332,7 +354,7 @@ contract Monster is MonsterCore {
     function getFeeOfTokenId(
         TypeMint _type,
         uint256 _tokenId
-    ) external view whenNotPaused returns (uint256 fee) {
+    ) public view whenNotPaused returns (uint256 fee) {
         if (_type == TypeMint.EXTERNAL_NFT) {
             uint256 countRegeneration = _numberOfRegenerations[season][
                 TypeMint.EXTERNAL_NFT

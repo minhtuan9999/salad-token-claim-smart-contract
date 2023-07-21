@@ -27,9 +27,7 @@ contract MonsterCore is MonsterInterface {
 
     // Mint monster from GeneralHash
     function _fromGeneralHash(
-        uint256 _tokenId,
-        bool _isOAS,
-        uint256 _cost
+        uint256 _tokenId
     ) private returns (uint256) {
         uint256 timesRegeneration = _numberOfRegenerations[season][
             TypeMint.GENERAL_HASH
@@ -43,19 +41,6 @@ contract MonsterCore is MonsterInterface {
                 msg.sender,
             "Monster:::MonsterCore::_fromGeneralHash: GENERAL_HASH The owner is not correct"
         );
-        if (_isOAS) {
-            require(
-                msg.value == _cost,
-                "Monster:::MonsterCore::_fromGeneralHash: wrong msg value"
-            );
-            bool sent = _treasuryAddress.send(_cost);
-            require(
-                sent,
-                "Monster:::MonsterCore::_fromGeneralHash: Failed to send Ether"
-            );
-        } else {
-            tokenBaseContract.burnToken(msg.sender, _cost);
-        }
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_tokenId]++;
         if (
             _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_tokenId] ==
@@ -69,9 +54,7 @@ contract MonsterCore is MonsterInterface {
 
     // mint monster from GenesisHash
     function _fromGenesisHash(
-        uint256 _tokenId,
-        bool _isOAS,
-        uint256 _cost
+        uint256 _tokenId
     ) private returns (uint256) {
         uint256 timesRegeneration = _numberOfRegenerations[season][
             TypeMint.GENESIS_HASH
@@ -86,19 +69,6 @@ contract MonsterCore is MonsterInterface {
             "Monster:::MonsterCore::_fromGenesisHash: The owner is not correct"
         );
 
-        if (_isOAS) {
-            require(
-                msg.value == _cost,
-                "Monster:::MonsterCore::_fromGenesisHash: wrong msg value"
-            );
-            bool sent = _treasuryAddress.send(_cost);
-            require(
-                sent,
-                "Monster:::MonsterCore::_fromGenesisHash: Failed to send Ether"
-            );
-        } else {
-            tokenBaseContract.burnToken(msg.sender, _cost);
-        }
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_tokenId]++;
         uint256 tokenId = _createNFT(msg.sender, TypeMint.GENESIS_HASH);
         return tokenId;
@@ -106,9 +76,7 @@ contract MonsterCore is MonsterInterface {
 
     // mint monster from External NFT
     function _fromExternalNFT(
-        uint256 _tokenId,
-        bool _isOAS,
-        uint256 _cost
+        uint256 _tokenId
     ) private returns (uint256) {
         uint256 timesRegeneration = _numberOfRegenerations[season][
             TypeMint.EXTERNAL_NFT
@@ -121,19 +89,6 @@ contract MonsterCore is MonsterInterface {
             timesRegeneration < limitExternal,
             "Monster:::MonsterCore::_fromExternalNFT: Exceed the allowed number of times"
         );
-        if (_isOAS) {
-            require(
-                msg.value == _cost,
-                "Monster:::MonsterCore::_fromExternalNFT: wrong msg value"
-            );
-            bool sent = _treasuryAddress.send(_cost);
-            require(
-                sent,
-                "Monster:::MonsterCore::_fromExternalNFT: Failed to send Ether"
-            );
-        } else {
-            tokenBaseContract.burnToken(msg.sender, _cost);
-        }
         _numberOfRegenerations[season][TypeMint.EXTERNAL_NFT][_tokenId]++;
         uint256 tokenId = _createNFT(msg.sender, TypeMint.EXTERNAL_NFT);
         return tokenId;
@@ -148,9 +103,7 @@ contract MonsterCore is MonsterInterface {
 
     // mint monster from Hash Chip NFT
     function _fromHashChipNFT(
-        uint256 _tokenId,
-        bool _isOAS,
-        uint256 _cost
+        uint256 _tokenId
     ) private returns (uint256) {
         uint256 timesRegeneration = _numberOfRegenerations[season][
             TypeMint.HASH_CHIP_NFT
@@ -164,19 +117,6 @@ contract MonsterCore is MonsterInterface {
             "Monster:::MonsterCore::_fromHashChipNFT: The owner is not correct"
         );
 
-        if (_isOAS) {
-            require(
-                msg.value == _cost,
-                "Monster:::MonsterCore::_fromHashChipNFT: wrong msg value"
-            );
-            bool sent = _treasuryAddress.send(_cost);
-            require(
-                sent,
-                "Monster:::MonsterCore::_fromHashChipNFT: Failed to send Ether"
-            );
-        } else {
-            tokenBaseContract.burnToken(msg.sender, _cost);
-        }
         uint256 tokenId = _createNFT(msg.sender, TypeMint.REGENERATION_ITEM);
         _numberOfRegenerations[season][TypeMint.HASH_CHIP_NFT][_tokenId]++;
         return tokenId;
@@ -195,19 +135,17 @@ contract MonsterCore is MonsterInterface {
 
     function _mintMonster(
         TypeMint _type,
-        uint256 _tokenId,
-        bool isOAS,
-        uint256 cost
+        uint256 _tokenId
     ) internal returns (uint256) {
         uint256 tokenId;
         if (_type == TypeMint.GENERAL_HASH) {
-            tokenId = _fromGeneralHash(_tokenId, isOAS, cost);
+            tokenId = _fromGeneralHash(_tokenId);
         } else if (_type == TypeMint.GENESIS_HASH) {
-            tokenId = _fromGenesisHash(_tokenId, isOAS, cost);
+            tokenId = _fromGenesisHash(_tokenId);
         } else if (_type == TypeMint.EXTERNAL_NFT) {
-            tokenId = _fromExternalNFT(_tokenId, isOAS, cost);
+            tokenId = _fromExternalNFT(_tokenId);
         } else if (_type == TypeMint.HASH_CHIP_NFT) {
-            tokenId = _fromHashChipNFT(_tokenId, isOAS, cost);
+            tokenId = _fromHashChipNFT(_tokenId);
         } else {
             revert("Monster:::MonsterCore::_mintMonster: Unsupported type");
         }

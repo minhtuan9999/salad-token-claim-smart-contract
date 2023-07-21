@@ -151,6 +151,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     /**
      * @dev Creates a new market item.
      * @param _type: type asset
+     * @param _account: account buyer
      * @param _price: price of nft
      * @param _number: number of nft
      * @param _deadline: deadline signature
@@ -158,6 +159,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
      */
     function buyItem(
         TypeAsset _type,
+        address _account,
         uint256 _group,
         uint256 _price,
         uint256 _number,
@@ -166,13 +168,13 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     ) public payable nonReentrant whenNotPaused {
         require(
             _deadline > block.timestamp,
-            "Monster:::Monster::mintMonster: Deadline exceeded"
+            "ReMonsterShop::buyItem: Deadline exceeded"
         );
         require(
             !_isSigned[_sig],
-            "Monster:::Monster::mintMonster: Signature used"
+            "ReMonsterShop::buyItem: Signature used"
         );
-
+        require(_account == msg.sender, "ReMonsterShop::buyItem: wrong account");
         address signer = recoverOAS(
             _type,
             _group,
@@ -184,16 +186,16 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         );
         require(
             signer == validator,
-            "Monster:::Monster::mintMonster: Validator fail signature"
+            "ReMonsterShop::buyItem: Validator fail signature"
         );
         require(
             msg.value == _price,
-            "Monster:::MonsterCore::_fromExternalNFT: wrong msg value"
+            "ReMonsterShop::buyItem: wrong msg value"
         );
         bool sent = treasuryAddress.send(_price);
         require(
             sent,
-            "Monster:::MonsterCore::_fromExternalNFT: Failed to send Ether"
+            "ReMonsterShop::buyItem: Failed to send Ether"
         );
         if (_type != TypeAsset.BIT) {
             _buyItem(_type, _group, _number);
