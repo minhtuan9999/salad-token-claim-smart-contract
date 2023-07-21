@@ -104,32 +104,9 @@ const changeNetworkInMetamask = async (chainId) => {
 //==================CREATE CONTRACT===========================================
 // Prepare the SHOP contract obj
 var shopContract = new provider.eth.Contract(ABI_SHOP, ABI_SHOP);
-// Prepare the OAS contract obj
-var tokenContract = new provider.eth.Contract(ABI_TOKEN, ADDRESS_TOKEN);
-
-//==================SHOP===========================================
-// Get list asset
-const getListAsset = async () => {
-  try {
-    return (await shopContract.methods.getListAsset().call())
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
-};
-
-// Get info asset
-const getInfoAsset = async (contracAddress, typeNFT) => {
-  try {
-    return (await shopContract.methods.getInfoAsset(contracAddress, typeNFT).call())
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
-};
 
 //==================SET ADDRESS===========================================
-const setNewAddress = async (address) => {
+const setTreasuryAddress = async (address) => {
   try {
     await changeNetworkInMetamask(CHAIN_NETWORK);
     let networkId = await window.ethereum.request({
@@ -139,78 +116,17 @@ const setNewAddress = async (address) => {
 
     if (networkId != CHAIN_NETWORK) return;
 
-    _setNewAddress(address);
+    _setTreasuryAddress(address);
   } catch (error) {
     console.log(error);
   }
 };
 
-const _setNewAddress = async (address) => {
+const _setTreasuryAddress = async (address) => {
   try {
     const transactionParameters = {
       to: ADDRESS_SHOP,
-      data: shopContract.methods.setNewAddress(address).encodeABI(),
-      chainId: CHAIN_NETWORK,
-    };
-
-    return sendTransaction(transactionParameters);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-//==================CREATE ASSET===========================================
-const createAsset = async (contracAddress, typeNFT, priceInWei, startTime, endTime) => {
-  try {
-    await changeNetworkInMetamask(CHAIN_NETWORK);
-    let networkId = await window.ethereum.request({
-      method: "eth_chainId",
-    });
-    networkId = await Web3.utils.hexToNumberString(networkId);
-
-    if (networkId != CHAIN_NETWORK) return;
-    _createAsset(contracAddress, typeNFT, priceInWei, startTime, endTime)
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const _createAsset = async (contracAddress, typeNFT, priceInWei, startTime, endTime) => {
-  try {
-    const transactionParameters = {
-      to: ADDRESS_SHOP,
-      data: shopContract.methods.createAsset(contracAddress, typeNFT, priceInWei, startTime, endTime).encodeABI(),
-      chainId: CHAIN_NETWORK,
-    };
-
-    return sendTransaction(transactionParameters);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-
-//==================REMOVE ASSET===========================================
-const removeAsset = async (contracAddress, typeNFT) => {
-  try {
-    await changeNetworkInMetamask(CHAIN_NETWORK);
-    let networkId = await window.ethereum.request({
-      method: "eth_chainId",
-    });
-    networkId = await Web3.utils.hexToNumberString(networkId);
-
-    if (networkId != CHAIN_NETWORK) return;
-    _removeAsset(contracAddress, typeNFT)
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const _removeAsset = async (contracAddress, typeNFT) => {
-  try {
-    const transactionParameters = {
-      to: ADDRESS_SHOP,
-      data: shopContract.methods.removeAsset(contracAddress, typeNFT).encodeABI(),
+      data: shopContract.methods.setTreasuryAddress(address).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
@@ -221,51 +137,25 @@ const _removeAsset = async (contracAddress, typeNFT) => {
 };
 
 //==================BUY ITEM===========================================
-const buyItem = async (contractAddress, typeNFT, amount) => {
+const buyItem = async (type, group, price, number, deadline, sig) => {
   try {
     await changeNetworkInMetamask(CHAIN_NETWORK);
     let networkId = await window.ethereum.request({
       method: "eth_chainId",
     });
     networkId = await Web3.utils.hexToNumberString(networkId);
-
     if (networkId != CHAIN_NETWORK) return;
-
-    let assetInfo = await shopContract.methods.getInfoAsset(contractAddress, typeNFT).call();
-
-    if (
-      (await tokenContract.methods.allowance(ethereum.selectedAddress, ADDRESS_SHOP).call()) >= (assetInfo.priceInWei * amount)
-    ) {
-      _buyItem(contractAddress, typeNFT, amount);
-    } else {
-      const transactionParametersApprove = {
-        from: ethereum.selectedAddress,
-        to: ABI_TOKEN,
-        data: tokenContract.methods
-          .approve(ADDRESS_SHOP, assetInfo.priceInWei * amount)
-          .encodeABI(),
-        chainId: CHAIN_NETWORK,
-      };
-      let txidApprove = await sendTransaction(transactionParametersApprove);
-      console.log("txidApprove: ", txidApprove);
-      await checkTransaction(txidApprove).then((status) => {
-        if (status == true) {
-          _buyItem(contractAddress, typeNFT, amount);
-        } else if (status == false) {
-          console.log("Fail Transaction");
-        }
-      });
-    }
+    _buyItem(contractAddress, typeNFT, amount);
   } catch (error) {
     console.log(error);
   }
 };
 
-const _buyItem = async (contractAddress, typeNFT, amount) => {
+const _buyItem = async (type, group, price, number, deadline, sig) => {
   try {
     const transactionParameters = {
       to: ABI_SHOP,
-      data: shopContract.methods.buyItem(contractAddress, typeNFT, amount).encodeABI(),
+      data: shopContract.methods.buyItem(type, group, price, number, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
