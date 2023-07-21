@@ -177,6 +177,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         require(_account == msg.sender, "ReMonsterShop::buyItem: wrong account");
         address signer = recoverOAS(
             _type,
+            _account,
             _group,
             _price,
             _number,
@@ -213,6 +214,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
      */
     function encodeOAS(
         TypeAsset _type,
+        address _account,
         uint256 _group,
         uint256 _price,
         uint256 _number,
@@ -220,7 +222,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _deadline
     ) public pure returns (bytes32) {
         return
-            keccak256(abi.encode(_type, _group, _price, _number, _chainId, _deadline));
+            keccak256(abi.encode(_type, _account, _group, _price, _number, _chainId, _deadline));
     }
 
     /*
@@ -234,6 +236,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
      */
     function recoverOAS(
         TypeAsset _type,
+        address _account,
         uint256 _group,
         uint256 _price,
         uint256 _number,
@@ -244,7 +247,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeOAS(_type, _group, _price, _number, _chainId, _deadline)
+                    encodeOAS(_type, _account, _group, _price, _number, _chainId, _deadline)
                 ),
                 signature
             );
