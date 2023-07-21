@@ -137,7 +137,7 @@ const _setTreasuryAddress = async (address) => {
 };
 
 //==================BUY ITEM===========================================
-const buyItem = async (type, group, price, number, deadline, sig) => {
+const buyItem = async (type, account, group, price, number, deadline, sig) => {
   try {
     await changeNetworkInMetamask(CHAIN_NETWORK);
     let networkId = await window.ethereum.request({
@@ -145,17 +145,17 @@ const buyItem = async (type, group, price, number, deadline, sig) => {
     });
     networkId = await Web3.utils.hexToNumberString(networkId);
     if (networkId != CHAIN_NETWORK) return;
-    _buyItem(contractAddress, typeNFT, amount);
+    _buyItem(type, account, group, price, number, deadline, sig);
   } catch (error) {
     console.log(error);
   }
 };
 
-const _buyItem = async (type, group, price, number, deadline, sig) => {
+const _buyItem = async (type, account, group, price, number, deadline, sig) => {
   try {
     const transactionParameters = {
       to: ABI_SHOP,
-      data: shopContract.methods.buyItem(type, group, price, number, deadline, sig).encodeABI(),
+      data: shopContract.methods.buyItem(type, account, group, price, number, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
