@@ -107,9 +107,8 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         emit burnItem(_from, _id, _amount);
     }
     
-    function burnMultipleItem(address _from, uint256[] memory _id, uint256[] memory _amount) external {
+    function burnMultipleItem(address _from, uint256[] memory _id, uint256[] memory _amount) external onlyRole(MANAGEMENT_ROLE){
         _burnBatch(_from, _id, _amount);
         emit burnBathItem(_from, _id, _amount);
     }
-
 }
