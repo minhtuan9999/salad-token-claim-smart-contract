@@ -11,18 +11,18 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, ReentrancyGuard {
     using EnumerableSet for EnumerableSet.UintSet;
 
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     constructor() ERC721("HashChip NFT", "HashChipNFT") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
 
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
 
     // Event create HashChipNFT
-    event createHashChipNFT(address _address, uint256 _tokenId);
+    event createHashChipNFT(address _address, uint256 tokenId);
 
     // Get list Tokens of address
     function getListTokensOfAddress(
@@ -62,11 +62,11 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -77,9 +77,8 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     function createNFT(
         address _address,
         uint256 _tokenId
-    ) external nonReentrant onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant onlyRole(MANAGEMENT_ROLE) {
         _mint(_address, _tokenId);
-        _listTokensOfAddress[_address].add(_tokenId);
         emit createHashChipNFT(_address, _tokenId);
     }
 
@@ -89,7 +88,7 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
     }
 }

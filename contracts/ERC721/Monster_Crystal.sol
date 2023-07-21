@@ -30,11 +30,11 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
 
     // Count token id
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     constructor() ERC721("Monster Crystal", "Crystal") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
 
     // mapping list token of address
@@ -68,14 +68,14 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
     // Set monster contract address
     function initSetMonsterContract(
         IMonster _monster
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         monsterContract = _monster;
     }
 
     // Set monster contract address
     function initSetMonsterMemory(
         IMonsterMemory _monsterMemory
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         monsterMemory = _monsterMemory;
     }
 
@@ -110,11 +110,11 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -127,7 +127,6 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAddress[_address].add(tokenId);
         return tokenId;
     }
 
@@ -140,7 +139,7 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
     function createNFT(
         address _address,
         uint256 _typeNFT
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         emit createMonsterCrystal(_address, tokenId, _typeNFT);
     }
@@ -178,7 +177,7 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
     }
 

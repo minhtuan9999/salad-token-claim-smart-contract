@@ -15,10 +15,6 @@ interface IGenesisHash {
     ) external view returns (uint256);
 }
 
-interface IERC1155Item {
-    function burn(address _from, uint256 _id, uint256 _amount) external;
-}
-
 interface IHashChip {
     function burn(address _from, uint256 _id, uint256 _amount) external;
 }
@@ -57,61 +53,55 @@ contract MonsterInterface is MonsterBase {
     IGenesisHash genesisHashContract;
     IGeneralHash generalHashContract;
     IERC721 hashChipNFTContract;
-    IERC1155Item regenerationContract;
     IMonsterMemory monsterMemory;
     IMonsterItem item;
 
     // Set contract token OAS
-    function initSetTokenBaseContract (
+    function initSetTokenBaseContract(
         IToken _tokenBase
-    ) external onlyRole(MANAGEMENT_ROLE ) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         tokenBaseContract = _tokenBase;
     }
 
     // Set contract External NFT
     function initSetExternalContract(
         IERC721 externalNFT
-    ) external onlyRole(MANAGEMENT_ROLE ) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         externalNFTContract = externalNFT;
     }
 
     // Set contract General Hash
     function initSetGeneralHashContract(
         IGeneralHash generalHash
-    ) external onlyRole(MANAGEMENT_ROLE ) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         generalHashContract = generalHash;
     }
 
     // Set contract Genesis Hash
     function initSetGenesisHashContract(
         IGenesisHash genesisHash
-    ) external onlyRole(MANAGEMENT_ROLE ) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         genesisHashContract = genesisHash;
     }
 
-    // Set contract Genesis Hash
-    function initSetRegenerationContract(
-        IERC1155Item _regenerationContract
-    ) external onlyRole(MANAGEMENT_ROLE ) {
-        regenerationContract = _regenerationContract;
-    }
-
     // Set contract Hash Chip NFT
-    function initSetHashChipContract(IERC721 hashChip) external onlyRole(MANAGEMENT_ROLE ) {
+    function initSetHashChipContract(
+        IERC721 hashChip
+    ) external onlyRole(MANAGEMENT_ROLE) {
         hashChipNFTContract = hashChip;
     }
 
     // Set contract Monster memory
     function initSetMonsterMemoryContract(
         IMonsterMemory _monsterMemory
-    ) external onlyRole(MANAGEMENT_ROLE ) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         monsterMemory = _monsterMemory;
     }
 
     // Set contract Monster Item
     function initSetMonsterItemContract(
         IMonsterItem _monsterItem
-    ) external onlyRole(MANAGEMENT_ROLE ) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         item = _monsterItem;
     }
 }

@@ -21,15 +21,15 @@ contract Skin is
 
     // Count token id
     Counters.Counter private _tokenIds;
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     constructor() ERC721("Monster Skin", "Skin") {
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
 
     // Mapping list token of address
-    mapping(address => EnumerableSet.UintSet) private _listTokensOfAdrress;
+    mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
     // Event create Monster Skin
     event createMonsterSkin(address _address, uint256 _tokenId, uint256 _type);
 
@@ -37,7 +37,7 @@ contract Skin is
     function getListTokensOfAddress(
         address _address
     ) public view returns (uint256[] memory) {
-        return _listTokensOfAdrress[_address].values();
+        return _listTokensOfAddress[_address].values();
     }
 
     /**
@@ -50,8 +50,8 @@ contract Skin is
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
-        _listTokensOfAdrress[to].add(firstTokenId);
-        _listTokensOfAdrress[from].remove(firstTokenId);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
     }
 
     // Base URI
@@ -71,11 +71,11 @@ contract Skin is
         return super.supportsInterface(interfaceId);
     }
 
-    function pause() public onlyRole(MANAGERMENT_ROLE) {
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(MANAGERMENT_ROLE) {
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
         _unpause();
     }
 
@@ -87,7 +87,6 @@ contract Skin is
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
-        _listTokensOfAdrress[_address].add(tokenId);
         return tokenId;
     }
 
@@ -99,20 +98,9 @@ contract Skin is
     function createNFT(
         address _address,
         uint256 _type
-    ) external whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _createNFT(_address);
         emit createMonsterSkin(_address, tokenId, _type);
-    }
-
-    /*
-     * mint a Skin
-     * @param _address: owner of NFT
-     */
-    function mint(
-        address _address
-    ) external onlyRole(MANAGERMENT_ROLE) returns (uint256) {
-        uint256 tokenId = _createNFT(_address);
-        return tokenId;
     }
 
     /*
@@ -121,7 +109,7 @@ contract Skin is
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
     }
 }

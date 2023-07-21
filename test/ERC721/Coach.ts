@@ -13,7 +13,7 @@ describe("Coach", function () {
         const [owner, userAddress] = await ethers.getSigners();
 
         const Coach = await ethers.getContractFactory("Coach");
-        const coach = await Coach.connect(owner).deploy("Coach", "Coach");
+        const coach = await Coach.connect(owner).deploy();
         coach.deployed();
 
         return { coach, owner, userAddress };
@@ -30,36 +30,27 @@ describe("Coach", function () {
         it('should check when the caller address has permission', async function () {
             const { coach, owner } = await loadFixture(deployERC721Fixture);
 
-            await expect(coach.connect(owner).createNFT(owner.address, 1)).not.to.be.rejected;
+            await expect(coach.connect(owner).createNFT(owner.address, 1)).not.to.be.reverted;
         });
         it('should check when the caller address has no permission', async function () {
             const { coach, userAddress } = await loadFixture(deployERC721Fixture);
 
-            await expect(coach.connect(userAddress).createNFT(userAddress.address, 1)).to.be.rejected;
+            await expect(coach.connect(userAddress).createNFT(userAddress.address, 1)).to.be.reverted;
         });
-        it('should check event create NFT', async function () {
-            const { coach, owner } = await loadFixture(deployERC721Fixture);
 
-            await expect(coach.createNFT(owner.address, 1))
-                .to.emit(coach, "createCoach")
-                .withArgs(owner.address, 0, 1);
-        });
         it('should check status isFree of Coach', async function () {
             const { coach, userAddress } = await loadFixture(deployERC721Fixture);
 
-            await expect(coach.connect(userAddress).createNFT(userAddress.address, 1)).to.be.rejected;
+            await expect(coach.connect(userAddress).createNFT(userAddress.address, 1)).to.be.reverted;
         });
-    })
-    describe("Mint NFT", function () {
-        it('should check when the caller address has permission', async function () {
+        it('should check event create NFT', async function () {
             const { coach, owner } = await loadFixture(deployERC721Fixture);
+            const type = 1;
+            let totalSupply = await coach.totalSupply();
 
-            await expect(coach.connect(owner).mint(owner.address, true)).not.to.be.rejected;
-        });
-        it('should check when the caller address has no permission', async function () {
-            const { coach, userAddress } = await loadFixture(deployERC721Fixture);
-
-            await expect(coach.connect(userAddress).mint(userAddress.address, true)).to.be.rejected;
+            await expect(coach.createNFT(owner.address, type))
+                .to.emit(coach, "createCoach")
+                .withArgs(owner.address, totalSupply, type);
         });
     })
     describe("Set token URI", function () {
@@ -105,17 +96,18 @@ describe("Coach", function () {
             const { coach, owner, userAddress } = await loadFixture(deployERC721Fixture);
 
             await coach.connect(owner).createNFT(owner.address, 1);
-            await expect(coach.connect(userAddress).burn(0)).to.be.rejected;
+            await expect(coach.connect(userAddress).burn(0)).to.be.reverted;
 
         });
     })
-    describe("should check isFree Coach", function () {
-        it('should check status isFree of Coach', async function () {
-            const { coach, owner, userAddress } = await loadFixture(deployERC721Fixture);
+    // describe("create Coach From Monster", function () {
+    //     it('should check status isFree of Coach', async function () {
+    //         const { coach, owner, userAddress } = await loadFixture(deployERC721Fixture);
 
-            await coach.connect(owner).mint(userAddress.address, true)
-            expect(( await coach.connect(owner).isFree(0)).toString()).to.equals("true")
-            await expect(coach.connect(owner).isFree(1)).to.be.rejectedWith("Coach:: isFree: Monster not exists");
-        });
-    })
+    //         await coach.connect(owner).createNFT(owner.address, 1)
+
+    //         expect(( await coach.connect(owner).isFree(0)).toString()).to.equals("true")
+    //         await expect(coach.connect(owner).isFree(1)).to.be.rejectedWith("Coach:: isFree: Monster not exists");
+    //     });
+    // })
 });

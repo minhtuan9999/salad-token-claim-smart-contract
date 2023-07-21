@@ -50,13 +50,13 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     /*
      * create Accessories by material
      * @param _owner: address of owner
-     * @param _materialId: id of material item
-     * @param _newTokenId: new tokenId of Accessories
+     * @param materialId: id of material item
+     * @param newTokenId: new tokenId of Accessories
      */
     event createAccessoriesByItems(
         address _owner,
-        uint256[] _materialId,
-        uint256 _newTokenId
+        uint256[] materialId,
+        uint256 newTokenId
     );
 
     // Get holder Tokens
