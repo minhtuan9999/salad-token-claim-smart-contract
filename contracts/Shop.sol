@@ -32,11 +32,11 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 interface GenesisBox {
-    function createNFT(address _address, uint256 _type) external;
+    function createGenesisBox(address _address, uint256 _type) external;
 }
 
 interface GeneralBox {
-    function createNFT(address _address, uint256 _type) external;
+    function createGeneralBox(address _address, uint256 _type) external;
 }
 
 interface FarmNFT {
@@ -131,11 +131,11 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     function _buyItem(TypeAsset _type, uint256 _group, uint256 _number) private{
         if(_type == TypeAsset.GENERAL_BOX) {
             for(uint256 i=0; i < _number; i++) {
-                generalContract.createNFT(msg.sender, _group);
+                generalContract.createGeneralBox(msg.sender, _group);
             }
         } else if(_type == TypeAsset.GENESIS_BOX) {
             for(uint256 i=0; i < _number; i++) {
-                genesisContract.createNFT(msg.sender, _group);
+                genesisContract.createGenesisBox(msg.sender, _group);
             }
         } else if(_type == TypeAsset.FARM_NFT){
             for(uint256 i=0; i < _number; i++) {

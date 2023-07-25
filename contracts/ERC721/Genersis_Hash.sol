@@ -37,6 +37,8 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     string private _baseURIextended;
     // Validator signtransaction
     address public validator;
+    // Number type of group
+    uint256[] typeOfGruop = [0,4,4,4,4];
 
     constructor() ERC721("Genesis Hash", "GenesisHash") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
@@ -55,10 +57,12 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     mapping(bytes => bool) public _signed;
     // Mint limit of group
     mapping(uint256 => GroupDetail) public _groupDetail;
+    // Number box of group
+    mapping(address => mapping(uint256 => uint256)) public _boxOfAddress;
 
     //=======================================EVENT=======================================//
     // Event create Genesishash with group
-    event createGenesisHash(address _address, uint256 tokenId, uint256 group);
+    event createGenesisBoxs(address _address, uint256 number, uint256 group);
     // Event random type of Group
     event openGenesisBox(uint256 tokenId, uint256 group, uint256 _type);
     // Event create Genesishash for marketing
@@ -116,6 +120,13 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
             _species[_group][_specie].issueAmount;
     }
 
+    // Set type of group
+    function setTypeOfGroup(
+        uint256 group,
+        uint256 number
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        typeOfGruop[group] = number;
+    }
     /**
      *@dev See {ERC721-_beforeTokenTransfer}.
      */
@@ -155,86 +166,21 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     }
 
     /*
-     * base mint a Genesishash
-     * @param _address: owner of NFT
-     * @param _group: group of NFT
-     */
-    function _createNFT(
-        address _address,
-        uint256 _group
-    ) private returns (uint256) {
-        require(
-            _groupDetail[_group].remaining > 0,
-            "Genesis Hash::_createNFT: Exceeding"
-        );
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _genesisDetail[tokenId].group = _group;
-        _groupDetail[_group].remaining--;
-        return tokenId;
-    }
-
-    /*
-     * random Species of genesis hash
-     * @param _tokenId: tokenid
-     * @param _type: Species of genesis hash
-     * @param deadline: deadline using signature
-     * @param sig: signature
-     */
-    function randomSpecies(
-        uint256 _tokenId,
-        uint256 _type,
-        uint256 deadline,
-        bytes calldata sig
-    ) external nonReentrant whenNotPaused {
-        require(
-            deadline > block.timestamp,
-            "Genesis Hash:: randomSpecies: dealine exceeded"
-        );
-        require(
-            !_signed[sig],
-            "Genesis Hash:: randomSpecies: Signature has been used "
-        );
-        uint256 group = _genesisDetail[_tokenId].group;
-
-        address signer = recoverBridge(
-            _tokenId,
-            group,
-            _type,
-            block.chainid,
-            deadline,
-            sig
-        );
-        require(
-            signer == validator,
-            "Genesis Hash:: randomSpecies: Validator fail signature"
-        );
-        require(
-            _species[group][_type].remaining > 0,
-            "Genesis Hash::randomSpecies: Maxsupply  of type"
-        );
-
-        _genesisDetail[_tokenId].species = _type;
-        _species[group][_type].issueAmount += 1;
-        _species[group][_type].remaining =
-            _species[group][_type].issueLimit -
-            _species[group][_type].issueAmount;
-        _signed[sig] = true;
-        emit openGenesisBox(_tokenId, group, _type);
-    }
-
-    /*
      * mint a Genesishash
      * @param _address: owner of NFT
      * @param _group: group of genesis hash
      */
-    function createNFT(
+    function createGenesisBox(
         address _address,
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        uint256 tokenId = _createNFT(_address, _group);
-        emit createGenesisHash(_address, tokenId, _group);
+        require(
+            _groupDetail[_group].remaining > 0,
+            "Genesis Hash::createGenesisBox: Exceeding"
+        );
+        _groupDetail[_group].remaining--;
+        _boxOfAddress[_address][_group]++;
+        emit createGenesisBoxs(_address, 1, _group);
     }
 
     /*
@@ -251,15 +197,22 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 _type
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256[] memory listToken = new uint256[](_number);
+        require(
+            _number <= _groupDetail[_group].remaining,
+            "Genesis Hash::_createNFT: Exceeding"
+        );
         for (uint8 i = 0; i < _number; i++) {
-            uint256 tokenId = _createNFT(_address, _group);
+            uint256 tokenId = _tokenIds.current();
+            _mint(_address, tokenId);
+            _tokenIds.increment();
+            _genesisDetail[tokenId].group = _group;
             _genesisDetail[tokenId].species = _type;
-            _species[_group][_type].issueAmount += 1;
-            _species[_group][_type].remaining =
-                _species[_group][_type].issueLimit -
-                _species[_group][_type].issueAmount;
             listToken[i] = tokenId;
         }
+        _species[_group][_type].issueAmount = _species[_group][_type].issueAmount + _number;
+        _species[_group][_type].remaining = _species[_group][_type].remaining - _number;
+        _groupDetail[_group].remaining = _groupDetail[_group].remaining - _number;
+        _boxOfAddress[_address][_group] = _boxOfAddress[_address][_group] + _number;
         emit createMultipleGenesisHashwithType(
             _address,
             listToken,
@@ -274,7 +227,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      * @param _number: number of mint NFT
      * @param _group: group of genesis hash
      */
-    function createMultipleNFT(
+    function createMultipleBox(
         address _address,
         uint256 _number,
         uint256 _group
@@ -283,15 +236,80 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
             _number <= _groupDetail[_group].remaining,
             "Genesis Hash::createMultipleNFT: Exceeding"
         );
-        uint256[] memory listToken = new uint256[](_number);
-        for (uint8 i = 0; i < _number; i++) {
-            uint256 tokenId = _createNFT(_address, _group);
-            listToken[i] = tokenId;
-        }
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
             _number;
-        emit createMultipleGenesis(_address, listToken, _group);
+        _boxOfAddress[_address][_group] = _boxOfAddress[_address][_group] + _number;
+        emit createGenesisBoxs(_address, _number, _group);
+    }
+
+    // get type random
+    function getTypeOfGroup(
+        uint256 _group,
+        uint256 deadline,
+        bytes calldata sig
+    ) internal view returns(uint256) {
+        uint256 _type;
+        uint256 totalTypes = typeOfGruop[_group];
+        for (uint256 i = 1; i <= totalTypes; i++) {
+            address signer = recoverBridge(
+                _group,
+                i,
+                block.chainid,
+                deadline,
+                sig
+            );
+            if(signer == validator) {
+                _type = i;
+                break;
+            }
+        }
+        return _type;
+    }
+
+    /*
+     * random Species of genesis hash
+     * @param _tokenId: tokenid
+     * @param deadline: deadline using signature
+     * @param sig: signature
+     */
+    function openBoxGenesis(
+        uint256 _group,
+        uint256 deadline,
+        bytes calldata sig
+    ) external nonReentrant whenNotPaused {
+        require(
+            deadline > block.timestamp,
+            "Genesis Hash:: openBoxGenesis: dealine exceeded"
+        );
+        require(
+            !_signed[sig],
+            "Genesis Hash:: openBoxGenesis: Signature has been used "
+        );
+        require(
+            _boxOfAddress[msg.sender][_group] > 0,
+            "General Hash:: openBoxGeneral: Exceeding box"
+        );
+        uint256 _type = getTypeOfGroup(_group, deadline, sig);
+        require(_type > 0, "Genesis Hash::openBoxGenesis: Type not exits");
+        require(
+            _species[_group][_type].remaining > 0,
+            "Genesis Hash::openBoxGenesis: Maxsupply of type"
+        );
+        
+        uint256 tokenId = _tokenIds.current();
+        _mint(msg.sender, tokenId);
+        _tokenIds.increment();
+
+        uint256 group = _genesisDetail[tokenId].group;
+
+        _genesisDetail[tokenId].species = _type;
+        _species[group][_type].issueAmount += 1;
+        _species[group][_type].remaining =
+            _species[group][_type].issueLimit -
+            _species[group][_type].issueAmount;
+        _signed[sig] = true;
+        emit openGenesisBox(tokenId, group, _type);
     }
 
     /*
@@ -305,18 +323,16 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     }
 
     function encodeBridge(
-        uint256 _tokenId,
         uint256 _group,
         uint256 _type,
         uint256 _chainId,
         uint256 _deadline
     ) public pure returns (bytes32) {
         return
-            keccak256(abi.encode(_tokenId, _group, _type, _chainId, _deadline));
+            keccak256(abi.encode(_group, _type, _chainId, _deadline));
     }
 
     function recoverBridge(
-        uint256 _tokenId,
         uint256 _group,
         uint256 _type,
         uint256 _chainId,
@@ -326,7 +342,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeBridge(_tokenId, _group, _type, _chainId, _deadline)
+                    encodeBridge(_group, _type, _chainId, _deadline)
                 ),
                 _sig
             );

@@ -37,6 +37,8 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     string private _baseURIextended;
     // Validator signtransaction
     address public validator;
+    // Number type of group
+    uint256[] typeOfGruop = [0,4,4,4,4];
 
     constructor() ERC721("General Hash", "GeneralHash") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
@@ -55,10 +57,12 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     mapping(bytes => bool) public _signed;
     // Detail of group
     mapping(uint256 => GroupDetail) public _groupDetail;
+    // Number box of group
+    mapping(address => mapping(uint256 => uint256)) public _boxOfAddress;
 
     //=======================================EVENT=======================================//
     // Event create General hash with group
-    event createGeneralHash(address _address, uint256 tokenId, uint256 group);
+    event createGeneralBoxs(address _address, uint256 number, uint256 group);
     // Event random type of Group
     event openGeneralBox(uint256 tokenId, uint256 group, uint256 _type);
     // Event create multiple General hash
@@ -103,6 +107,14 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         validator = _address;
     }
+    
+    // Set type of group
+    function setTypeOfGroup(
+        uint256 group,
+        uint256 number
+    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        typeOfGruop[group] = number;
+    }
 
     /**
      *@dev See {ERC721-_beforeTokenTransfer}.
@@ -143,86 +155,21 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     }
 
     /*
-     * base mint a General hash
-     * @param _address: owner of NFT
-     * @param _group: group of NFT
-     */
-    function _createNFT(
-        address _address,
-        uint256 _group
-    ) private returns (uint256) {
-        require(
-            _groupDetail[_group].remaining > 0,
-            "General_Hash::_createNFT: Exceeding"
-        );
-        uint256 tokenId = _tokenIds.current();
-        _mint(_address, tokenId);
-        _tokenIds.increment();
-        _generalDetail[tokenId].group = _group;
-        _groupDetail[_group].remaining--;
-        return tokenId;
-    }
-
-    /*
-     * random Species of general hash
-     * @param _tokenId: tokenid
-     * @param _type: Species of general hash
-     * @param deadline: deadline using signature
-     * @param sig: signature
-     */
-    function randomSpecies(
-        uint256 _tokenId,
-        uint256 _type,
-        uint256 deadline,
-        bytes calldata sig
-    ) external whenNotPaused nonReentrant {
-        require(
-            deadline > block.timestamp,
-            "General Hash:: randomSpecies:Deadline exceeded"
-        );
-        require(
-            !_signed[sig],
-            "General Hash:: randomSpecies: Signature has been used"
-        );
-        uint256 group = _generalDetail[_tokenId].group;
-
-        address signer = recoverBridge(
-            _tokenId,
-            group,
-            _type,
-            block.chainid,
-            deadline,
-            sig
-        );
-        require(
-            signer == validator,
-            "General Hash:: randomSpecies:Validator fail signature"
-        );
-        require(
-            _species[group][_type].remaining > 0,
-            "General Hash:: randomSpecies: Exceeding"
-        );
-
-        _generalDetail[_tokenId].species = _type;
-        _species[group][_type].issueAmount += 1;
-        _species[group][_type].remaining =
-            _species[group][_type].issueLimit -
-            _species[group][_type].issueAmount;
-        _signed[sig] = true;
-        emit openGeneralBox(_tokenId, group, _type);
-    }
-
-    /*
      * mint a General hash
      * @param _address: owner of NFT
      * @param _group: group of general hash
      */
-    function createNFT(
+    function createGeneralBox(
         address _address,
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        uint256 tokenId = _createNFT(_address, _group);
-        emit createGeneralHash(_address, tokenId, _group);
+         require(
+            _groupDetail[_group].remaining > 0,
+            "General_Hash::createGeneralBox: Exceeding"
+        );
+        _groupDetail[_group].remaining--;
+        _boxOfAddress[_address][_group]++;
+        emit createGeneralBoxs(_address, 1, _group);
     }
 
     /*
@@ -231,24 +178,90 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      * @param _group: group of general hash
      * @param _number: _number
      */
-    function createMultipleGeneralHash(
+    function createMultipleGeneralBox(
         address _address,
         uint256 _number,
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         require(
             _number <= _groupDetail[_group].remaining,
-            "Genesis Hash::createMultipleNFT: Exceeding"
+            "General_Hash::createMultipleNFT: Exceeding"
         );
-        uint256[] memory listToken = new uint256[](_number);
-        for (uint256 i = 0; i < _number; i++) {
-            uint256 tokenId = _createNFT(_address, _group);
-            listToken[i] = tokenId;
-        }
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
             _number;
-        emit createMultipleGeneral(_address, listToken, _group);
+        _boxOfAddress[_address][_group] = _boxOfAddress[_address][_group] + _number;
+        emit createGeneralBoxs(_address, _number, _group);
+    }
+    
+    // get type random
+    function getTypeOfGroup(
+        uint256 _group,
+        uint256 deadline,
+        bytes calldata sig
+    ) internal view returns(uint256) {
+        uint256 _type;
+        uint256 totalTypes = typeOfGruop[_group];
+        for (uint256 i = 1; i <= totalTypes; i++) {
+            address signer = recoverBridge(
+                _group,
+                i,
+                block.chainid,
+                deadline,
+                sig
+            );
+            if(signer == validator) {
+                _type = i;
+                break;
+            }
+        }
+        return _type;
+    }
+
+    /*
+     * random Species of general hash
+     * @param _tokenId: tokenid
+     * @param deadline: deadline using signature
+     * @param sig: signature
+     */
+    function openBoxGeneral(
+        uint256 _group,
+        uint256 deadline,
+        bytes calldata sig
+    ) external whenNotPaused nonReentrant {
+        require(
+            deadline > block.timestamp,
+            "General Hash:: openBoxGeneral:Deadline exceeded"
+        );
+        require(
+            !_signed[sig],
+            "General Hash:: openBoxGeneral: Signature has been used"
+        );
+        require(
+            _boxOfAddress[msg.sender][_group] > 0,
+            "General Hash:: openBoxGeneral: Exceeding box"
+        );
+        uint256 _type = getTypeOfGroup(_group, deadline, sig);
+        require(_type > 0, "General Hash:: openBoxGeneral: Type not exits");
+        require(
+            _species[_group][_type].remaining > 0,
+            "General Hash:: openBoxGeneral: Maxsupply  of type"
+        );
+        uint256 tokenId = _tokenIds.current();
+        _mint(msg.sender, tokenId);
+        _tokenIds.increment();
+
+        _generalDetail[tokenId].group = _group;
+        _generalDetail[tokenId].species = _type;
+
+        _species[_group][_type].issueAmount += 1;
+        _species[_group][_type].remaining =
+            _species[_group][_type].issueLimit -
+            _species[_group][_type].issueAmount;
+
+        _signed[sig] = true;
+        
+        emit openGeneralBox(tokenId, _group, _type);
     }
 
     /*
@@ -260,27 +273,23 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 _type = _generalDetail[_tokenId].species;
         uint256 _group = _generalDetail[_tokenId].group;
-        if(_species[_group][_type].issueAmount > 0) {
-            _species[_group][_type].issueAmount--;
-            _species[_group][_type].remaining++;
-        }
+        _species[_group][_type].issueAmount--;
+        _species[_group][_type].remaining++;
         _groupDetail[_group].remaining++;
          _burn(_tokenId);
     }
 
     function encodeBridge(
-        uint256 _tokenId,
         uint256 _group,
         uint256 _type,
         uint256 _chainId,
         uint256 _deadline
     ) public pure returns (bytes32) {
         return
-            keccak256(abi.encode(_tokenId, _group, _type, _chainId, _deadline));
+            keccak256(abi.encode(_group, _type, _chainId, _deadline));
     }
 
     function recoverBridge(
-        uint256 _tokenId,
         uint256 _group,
         uint256 _type,
         uint256 _chainId,
@@ -290,7 +299,7 @@ contract GeneralHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeBridge(_tokenId, _group, _type, _chainId, _deadline)
+                    encodeBridge(_group, _type, _chainId, _deadline)
                 ),
                 _sig
             );
