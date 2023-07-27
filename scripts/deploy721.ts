@@ -1,28 +1,36 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  let admin = "0x3E32A4DDb6072D5E93E45Ca98049bd5b8e6B4E79";
+  let admin = "0x3C971ccf2F799EBa65EA25E7461D7Ad438c811aD";
   
   const generalLimitGroup = [400,400,500,400,400];
-  const generalGroupA= [100,100,100100,];
-  const generalGroupB = [100,100,100,100];
-  const generalGroupC = [100,100,100,100,100];
-  const generalGroupD = [100,100,100,100];
-  const generalGroupE = [100,100,100,100];
 
   const genesisLimitGroup = [800,800,1000,800,800];
-  const genesisGroupA= [200,200,200,200];
-  const genesisGroupB = [200,200,200,200];
-  const genesisGroupC = [200,200,200,200,200];
-  const genesisGroupD = [200,200,200,200];
-  const genesisGroupE = [200,200,200,200];
 
   const listGroup = [1,2,3,4,5];
-  const maketingGenesis = [120, 120, 150, 120, 120];
-  const maketingGeneral = [80, 80, 100, 80, 80];
+  const feeSeller = (10 * 10**18).toString();
 
-  const listGeneralGroup = [generalGroupA,generalGroupB,generalGroupC,generalGroupD, generalGroupE];
-  const listGenesisGroup = [genesisGroupA,genesisGroupB,genesisGroupC,genesisGroupD, genesisGroupE];
+  const listGeneralGroup = [
+    [100,100,100,100],
+    [100,100,100,100],
+    [100,100,100,100,100],
+    [100,100,100,100],
+    [100,100,100,100]
+  ];
+
+  const listGenesisGroup = 
+  [
+    [200,200,200,200],
+    [200,200,200,200],
+    [200,200,200,200,200],
+    [200,200,200,200],
+    [200,200,200,200]
+  ];
+
+  const generalPrice = (10**18).toString();
+  const genesisPrice = (10**18).toString();
+  const farmPrice = (10**18).toString();
+  const bitPrice = (10**18).toString();
 
   // Deploy contract token (OAS) 
   const Accessories = await ethers.getContractFactory("Accessories");
@@ -61,13 +69,29 @@ async function main() {
   const monster = await Monster.deploy();
   monster.deployed();
 
-  const RemonsterItem= await ethers.getContractFactory("RemonsterItem");
-  const item = await RemonsterItem.deploy("baseURL");
-  item.deployed();
+  const TrainingItem= await ethers.getContractFactory("TrainingItem");
+  const trainingItem = await TrainingItem.deploy("baseURL");
+  trainingItem.deployed();
   
+  const RegenerationItem= await ethers.getContractFactory("RegenerationItem");
+  const regenerationItem = await RegenerationItem.deploy("baseURL");
+  regenerationItem.deployed();
+  
+  const FusionItem= await ethers.getContractFactory("FusionItem");
+  const fusionItem = await FusionItem.deploy("baseURL");
+  fusionItem.deployed();
+
+  const EhanceItem= await ethers.getContractFactory("EhanceItem");
+  const ehanceItem = await EhanceItem.deploy("baseURL");
+  ehanceItem.deployed();
+
   const Shop= await ethers.getContractFactory("ReMonsterShop");
-  const shop = await Shop.deploy(admin, 1,1,1,1);
+  const shop = await Shop.deploy(admin,generalPrice,genesisPrice,farmPrice,bitPrice);
   shop.deployed();
+
+  const ReMonsterMarketplace= await ethers.getContractFactory("ReMonsterMarketplace");
+  const reMonsterMarketplace = await ReMonsterMarketplace.deploy(feeSeller, admin);
+  reMonsterMarketplace.deployed();
 
   // Log results
   console.log(`ADDRESS_CONTRACT_ACCESSORIES: ${accessories.address}`);
@@ -79,11 +103,16 @@ async function main() {
   console.log(`ADDRESS_CONTRACT_MEMORY: ${monsterMemory.address}`)
   console.log(`ADDRESS_CONTRACT_SKIN: ${skin.address}`)
   console.log(`ADDRESS_CONTRACT_MONSTER: ${monster.address}`)
-  console.log(`ADDRESS_CONTRACT_ITEM: ${item.address}`)
+  console.log(`ADDRESS_CONTRACT_TRAINING_ITEM: ${trainingItem.address}`)
+  console.log(`ADDRESS_CONTRACT_REGENERATION_ITEM: ${regenerationItem.address}`)
+  console.log(`ADDRESS_CONTRACT_FUSION_ITEM: ${fusionItem.address}`)
+  console.log(`ADDRESS_CONTRACT_ENHANCE_ITEM: ${ehanceItem.address}`)
   console.log(`ADDRESS_CONTRACT_SHOP: ${shop.address}`)
+  console.log(`ADDRESS_CONTRACT_MARKET: ${reMonsterMarketplace.address}`)
+
 
   // Set init contract Accessories
-  await accessories.setMonsterItem(item.address);
+  await accessories.setMonsterItem(ehanceItem.address);
   // Set init contract Coach
   await coach.setMonsterContract(monster.address);
   await coach.setMonsterMemory(monsterMemory.address);
@@ -95,16 +124,17 @@ async function main() {
   }
   // Set detail specie group A
   for(let i=0; i< genesisLimitGroup.length; i++){
-    for(let j=0;j < listGenesisGroup[i].length; j++) {
-      await genesis.initSetSpecieDetail(i+1,j+1, listGeneralGroup[i][j]);
+    let arr = listGenesisGroup[i];
+    for(let j=0;j < arr.length; j++) {
+      await genesis.initSetSpecieDetail(i+1,j+1, arr[j]);
     }
   }
-  for(let i =0; i < listGroup.length; i++ ){
-    await genesis.createMaketingBox(admin, listGroup[i]);
-  }
-  for(let i =0; i< listGroup.length; i++) {
-    await genesis.createMultipleGenesisBox(admin, maketingGenesis[i], listGroup[i]);
-  }
+  // for(let i =0; i < listGroup.length; i++ ){
+  //   await genesis.createMarketingBoxWithType(admin, listGroup[i]);
+  // }
+  // for(let i =0; i< listGroup.length; i++) {
+  //   await genesis.createMarketingBox(admin, listGroup[i]);
+  // }
 
   /* Set init contract General Hash*/
   // Set detail limit group
@@ -113,13 +143,14 @@ async function main() {
   }
   // Set detail specie group A
   for(let i=0; i< generalLimitGroup.length; i++){
-    for(let j=0;j < listGeneralGroup[i].length; j++) {
-      await general.initSetSpecieDetail(i+1,j+1, listGeneralGroup[i][j]);
+    let arr = listGeneralGroup[i];
+    for(let j=0;j < arr.length; j++) {
+      await general.initSetSpecieDetail(i+1,j+1, arr[j]);
     }
   }  
-  for(let i =0; i< listGroup.length; i++) {
-    await general.createMultipleGeneralBox(admin, maketingGeneral[i], listGroup[i]);
-  }
+  // for(let i =0; i< listGroup.length; i++) {
+  //   await general.createMarketingBox(admin, listGroup[i]);
+  // }
 
   /* Set init contract Monster crystal*/
   await monsterCrystal.initSetMonsterContract(monster.address);
@@ -141,21 +172,18 @@ async function main() {
   await monster.initSetGenesisHashContract(genesis.address);
   await monster.initSetHashChipContract(hashChipNFT.address);
   await monster.initSetMonsterMemoryContract(monsterMemory.address);
-  await monster.initSetMonsterItemContract(item.address);
-  await monster.initSetTreasuryAdress(item.address);
+  await monster.initSetMonsterItemContract(regenerationItem.address);
+  await monster.initSetTreasuryAdress(admin);
   // Set init contract General
   await general.grantRole(general.MANAGEMENT_ROLE(), monster.address);
   // Set init contract Genesis
   await genesis.grantRole(genesis.MANAGEMENT_ROLE(), monster.address);
   // Set init contract Item
-  await item.grantRole(item.MANAGEMENT_ROLE(), monster.address);
+  await regenerationItem.grantRole(regenerationItem.MANAGEMENT_ROLE(), monster.address);
+  await ehanceItem.grantRole(ehanceItem.MANAGEMENT_ROLE(), accessories.address);
   // Set init contract HashChip
   await hashChipNFT.grantRole(hashChipNFT.MANAGEMENT_ROLE(), monster.address);
-
-
   // shop
-
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere

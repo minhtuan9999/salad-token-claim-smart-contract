@@ -39,15 +39,16 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     uint256[] public listGroup;
     uint256[] public typeOfGroup;
     // maketing group
-    uint256[] _maketingValue1;
-    uint256 _maketingValue2;
+    uint256[] _marketingLimit1;
+    uint256 _marketingLimit2;
+    
     constructor() ERC721("Genesis Hash", "GenesisHash") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         listGroup = [1,2,3,4,5];
         typeOfGroup = [4,4,5,4,4];
-        _maketingValue1 = [80, 80, 100, 80, 80];
-        _maketingValue2 = 20;
+        _marketingLimit1 = [120, 120, 150, 120, 120];
+        _marketingLimit2 = 20;
     }
 
     //=======================================MAPPING=======================================//
@@ -61,6 +62,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
     mapping(uint256 => GroupDetail) public _groupDetail;
     // Number box of group
     mapping(address => mapping(uint256 => uint256)) public _boxOfAddress;
+    mapping(uint256 => bool) public _marketing;
 
     //=======================================EVENT=======================================//
     // Event create Genesishash with group
@@ -160,21 +162,21 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         emit createGenesisBoxs(_address, 1, _group);
     }
 
-    function _createMaketingBox(
+    function _createMarketingBoxWithType(
         address _address,
         uint256 _group,
         uint256 _type
     ) private {
-        for (uint8 i = 0; i < _maketingValue2; i++) {
+        for (uint8 i = 0; i < _marketingLimit2; i++) {
             uint256 tokenId = _tokenIds.current();
             _mint(_address, tokenId);
             _tokenIds.increment();
             _genesisDetail[tokenId].group = _group;
             _genesisDetail[tokenId].species = _type;
         }
-        _species[_group][_type].issueAmount = _species[_group][_type].issueAmount + _maketingValue2;
-        _species[_group][_type].remaining = _species[_group][_type].remaining - _maketingValue2;
-        _groupDetail[_group].remaining = _groupDetail[_group].remaining - _maketingValue2;
+        _species[_group][_type].issueAmount = _species[_group][_type].issueAmount + _marketingLimit2;
+        _species[_group][_type].remaining = _species[_group][_type].remaining - _marketingLimit2;
+        _groupDetail[_group].remaining = _groupDetail[_group].remaining - _marketingLimit2;
     }
     /*
      * create Multiple NFT with Type
@@ -183,35 +185,33 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      * @param _group: group of genesis hash
      * @param _type: type of group
      */
-    function createMaketingBox(address _address, uint256 _group) public{
+    function createMarketingBoxWithType(address _address, uint256 _group) public{
+        require(!_marketing[_group], "Genesis Hash::createMarketingBoxWithType: created marketing box");
         uint256 _type = typeOfGroup[_group - 1];
         for(uint256 i = 1; i <= _type ; i++ ) {
-            _createMaketingBox(_address, _group, i );
+            _createMarketingBoxWithType(_address, _group, i );
         }
+        _marketing[_group] = true;
         emit createMultipleGenesisHashwithType(_address,_group);
     }
 
     /*
      * create Multiple NFT
      * @param _address: owner of NFT
-     * @param _number: number of mint NFT
      * @param _group: group of genesis hash
      */
-    function createMultipleGenesisBox(
+    function createMarketingBox(
         address _address,
-        uint256 _number,
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        require(
-            _number <= _maketingValue1[_group - 1],
-            "General_Hash::createMultipleGenesisBox: Exceeding"
-        );
+        uint256 number = _marketingLimit1[_group - 1];
+        require(number > 0, "Genesis Hash::createMarketingBox: Exceeding marketing box");
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
-            _number;
-        _boxOfAddress[_address][_group] = _boxOfAddress[_address][_group] + _number;
-        _maketingValue1[_group - 1] -= _number;
-        emit createGenesisBoxs(_address, _number, _group);
+            number;
+        _boxOfAddress[_address][_group] += number;
+        _marketingLimit1[_group - 1] = 0;
+        emit createGenesisBoxs(_address, number, _group);
     }
 
     // get type random
@@ -288,6 +288,7 @@ contract GenesisHash is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         }
         return (_listToken,listTypes);
     }
+    //get group detail
     function getDetailGroup(uint256 group) external view returns(GroupDetail memory) {
         return _groupDetail[group];
     }

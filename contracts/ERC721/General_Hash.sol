@@ -45,12 +45,12 @@ contract GeneralHash is
     // set value group
     uint256[] public listGroup;
     // maketing group
-    uint256[] _maketingValue;
+    uint256[] _marketingValue;
     constructor() ERC721("General Hash", "GeneralHash") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         listGroup = [1,2,3,4,5];
-        _maketingValue = [80, 80, 100, 80, 80];
+        _marketingValue = [80, 80, 100, 80, 80];
     }
 
     //=======================================MAPPING=======================================//
@@ -161,26 +161,25 @@ contract GeneralHash is
      * create Multiple Box
      * @param _address: owner of NFT
      * @param _group: group of general hash
-     * @param _number: _number
      */
-    function createMultipleGeneralBox(
+    function createMarketingBox(
         address _address,
-        uint256 _number,
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        require(
-            _number <= _maketingValue[_group - 1],
-            "General_Hash::createMultipleGeneralBox: Exceeding"
-        );
-        
+        uint256 number = _marketingValue[_group - 1];
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
-            _number;
-        _boxOfAddress[_address][_group] =
-            _boxOfAddress[_address][_group] +
-            _number;
-        _maketingValue[_group - 1] -= _number;
-        emit createGeneralBoxs(_address, _number, _group);
+            number;
+        _boxOfAddress[_address][_group] += number;
+        _marketingValue[_group - 1] -= number;
+        emit createGeneralBoxs(_address, number, _group);
+    }
+
+    // send group maketing by admin
+    function sendGroup(address to, uint256 group, uint256 number) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        require(_boxOfAddress[msg.sender][group] > number, "General_Hash::sendGroup: Exceeding group");
+        _boxOfAddress[msg.sender][group] -= number;
+        _boxOfAddress[to][group] += number;
     }
 
     // get type random
@@ -262,9 +261,9 @@ contract GeneralHash is
         }
         return (_listToken,listTypes);
     }
-    // get Detai group
-    function getDetailGroup(uint256 group) external view returns(uint256, uint256) {
-        return (_groupDetail[group].totalSupply, _groupDetail[group].remaining);
+    //get group detail
+    function getDetailGroup(uint256 group) external view returns(GroupDetail memory) {
+        return _groupDetail[group];
     }
 
 }
