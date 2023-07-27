@@ -24,7 +24,7 @@
 
 pragma solidity ^0.8.18;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -36,7 +36,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract ReMonsterFarm is
     Ownable,
-    ERC721,
+    ERC721Enumerable,
     IERC4907,
     AccessControl,
     ReentrancyGuard,
@@ -52,6 +52,7 @@ contract ReMonsterFarm is
     Counters.Counter private _tokenIds;
     // Base URI
     string private _baseURIextended;
+    uint256 private totalLimit;
 
     struct UserInfo {
         address user; // address of user role
@@ -80,12 +81,14 @@ contract ReMonsterFarm is
 
     constructor(
         string memory name_,
-        string memory symbol_
+        string memory symbol_,
+        uint256 limit
     ) ERC721(name_, symbol_) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
         _setupRole(MANAGERMENT_ROLE, _msgSender());
+        totalLimit = limit;
     }
 
     function setBaseURI(string memory baseURI_) external onlyRole(MANAGERMENT_ROLE) {
@@ -145,6 +148,7 @@ contract ReMonsterFarm is
      * @param owner: owner of farm
      */
     function _createFarm(address owner, uint256 typeNFT) internal {
+        require(totalSupply() < totalLimit, "Total supply reached the limit");
         uint256 tokenId = _tokenIds.current();
         _mint(owner, tokenId);
         userToListFarm[owner].add(tokenId);
@@ -225,7 +229,7 @@ contract ReMonsterFarm is
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public view override(AccessControl, ERC721) returns (bool) {
+    ) public view override(AccessControl, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -243,5 +247,9 @@ contract ReMonsterFarm is
             delete _users[tokenId];
             emit UpdateUser(tokenId, address(0), 0);
         }
+    }
+
+    function getTotalLimit() external view returns (uint256) {
+        return totalLimit;
     }
 }

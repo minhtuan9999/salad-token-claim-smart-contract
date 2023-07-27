@@ -8,7 +8,6 @@ PATH_METAMASK = "";
 
 //========CREATE ABI CONTRACT===========================================================
 const ABI_SHOP = [];
-const ABI_TOKEN = [];
 
 //========CREATE PROVINDE===============================================================
 if (window.ethereum && ethereum.networkVersion == CHAIN_NETWORK) {
@@ -151,12 +150,13 @@ const buyItem = async (type, account, group, price, number, deadline, sig) => {
   }
 };
 
-const _buyItem = async (type, account, group, price, number, deadline, sig) => {
+const _buyItem = async (type, account, group, priceInWei, number, deadline, sig) => {
   try {
     const transactionParameters = {
       to: ABI_SHOP,
       data: shopContract.methods.buyItem(type, account, group, price, number, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
+      value: priceInWei
     };
 
     return sendTransaction(transactionParameters);
@@ -186,20 +186,4 @@ const sendTransaction = async (transactionParameters) => {
       console.log(error);
     });
   return txHash;
-};
-
-//==================CHECK SUCCESS TRANSACTION==========================================
-const checkTransaction = async (txid) => {
-  let checkSuccess = setInterval(async function () {
-    var receipt = await provider.eth.getTransactionReceipt(txid);
-    if (receipt?.status) {
-      clearInterval(checkSuccess);
-      console.log("Success: ", txid);
-      return true;
-    } else if (receipt?.status == false) {
-      clearInterval(checkSuccess);
-      console.log("fail txid", txid);
-      return false;
-    }
-  }, 2000);
 };

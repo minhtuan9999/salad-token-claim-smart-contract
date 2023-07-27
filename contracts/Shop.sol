@@ -30,6 +30,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 interface GenesisBox {
     // Detail of Group
@@ -37,17 +38,34 @@ interface GenesisBox {
         uint256 totalSupply;
         uint256 remaining;
     }
+
     function createGenesisBox(address _address, uint256 _type) external;
-    function getDetailGroup(uint256 group) external view returns(GroupDetail memory);
+
+    function getDetailGroup(
+        uint256 group
+    ) external view returns (GroupDetail memory);
 }
 
 interface GeneralBox {
+    // Detail of Group
+    struct GroupDetail {
+        uint256 totalSupply;
+        uint256 remaining;
+    }
+
     function createGeneralBox(address _address, uint256 _type) external;
-    function getDetailGroup(uint256 group) external view returns(uint256, uint256);
+
+    function getDetailGroup(
+        uint256 group
+    ) external view returns (GroupDetail memory);
 }
 
 interface FarmNFT {
+    function getTotalLimit() external view returns (uint256);
+
     function createNFT(address _address, uint256 _type) external;
+
+    function totalSupply() external view returns (uint256);
 }
 
 contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
@@ -57,6 +75,8 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
+    using Counters for Counters.Counter;
+    using SafeMath for uint256;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
@@ -69,6 +89,18 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     uint256 public farmPrice = 80;
     uint256 public bitPrice = 5;
 
+    struct AssetSale {
+        uint256 total;
+        uint256 remaining;
+        uint256 price;
+        GroupAsset[] detail;
+    }
+
+    struct GroupAsset {
+        uint256 total;
+        uint256 remaining;
+    }
+
     mapping(bytes => bool) public _isSigned;
 
     enum TypeAsset {
@@ -77,17 +109,20 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         FARM_NFT,
         BIT
     }
-    event BuyAssetSuccessful(
-        address owner,
-        TypeAsset _type
-    );
+    event BuyAssetSuccessful(address owner, TypeAsset _type);
     event ChangedAddressReceive(address _treasuryAddress);
 
     /**
      * @dev Initialize this contract. Acts as a constructor
      * @param _addressReceice - Recipient address
      */
-    constructor(address _addressReceice, uint256 _generalPrice, uint256 _genesisPrice, uint256 _farmPrice, uint256 _bitPrice) {
+    constructor(
+        address _addressReceice,
+        uint256 _generalPrice,
+        uint256 _genesisPrice,
+        uint256 _farmPrice,
+        uint256 _bitPrice
+    ) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
@@ -120,6 +155,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     ) external onlyRole(MANAGERMENT_ROLE) {
         genesisContract = _genesisContract;
     }
+
     // set Farm Contract
     function setFarmNFT(
         FarmNFT _farmContract
@@ -138,27 +174,37 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         emit ChangedAddressReceive(treasuryAddress);
     }
 
-    function _buyItem(TypeAsset _type, uint256 _group, uint256 _number) private{
-        if(_type == TypeAsset.GENERAL_BOX) {
-            (,uint256 remaining) = generalContract.getDetailGroup(_group); 
-            require(_number <= remaining,"ReMonsterShop::_buyItem: Exceeding");
-            for(uint256 i=0; i < _number; i++) {
+    function _buyItem(
+        TypeAsset _type,
+        uint256 _group,
+        uint256 _number
+    ) private {
+        if (_type == TypeAsset.GENERAL_BOX) {
+            uint256 remaining = generalContract
+                .getDetailGroup(_group)
+                .remaining;
+            require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
+            for (uint256 i = 0; i < _number; i++) {
                 generalContract.createGeneralBox(msg.sender, _group);
             }
-        } else if(_type == TypeAsset.GENESIS_BOX) {
-            (,uint256 remaining) = generalContract.getDetailGroup(_group); 
-            require(_number <= remaining,"ReMonsterShop::_buyItem: Exceeding");
-            for(uint256 i=0; i < _number; i++) {
+        } else if (_type == TypeAsset.GENESIS_BOX) {
+            uint256 remaining = generalContract
+                .getDetailGroup(_group)
+                .remaining;
+            require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
+            for (uint256 i = 0; i < _number; i++) {
                 genesisContract.createGenesisBox(msg.sender, _group);
             }
-        } else if(_type == TypeAsset.FARM_NFT){
-            for(uint256 i=0; i < _number; i++) {
+        } else if (_type == TypeAsset.FARM_NFT) {
+            uint256 remaining = farmContract.getTotalLimit().sub(
+                farmContract.totalSupply()
+            );
+            require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
+            for (uint256 i = 0; i < _number; i++) {
                 farmContract.createNFT(msg.sender, _group);
             }
         } else {
-            revert(
-                "ReMonsterShop::_buyItem: Unsupported type"
-            );
+            revert("ReMonsterShop::_buyItem: Unsupported type");
         }
     }
 
@@ -184,11 +230,11 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             _deadline > block.timestamp,
             "ReMonsterShop::buyItem: Deadline exceeded"
         );
+        require(!_isSigned[_sig], "ReMonsterShop::buyItem: Signature used");
         require(
-            !_isSigned[_sig],
-            "ReMonsterShop::buyItem: Signature used"
+            _account == msg.sender,
+            "ReMonsterShop::buyItem: wrong account"
         );
-        require(_account == msg.sender, "ReMonsterShop::buyItem: wrong account");
         address signer = recoverOAS(
             _type,
             _account,
@@ -203,15 +249,9 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             signer == validator,
             "ReMonsterShop::buyItem: Validator fail signature"
         );
-        require(
-            msg.value == _price,
-            "ReMonsterShop::buyItem: wrong msg value"
-        );
+        require(msg.value == _price, "ReMonsterShop::buyItem: wrong msg value");
         bool sent = treasuryAddress.send(_price);
-        require(
-            sent,
-            "ReMonsterShop::buyItem: Failed to send Ether"
-        );
+        require(sent, "ReMonsterShop::buyItem: Failed to send Ether");
         if (_type != TypeAsset.BIT) {
             _buyItem(_type, _group, _number);
         }
@@ -236,7 +276,17 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _deadline
     ) public pure returns (bytes32) {
         return
-            keccak256(abi.encode(_type, _account, _group, _price, _number, _chainId, _deadline));
+            keccak256(
+                abi.encode(
+                    _type,
+                    _account,
+                    _group,
+                    _price,
+                    _number,
+                    _chainId,
+                    _deadline
+                )
+            );
     }
 
     /*
@@ -261,9 +311,51 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeOAS(_type, _account, _group, _price, _number, _chainId, _deadline)
+                    encodeOAS(
+                        _type,
+                        _account,
+                        _group,
+                        _price,
+                        _number,
+                        _chainId,
+                        _deadline
+                    )
                 ),
                 signature
             );
+    }
+
+    function getListSale() external view returns (AssetSale[] memory) {
+        AssetSale[] memory listSale;
+        // Farm
+        GroupAsset[] memory groupAssetFarm;
+        listSale[0] = AssetSale(
+            farmContract.getTotalLimit(),
+            farmContract.getTotalLimit().sub(farmContract.totalSupply()),
+            farmPrice,
+            groupAssetFarm
+        );
+        // General
+        GroupAsset[] memory groupAssetGeneral;
+        for (uint i = 1; i < 5; i++) {
+            groupAssetGeneral[i - 1] = GroupAsset(
+                generalContract.getDetailGroup(i).totalSupply,
+                generalContract.getDetailGroup(i).remaining
+            );
+        }
+        listSale[1] = AssetSale(0, 0, generalPrice, groupAssetGeneral);
+        // Genesis
+        GroupAsset[] memory groupAssetGenesis;
+        for (uint i = 1; i < 5; i++) {
+            groupAssetGenesis[i - 1] = GroupAsset(
+                genesisContract.getDetailGroup(i).totalSupply,
+                genesisContract.getDetailGroup(i).remaining
+            );
+        }
+        listSale[2] = AssetSale(0, 0, genesisPrice, groupAssetGenesis);
+        // Bit
+        GroupAsset[] memory groupAssetBit;
+        listSale[3] = AssetSale(0, 0, bitPrice, groupAssetBit);
+        return listSale;
     }
 }
