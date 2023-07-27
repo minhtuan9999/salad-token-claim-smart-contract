@@ -32,11 +32,18 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 interface GenesisBox {
-    function createNFT(address _address, uint256 _type) external;
+    // Detail of Group
+    struct GroupDetail {
+        uint256 totalSupply;
+        uint256 remaining;
+    }
+    function createGenesisBox(address _address, uint256 _type) external;
+    function getDetailGroup(uint256 group) external view returns(GroupDetail memory);
 }
 
 interface GeneralBox {
-    function createNFT(address _address, uint256 _type) external;
+    function createGeneralBox(address _address, uint256 _type) external;
+    function getDetailGroup(uint256 group) external view returns(uint256, uint256);
 }
 
 interface FarmNFT {
@@ -80,13 +87,16 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
      * @dev Initialize this contract. Acts as a constructor
      * @param _addressReceice - Recipient address
      */
-    constructor(address _addressReceice) {
+    constructor(address _addressReceice, uint256 _generalPrice, uint256 _genesisPrice, uint256 _farmPrice, uint256 _bitPrice) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        // set Treasury Address
         setTreasuryAddress(payable(_addressReceice));
+        generalPrice = _generalPrice;
+        genesisPrice = _genesisPrice;
+        farmPrice = _farmPrice;
+        bitPrice = _bitPrice;
     }
 
     function pause() public onlyRole(ADMIN_ROLE) {
@@ -130,12 +140,16 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     function _buyItem(TypeAsset _type, uint256 _group, uint256 _number) private{
         if(_type == TypeAsset.GENERAL_BOX) {
+            (,uint256 remaining) = generalContract.getDetailGroup(_group); 
+            require(_number <= remaining,"ReMonsterShop::_buyItem: Exceeding");
             for(uint256 i=0; i < _number; i++) {
-                generalContract.createNFT(msg.sender, _group);
+                generalContract.createGeneralBox(msg.sender, _group);
             }
         } else if(_type == TypeAsset.GENESIS_BOX) {
+            (,uint256 remaining) = generalContract.getDetailGroup(_group); 
+            require(_number <= remaining,"ReMonsterShop::_buyItem: Exceeding");
             for(uint256 i=0; i < _number; i++) {
-                genesisContract.createNFT(msg.sender, _group);
+                genesisContract.createGenesisBox(msg.sender, _group);
             }
         } else if(_type == TypeAsset.FARM_NFT){
             for(uint256 i=0; i < _number; i++) {
