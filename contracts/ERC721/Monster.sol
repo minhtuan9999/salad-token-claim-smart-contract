@@ -211,16 +211,12 @@ contract Monster is MonsterCore {
     function fusionMonsterNFT(
         address _owner,
         uint256 _firstTokenId,
-        uint256 _lastTokenId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _lastTokenId
     ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionMonsterNFT(
             _owner,
             _firstTokenId,
-            _lastTokenId,
-            _itemId,
-            _amount
+            _lastTokenId
         );
         emit fusionMultipleMonster(
             _owner,
@@ -241,16 +237,12 @@ contract Monster is MonsterCore {
     function fusionGenesisHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _lastId
     ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionGenesisHash(
             _owner,
             _firstId,
-            _lastId,
-            _itemId,
-            _amount
+            _lastId
         );
         emit fusionGenesisHashNFT(_owner, _firstId, _lastId, tokenId);
     }
@@ -266,16 +258,12 @@ contract Monster is MonsterCore {
     function fusionGeneralHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _lastId
     ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionGeneralHash(
             _owner,
             _firstId,
-            _lastId,
-            _itemId,
-            _amount
+            _lastId
         );
         emit fusionGeneralHashNFT(_owner, _firstId, _lastId, tokenId);
     }
@@ -291,16 +279,12 @@ contract Monster is MonsterCore {
     function fusionMultipleHash(
         address _owner,
         uint256 _genesisId,
-        uint256 _generalId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _generalId
     ) external nonReentrant whenNotPaused {
         uint256 tokenId = _fusionMultipleHash(
             _owner,
             _genesisId,
-            _generalId,
-            _itemId,
-            _amount
+            _generalId
         );
         emit fusionMultipleHashNFT(_owner, _genesisId, _generalId, tokenId);
     }

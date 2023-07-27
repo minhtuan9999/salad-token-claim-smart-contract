@@ -152,12 +152,12 @@ contract MonsterCore is MonsterInterface {
         return tokenId;
     }
 
-    // fusion 2 Monster
-    function _fusionNFT(
+    // fusion monster nft
+    function _fusionMonsterNFT(
         address _owner,
         uint256 _firstTokenId,
         uint256 _lastTokenId
-    ) private returns (uint256) {
+    ) internal returns (uint256) {
         require(
             ownerOf(_firstTokenId) == _owner,
             "Monster:::MonsterCore::_fusionMonsterNFT: The owner is not correct"
@@ -180,32 +180,11 @@ contract MonsterCore is MonsterInterface {
         return newTokenId;
     }
 
-    // fusion monster nft
-    function _fusionMonsterNFT(
-        address _owner,
-        uint256 _firstTokenId,
-        uint256 _lastTokenId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
-    ) internal returns (uint256) {
-        require(
-            _itemId.length == _amount.length,
-            "Monster:::MonsterCore::_fusionMonsterNFT: Invalid input"
-        );
-        if (_itemId[0] != 0) {
-            item.burnMultipleItem(_owner, _itemId, _amount);
-        }
-        uint256 tokenId = _fusionNFT(_owner, _firstTokenId, _lastTokenId);
-        return tokenId;
-    }
-
     // fusion monster by genesis hash
     function _fusionGenesisHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _lastId
     ) internal returns (uint256) {
         uint256 timesRegeneration1 = _numberOfRegenerations[season][
             TypeMint.GENESIS_HASH
@@ -222,17 +201,11 @@ contract MonsterCore is MonsterInterface {
             "Monster:::MonsterCore::_fusionGenesisHash: The owner is not correct"
         );
         require(
-            _itemId.length == _amount.length,
-            "Monster:::MonsterCore::_fusionGenesisHash: Invalid input"
-        );
-        require(
             timesRegeneration1 < limitGenesis &&
                 timesRegeneration2 < limitGenesis,
             "Monster:::MonsterCore::_fusionGenesisHash: Exceed the allowed number of times"
         );
-        if (_itemId[0] != 0) {
-            item.burnMultipleItem(_owner, _itemId, _amount);
-        }
+
         uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_firstId]++;
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_lastId]++;
@@ -243,9 +216,7 @@ contract MonsterCore is MonsterInterface {
     function _fusionGeneralHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _lastId
     ) internal returns (uint256) {
         uint256 timesRegeneration1 = _numberOfRegenerations[season][
             TypeMint.GENERAL_HASH
@@ -262,17 +233,10 @@ contract MonsterCore is MonsterInterface {
             "Monster:::MonsterCore::_fusionGeneralHash: The owner is not correct"
         );
         require(
-            _itemId.length == _amount.length,
-            "Monster:::MonsterCore::_fusionGeneralHash: Invalid input"
-        );
-        require(
             timesRegeneration1 < limitGeneral &&
                 timesRegeneration2 < limitGeneral,
             "Monster:::MonsterCore::_fusionGeneralHash: Exceed the allowed number of times"
         );
-        if (_itemId[0] != 0) {
-            item.burnMultipleItem(_owner, _itemId, _amount);
-        }
         uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_firstId]++;
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_lastId]++;
@@ -289,9 +253,7 @@ contract MonsterCore is MonsterInterface {
     function _fusionMultipleHash(
         address _owner,
         uint256 _genesisId,
-        uint256 _generalId,
-        uint256[] memory _itemId,
-        uint256[] memory _amount
+        uint256 _generalId
     ) internal returns (uint256) {
         uint256 timesGenesis = _numberOfRegenerations[season][
             TypeMint.GENESIS_HASH
@@ -308,16 +270,9 @@ contract MonsterCore is MonsterInterface {
             "Monster:::MonsterCore::_fusionMultipleHash: The owner is not correct"
         );
         require(
-            _itemId.length == _amount.length,
-            "Monster:::MonsterCore::_fusionMultipleHash: Invalid input"
-        );
-        require(
             timesGenesis < limitGenesis && timesGeneral < limitGeneral,
             "Monster:::MonsterCore::_fusionMultipleHash: Exceed the allowed number of times"
         );
-        if (_itemId[0] != 0) {
-            item.burnMultipleItem(_owner, _itemId, _amount);
-        }
         uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _numberOfRegenerations[season][TypeMint.GENESIS_HASH][_genesisId]++;
         _numberOfRegenerations[season][TypeMint.GENERAL_HASH][_generalId]++;
