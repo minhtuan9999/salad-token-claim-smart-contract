@@ -142,6 +142,34 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         _unpause();
     }
 
+    // set Price farm
+    function setNewPriceFarm(
+        uint256 newPrice
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        farmPrice = newPrice;
+    }
+
+    // set Price Genesis
+    function setNewPriceGenesis(
+        uint256 newPrice
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        genesisPrice = newPrice;
+    }
+
+    // set Price General
+    function setNewPriceGeneral(
+        uint256 newPrice
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        generalPrice = newPrice;
+    }
+
+    // set Price BIT
+    function setNewPriceBit(
+        uint256 newPrice
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        bitPrice = newPrice;
+    }
+
     // set General Contract
     function setGeneralContract(
         GeneralBox _generalContract
