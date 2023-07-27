@@ -42,10 +42,15 @@ contract GeneralHash is
     bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     // Base URI
     string private _baseURIextended;
-
+    // set value group
+    uint256[] public listGroup;
+    // maketing group
+    uint256[] _maketingValue;
     constructor() ERC721("General Hash", "GeneralHash") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
+        listGroup = [1,2,3,4,5];
+        _maketingValue = [80, 80, 100, 80, 80];
     }
 
     //=======================================MAPPING=======================================//
@@ -65,12 +70,6 @@ contract GeneralHash is
     event createGeneralBoxs(address _address, uint256 number, uint256 group);
     // Event random type of Group
     event openGeneralBox(uint256 tokenId, uint256 group, uint256 _type);
-    // Event create multiple General hash
-    event createMultipleGeneral(
-        address _address,
-        uint256[] listToken,
-        uint256 group
-    );
 
     //=======================================FUNCTION=======================================//
     // Get list Tokens of address
@@ -140,7 +139,7 @@ contract GeneralHash is
     }
 
     /*
-     * mint a General hash
+     * mint a General box
      * @param _address: owner of NFT
      * @param _group: group of general hash
      */
@@ -148,6 +147,7 @@ contract GeneralHash is
         address _address,
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        require(_group> 0 && _group <= listGroup.length, "General_Hash::createGeneralBox: Group not exits");
         require(
             _groupDetail[_group].remaining > 0,
             "General_Hash::createGeneralBox: Exceeding"
@@ -158,7 +158,7 @@ contract GeneralHash is
     }
 
     /*
-     * create NFT marketing
+     * create Multiple Box
      * @param _address: owner of NFT
      * @param _group: group of general hash
      * @param _number: _number
@@ -169,44 +169,22 @@ contract GeneralHash is
         uint256 _group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         require(
-            _number <= _groupDetail[_group].remaining,
-            "General_Hash::createMultipleNFT: Exceeding"
+            _number <= _maketingValue[_group - 1],
+            "General_Hash::createMultipleGeneralBox: Exceeding"
         );
+        
         _groupDetail[_group].remaining =
             _groupDetail[_group].remaining -
             _number;
         _boxOfAddress[_address][_group] =
             _boxOfAddress[_address][_group] +
             _number;
+        _maketingValue[_group - 1] -= _number;
         emit createGeneralBoxs(_address, _number, _group);
     }
 
-    function createNFTWithType(
-        uint256 _group,
-        uint256 _type,
-        uint256 _number
-    ) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        require(
-            _number <= _groupDetail[_group].remaining,
-            "General_Hash::createMultipleNFT: Exceeding"
-        );
-        _groupDetail[_group].remaining -=_number;
-        _boxOfAddress[msg.sender][_group] +=_number;
-        for(uint256 i=0; i<_number;i++) {
-            uint256 tokenId = _tokenIds.current();
-            _mint(msg.sender, tokenId);
-            _tokenIds.increment();
-            _generalDetail[tokenId].group = _group;
-            _generalDetail[tokenId].species = _type;
-        }
-        _species[_group][_type].issueAmount += _number;
-        _species[_group][_type].remaining =
-            _species[_group][_type].issueLimit -
-            _species[_group][_type].issueAmount;
-    }
-
     // get type random
-    function getTypeOfGroup(uint256 _group) private returns (uint256) {
+    function _getTypeOfGroup(uint256 _group) private returns (uint256) {
         uint256 _type = openBox(
             _species[_group][1].issueLimit,
             _species[_group][1].remaining,
@@ -223,17 +201,18 @@ contract GeneralHash is
     }
 
     /*
-     * random Species of general hash
+     * open box
      * @param _group: group of Box
      */
     function openBoxGeneral(
         uint256 _group
     ) external whenNotPaused nonReentrant {
+        require(_group> 0 && _group <= listGroup.length, "General_Hash::openBoxGeneral: Group not exits");
         require(
             _boxOfAddress[msg.sender][_group] > 0,
             "General Hash:: openBoxGeneral: Exceeding box"
         );
-        uint256 _type = getTypeOfGroup(_group);
+        uint256 _type = _getTypeOfGroup(_group);
         require(_type > 0, "General Hash:: openBoxGeneral: Type not exits");
 
         uint256 tokenId = _tokenIds.current();
@@ -247,6 +226,7 @@ contract GeneralHash is
         _species[_group][_type].remaining =
             _species[_group][_type].issueLimit -
             _species[_group][_type].issueAmount;
+        _boxOfAddress[msg.sender][_group]--;
         emit openGeneralBox(tokenId, _group, _type);
     }
 
@@ -264,4 +244,27 @@ contract GeneralHash is
         _groupDetail[_group].remaining++;
         _burn(_tokenId);
     }
+
+    // get listBox, list Token of address
+    function getDetailAddress(address _address) public view returns(uint256[] memory, uint256[] memory) {
+        uint256[] memory listBox = new uint256[](listGroup.length);
+        for(uint256 i=0; i < listGroup.length; i++){
+            listBox[i] = _boxOfAddress[_address][listGroup[i]];
+        }
+        return (listBox, _listTokensOfAddress[_address].values());
+    }
+
+    // get type of list Token
+    function getTypeOfListToken(uint256[] memory _listToken) public view returns(uint256[] memory,uint256[] memory) {
+        uint256[] memory listTypes = new uint256[](_listToken.length);
+        for(uint256 i=0; i< _listToken.length; i++) {
+            listTypes[i] = _generalDetail[_listToken[i]].species;
+        }
+        return (_listToken,listTypes);
+    }
+    // get Detai group
+    function getDetailGroup(uint256 group) external view returns(uint256, uint256) {
+        return (_groupDetail[group].totalSupply, _groupDetail[group].remaining);
+    }
+
 }

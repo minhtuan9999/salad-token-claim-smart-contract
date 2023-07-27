@@ -8,11 +8,7 @@ interface IGeneralHash {
 }
 
 interface IGenesisHash {
-    function refreshTheNumberOfUse(uint256 _tokenId) external;
-
-    function countRegeneration(
-        uint256 _tokenId
-    ) external view returns (uint256);
+    function burn(uint256 _tokenId) external;
 }
 
 interface IHashChip {
@@ -24,12 +20,10 @@ interface IToken {
 }
 
 interface IMonsterMemory {
-    // mint monster memory
     function mint(address _address, uint256 _monsterId) external;
 }
 
 interface IMonsterItem {
-    // burn item from tokenid
     function burn(address _from, uint256 _id, uint256 _amount) external;
 
     function mint(
