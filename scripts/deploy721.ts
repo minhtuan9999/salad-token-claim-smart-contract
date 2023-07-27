@@ -93,6 +93,14 @@ async function main() {
   const reMonsterMarketplace = await ReMonsterMarketplace.deploy(feeSeller, admin);
   reMonsterMarketplace.deployed();
 
+  const ReMonsterFarm= await ethers.getContractFactory("ReMonsterFarm");
+  const reMonsterFarm = await ReMonsterFarm.deploy("Farm", "FARM", 5000);
+  reMonsterFarm.deployed();
+
+  const TokenXXX= await ethers.getContractFactory("TokenXXX");
+  const tokenXXX = await TokenXXX.deploy("xxx", "xxx");
+  tokenXXX.deployed();
+
   // Log results
   console.log(`ADDRESS_CONTRACT_ACCESSORIES: ${accessories.address}`);
   console.log(`ADDRESS_CONTRACT_COACH: ${coach.address}`);
@@ -109,7 +117,8 @@ async function main() {
   console.log(`ADDRESS_CONTRACT_ENHANCE_ITEM: ${ehanceItem.address}`)
   console.log(`ADDRESS_CONTRACT_SHOP: ${shop.address}`)
   console.log(`ADDRESS_CONTRACT_MARKET: ${reMonsterMarketplace.address}`)
-
+  console.log(`ADDRESS_CONTRACT_FARM: ${reMonsterFarm.address}`)
+  console.log(`ADDRESS_CONTRACT_TOKEN_XXX: ${tokenXXX.address}`)
 
   // Set init contract Accessories
   await accessories.setMonsterItem(ehanceItem.address);
