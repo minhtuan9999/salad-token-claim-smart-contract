@@ -106,15 +106,15 @@ contract RandomBox {
     ) private pure returns (uint256) {
         Check memory check = total(tA, rA, tB, rB, tC, rC, tD, rD, tE, rE);
         if (randomValue < check.a) {
-            return 1;
+            return 0;
         } else if (randomValue < check.a + check.b) {
-            return 2;
+            return 1;
         } else if (randomValue < check.a + check.b + check.c) {
-            return 3;
+            return 2;
         } else if (randomValue < check.a + check.b + check.c + check.d) {
-            return 4;
+            return 3;
         } else {
-            return 5;
+            return 4;
         }
     }
 

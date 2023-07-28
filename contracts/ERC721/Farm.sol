@@ -94,7 +94,9 @@ contract ReMonsterFarm is
     function setBaseURI(string memory baseURI_) external onlyRole(MANAGERMENT_ROLE) {
         _baseURIextended = baseURI_;
     }
-
+    function setTotalLimit(uint256 _total) external onlyRole(MANAGERMENT_ROLE) {
+        totalLimit = _total;
+    }
     function _baseURI() internal view virtual override returns (string memory) {
         return _baseURIextended;
     }
