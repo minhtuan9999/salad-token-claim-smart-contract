@@ -36,7 +36,10 @@ interface GenesisBox {
     // Detail of Group
     struct GroupDetail {
         uint256 totalSupply;
-        uint256 remaining;
+        uint256 issueAmount;
+        uint256 issueMarketing;
+        uint256[] limitType;
+        uint256[] amountType;
     }
 
     function createGenesisBox(address _address, uint256 _type) external;
@@ -50,7 +53,10 @@ interface GeneralBox {
     // Detail of Group
     struct GroupDetail {
         uint256 totalSupply;
-        uint256 remaining;
+        uint256 issueAmount;
+        uint256 issueMarketing;
+        uint256[] limitType;
+        uint256[] amountType;
     }
 
     function createGeneralBox(address _address, uint256 _type) external;
@@ -223,17 +229,13 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 _number
     ) private {
         if (_type == TypeAsset.GENERAL_BOX) {
-            uint256 remaining = generalContract
-                .getDetailGroup(_group)
-                .remaining;
+            uint256 remaining = generalContract.getDetailGroup(_group).totalSupply.sub(generalContract.getDetailGroup(_group).issueAmount);
             require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
             for (uint256 i = 0; i < _number; i++) {
                 generalContract.createGeneralBox(msg.sender, _group);
             }
         } else if (_type == TypeAsset.GENESIS_BOX) {
-            uint256 remaining = generalContract
-                .getDetailGroup(_group)
-                .remaining;
+            uint256 remaining = genesisContract.getDetailGroup(_group).totalSupply.sub(genesisContract.getDetailGroup(_group).issueAmount);
             require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
             for (uint256 i = 0; i < _number; i++) {
                 genesisContract.createGenesisBox(msg.sender, _group);
@@ -383,18 +385,20 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         // General
         GroupAsset[] memory groupAssetGeneral = new GroupAsset[](5);
         for (uint i = 0; i < 5; i++) {
+            uint256 remaining = generalContract.getDetailGroup(i).totalSupply.sub(generalContract.getDetailGroup(i).issueAmount);
             groupAssetGeneral[i] = GroupAsset(
                 generalContract.getDetailGroup(i).totalSupply,
-                generalContract.getDetailGroup(i).remaining
+                remaining
             );
         }
         listSale[1] = AssetSale(0, 0, generalPrice, groupAssetGeneral);
         // // Genesis
         GroupAsset[] memory groupAssetGenesis  = new GroupAsset[](5);
         for (uint i = 0; i < 5; i++) {
+            uint256 remaining = genesisContract.getDetailGroup(i).totalSupply.sub(genesisContract.getDetailGroup(i).issueAmount);
             groupAssetGenesis[i] = GroupAsset(
                 genesisContract.getDetailGroup(i).totalSupply,
-                genesisContract.getDetailGroup(i).remaining
+                remaining
             );
         }
         listSale[2] = AssetSale(0, 0, genesisPrice, groupAssetGenesis);
