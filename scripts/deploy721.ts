@@ -141,6 +141,7 @@ async function main() {
   await general.claimMaketingBox(admin,2);
   await general.claimMaketingBox(admin,3);
   await general.claimMaketingBox(admin,4);
+  
   // claim marketing genesis
   await genesis.claimMaketingBox(admin, 0);
   await genesis.claimMaketingBox(admin, 1);
@@ -148,11 +149,31 @@ async function main() {
   await genesis.claimMaketingBox(admin, 3);
   await genesis.claimMaketingBox(admin, 4);
 
-  await genesis.claimMaketingWithType(admin, 0);
-  await genesis.claimMaketingWithType(admin, 1);
-  await genesis.claimMaketingWithType(admin, 2);
-  await genesis.claimMaketingWithType(admin, 3);
-  await genesis.claimMaketingWithType(admin, 4);
+  await genesis.claimMaketingWithType(admin, 0, 0);
+  await genesis.claimMaketingWithType(admin, 0, 1);
+  await genesis.claimMaketingWithType(admin, 0, 2);
+  await genesis.claimMaketingWithType(admin, 0, 3);
+
+  await genesis.claimMaketingWithType(admin, 1, 0);
+  await genesis.claimMaketingWithType(admin, 1, 1);
+  await genesis.claimMaketingWithType(admin, 1, 2);
+  await genesis.claimMaketingWithType(admin, 1, 3);
+  
+  await genesis.claimMaketingWithType(admin, 2, 0);
+  await genesis.claimMaketingWithType(admin, 2, 1);
+  await genesis.claimMaketingWithType(admin, 2, 2);
+  await genesis.claimMaketingWithType(admin, 2, 3);
+  await genesis.claimMaketingWithType(admin, 2, 4);
+
+  await genesis.claimMaketingWithType(admin, 3, 0);
+  await genesis.claimMaketingWithType(admin, 3, 1);
+  await genesis.claimMaketingWithType(admin, 3, 2);
+  await genesis.claimMaketingWithType(admin, 3, 3);
+
+  await genesis.claimMaketingWithType(admin, 4, 0);
+  await genesis.claimMaketingWithType(admin, 4, 1);
+  await genesis.claimMaketingWithType(admin, 4, 2);
+  await genesis.claimMaketingWithType(admin, 4, 3);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

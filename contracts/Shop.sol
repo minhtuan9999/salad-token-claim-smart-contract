@@ -102,6 +102,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     mapping(bytes => bool) public _isSigned;
+    mapping(uint256 => uint256) public packageBit;
 
     enum TypeAsset {
         GENERAL_BOX,
@@ -153,6 +154,14 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 newPrice
     ) external onlyRole(MANAGERMENT_ROLE) {
         farmPrice = newPrice;
+    }
+
+    // set Package bit
+    function addNewPackageBit(
+        uint256 package,
+        uint256 price
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        packageBit[package] = price;
     }
 
     // set Price Genesis
@@ -291,6 +300,8 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         }
         emit BuyAssetSuccessful(msg.sender, _type);
     }
+
+    
 
     /*
      * encode data

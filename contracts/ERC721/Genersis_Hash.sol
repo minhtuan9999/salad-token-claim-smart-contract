@@ -26,7 +26,7 @@ contract GenesisHash is
         uint256 totalSupply;
         uint256 issueAmount;
         uint256 issueMarketingBox;
-        uint256 issueMarketingType;
+        uint256[] issueMarketingType;
         uint256[] limitType;
         uint256[] amountType;
     }
@@ -68,31 +68,31 @@ contract GenesisHash is
 
         groupDetail[Group.GROUP_A].totalSupply = 800;
         groupDetail[Group.GROUP_A].issueMarketingBox = 120;
-        groupDetail[Group.GROUP_A].issueMarketingType = 20;
+        groupDetail[Group.GROUP_A].issueMarketingType = [20,20,20,20];
         groupDetail[Group.GROUP_A].limitType = [200, 200, 200, 200];
         groupDetail[Group.GROUP_A].amountType = [0, 0, 0, 0];
 
         groupDetail[Group.GROUP_B].totalSupply = 800;
         groupDetail[Group.GROUP_B].issueMarketingBox = 120;
-        groupDetail[Group.GROUP_B].issueMarketingType = 20;
+        groupDetail[Group.GROUP_B].issueMarketingType = [20,20,20,20];
         groupDetail[Group.GROUP_B].limitType = [200, 200, 200, 200];
         groupDetail[Group.GROUP_B].amountType = [0, 0, 0, 0];
         
         groupDetail[Group.GROUP_C].totalSupply = 1000;
         groupDetail[Group.GROUP_C].issueMarketingBox = 150;
-        groupDetail[Group.GROUP_C].issueMarketingType = 20;
+        groupDetail[Group.GROUP_C].issueMarketingType = [20,20,20,20,20];
         groupDetail[Group.GROUP_C].limitType = [200, 200, 200, 200, 200];
         groupDetail[Group.GROUP_C].amountType = [0, 0, 0, 0, 0];
 
         groupDetail[Group.GROUP_D].totalSupply = 800;
         groupDetail[Group.GROUP_D].issueMarketingBox = 120;
-        groupDetail[Group.GROUP_D].issueMarketingType = 20;
+        groupDetail[Group.GROUP_D].issueMarketingType = [20,20,20,20];
         groupDetail[Group.GROUP_D].limitType = [200, 200, 200, 200];
         groupDetail[Group.GROUP_D].amountType = [0, 0, 0, 0];
 
         groupDetail[Group.GROUP_E].totalSupply = 800;
         groupDetail[Group.GROUP_E].issueMarketingBox = 120;
-        groupDetail[Group.GROUP_E].issueMarketingType = 20;
+        groupDetail[Group.GROUP_E].issueMarketingType = [20,20,20,20];
         groupDetail[Group.GROUP_E].limitType = [200, 200, 200, 200];
         groupDetail[Group.GROUP_E].amountType = [0, 0, 0, 0];
     }
@@ -189,24 +189,23 @@ contract GenesisHash is
      */
     function claimMaketingWithType(
         address _address,
-        Group group
+        Group group,
+        uint256 _type
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        uint256 amount = groupDetail[group].issueMarketingType;
-        uint256[] memory listType = groupDetail[group].limitType;
+        uint256 amount = groupDetail[group].issueMarketingType[_type];
         require(amount > 0, "General_Hash::claimMaketingBox: Exceeding limit marketing");
-        for(uint256 i=0; i< listType.length; i++) {
-            for(uint256 j=0; j< amount; j++) {
-                uint256 tokenId = _tokenIds.current();
-                _mint(_address, tokenId);
-                _tokenIds.increment();
-                genesisDetail[tokenId].group = group;
-                genesisDetail[tokenId].species = i;
-            }
-            groupDetail[group].amountType[i] += amount;
-            groupDetail[group].issueAmount += amount;
+        for(uint256 i=0; i< amount; i++) {
+            uint256 tokenId = _tokenIds.current();
+            _mint(_address, tokenId);
+            _tokenIds.increment();
+            genesisDetail[tokenId].group = group;
+            genesisDetail[tokenId].species = _type;
         }
+        groupDetail[group].amountType[_type] += amount;
+        groupDetail[group].issueAmount += amount;
+        
         boxOfAddress[_address][group] += amount;
-        groupDetail[group].issueMarketingType = 0;
+        groupDetail[group].issueMarketingType[_type] = 0;
         emit createBoxs(_address, amount, group);
     }
 
