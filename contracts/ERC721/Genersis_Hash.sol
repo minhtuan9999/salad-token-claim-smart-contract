@@ -33,6 +33,7 @@ contract GenesisHash is
 
     // Detail of token id
     struct GenesisDetail {
+        uint256 tokenId;
         Group group;
         uint256 species;
     }
@@ -200,11 +201,11 @@ contract GenesisHash is
             _tokenIds.increment();
             genesisDetail[tokenId].group = group;
             genesisDetail[tokenId].species = _type;
+            genesisDetail[tokenId].tokenId = tokenId;
         }
         groupDetail[group].amountType[_type] += amount;
         groupDetail[group].issueAmount += amount;
         
-        boxOfAddress[_address][group] += amount;
         groupDetail[group].issueMarketingType[_type] = 0;
         emit createBoxs(_address, amount, group);
     }
@@ -263,6 +264,7 @@ contract GenesisHash is
 
         genesisDetail[tokenId].group = group;
         genesisDetail[tokenId].species = _type;
+        genesisDetail[tokenId].tokenId = tokenId;
 
         groupDetail[group].amountType[_type] += 1;
         boxOfAddress[msg.sender][group]--;
@@ -276,6 +278,7 @@ contract GenesisHash is
     function burn(
         uint256 _tokenId
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        delete genesisDetail[_tokenId];
         _burn(_tokenId);
     }
 
@@ -291,12 +294,12 @@ contract GenesisHash is
     }
 
     // get type of list Token
-    function getTypeOfListToken(uint256[] memory _listToken) public view returns(uint256[] memory,uint256[] memory) {
-        uint256[] memory listTypes = new uint256[](_listToken.length);
+    function getTypeOfListToken(uint256[] memory _listToken) public view returns(GenesisDetail[] memory) {
+        GenesisDetail[] memory listTypes = new GenesisDetail[](_listToken.length);
         for(uint256 i=0; i< _listToken.length; i++) {
-            listTypes[i] = genesisDetail[_listToken[i]].species;
+            listTypes[i] = genesisDetail[_listToken[i]];
         }
-        return (_listToken,listTypes);
+        return listTypes;
     }
     //get group detail
     function getDetailGroup(uint256 _group) external view returns(GroupDetail memory group) {

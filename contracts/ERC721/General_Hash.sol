@@ -32,6 +32,7 @@ contract GeneralHash is
 
     // Detail of token id
     struct GeneralDetail {
+        uint256 tokenId;
         Group group;
         uint256 species;
     }
@@ -235,6 +236,7 @@ contract GeneralHash is
 
         generalDetail[tokenId].group = group;
         generalDetail[tokenId].species = _type;
+        generalDetail[tokenId].tokenId = tokenId;
 
         groupDetail[group].amountType[_type] += 1;
         boxOfAddress[msg.sender][group]--;
@@ -252,6 +254,7 @@ contract GeneralHash is
         Group group = generalDetail[_tokenId].group;
         groupDetail[group].amountType[_type]--;
         groupDetail[group].issueAmount--;
+        delete generalDetail[_tokenId];
         _burn(_tokenId);
     }
 
@@ -267,12 +270,12 @@ contract GeneralHash is
     }
 
     // get type of list Token
-    function getTypeOfListToken(uint256[] memory _listToken) public view returns(uint256[] memory,uint256[] memory) {
-        uint256[] memory listTypes = new uint256[](_listToken.length);
+    function getTypeOfListToken(uint256[] memory _listToken) public view returns(GeneralDetail[] memory) {
+        GeneralDetail[] memory listTypes = new GeneralDetail[](_listToken.length);
         for(uint256 i=0; i< _listToken.length; i++) {
-            listTypes[i] = generalDetail[_listToken[i]].species;
+            listTypes[i] = generalDetail[_listToken[i]];
         }
-        return (_listToken,listTypes);
+        return listTypes;
     }
     //get group detail
     function getDetailGroup(uint256 _group) external view returns(GroupDetail memory group) {
