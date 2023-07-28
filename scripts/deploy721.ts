@@ -2,31 +2,7 @@ import { ethers } from "hardhat";
 
 async function main() {
   let admin = "0x3C971ccf2F799EBa65EA25E7461D7Ad438c811aD";
-  
-  const generalLimitGroup = [400,400,500,400,400];
-
-  const genesisLimitGroup = [800,800,1000,800,800];
-
-  const listGroup = [1,2,3,4,5];
   const feeSeller = (10 * 10**18).toString();
-
-  const listGeneralGroup = [
-    [100,100,100,100],
-    [100,100,100,100],
-    [100,100,100,100,100],
-    [100,100,100,100],
-    [100,100,100,100]
-  ];
-
-  const listGenesisGroup = 
-  [
-    [200,200,200,200],
-    [200,200,200,200],
-    [200,200,200,200,200],
-    [200,200,200,200],
-    [200,200,200,200]
-  ];
-
   const generalPrice = (10**18).toString();
   const genesisPrice = (10**18).toString();
   const farmPrice = (10**18).toString();
@@ -85,17 +61,17 @@ async function main() {
   const ehanceItem = await EhanceItem.deploy("baseURL");
   ehanceItem.deployed();
 
+  const ReMonsterFarm= await ethers.getContractFactory("ReMonsterFarm");
+  const reMonsterFarm = await ReMonsterFarm.deploy("Farm", "FARM", 5000);
+  reMonsterFarm.deployed();
+
   const Shop= await ethers.getContractFactory("ReMonsterShop");
-  const shop = await Shop.deploy(admin,generalPrice,genesisPrice,farmPrice,bitPrice);
+  const shop = await Shop.deploy(admin, general.address, genesis.address, reMonsterFarm.address,generalPrice,genesisPrice,farmPrice,bitPrice);
   shop.deployed();
 
   const ReMonsterMarketplace= await ethers.getContractFactory("ReMonsterMarketplace");
   const reMonsterMarketplace = await ReMonsterMarketplace.deploy(feeSeller, admin);
   reMonsterMarketplace.deployed();
-
-  const ReMonsterFarm= await ethers.getContractFactory("ReMonsterFarm");
-  const reMonsterFarm = await ReMonsterFarm.deploy("Farm", "FARM", 5000);
-  reMonsterFarm.deployed();
 
   const TokenXXX= await ethers.getContractFactory("TokenXXX");
   const tokenXXX = await TokenXXX.deploy("xxx", "xxx");
@@ -125,41 +101,6 @@ async function main() {
   // Set init contract Coach
   await coach.setMonsterContract(monster.address);
   await coach.setMonsterMemory(monsterMemory.address);
-
-  /* Set init contract Genesis Hash*/
-  // Set detail limit group
-  for(let i=0; i< genesisLimitGroup.length; i++){
-    await genesis.initSetDetailGroup(i+1, genesisLimitGroup[i]);
-  }
-  // Set detail specie group A
-  for(let i=0; i< genesisLimitGroup.length; i++){
-    let arr = listGenesisGroup[i];
-    for(let j=0;j < arr.length; j++) {
-      await genesis.initSetSpecieDetail(i+1,j+1, arr[j]);
-    }
-  }
-  // for(let i =0; i < listGroup.length; i++ ){
-  //   await genesis.createMarketingBoxWithType(admin, listGroup[i]);
-  // }
-  // for(let i =0; i< listGroup.length; i++) {
-  //   await genesis.createMarketingBox(admin, listGroup[i]);
-  // }
-
-  /* Set init contract General Hash*/
-  // Set detail limit group
-  for(let i=0; i< generalLimitGroup.length; i++){
-    await general.initSetDetailGroup(i+1, generalLimitGroup[i]);
-  }
-  // Set detail specie group A
-  for(let i=0; i< generalLimitGroup.length; i++){
-    let arr = listGeneralGroup[i];
-    for(let j=0;j < arr.length; j++) {
-      await general.initSetSpecieDetail(i+1,j+1, arr[j]);
-    }
-  }  
-  // for(let i =0; i< listGroup.length; i++) {
-  //   await general.createMarketingBox(admin, listGroup[i]);
-  // }
 
   /* Set init contract Monster crystal*/
   await monsterCrystal.initSetMonsterContract(monster.address);
@@ -193,6 +134,46 @@ async function main() {
   // Set init contract HashChip
   await hashChipNFT.grantRole(hashChipNFT.MANAGEMENT_ROLE(), monster.address);
   // shop
+
+  // mint marketing general
+  await general.claimMaketingBox(admin,0);
+  await general.claimMaketingBox(admin,1);
+  await general.claimMaketingBox(admin,2);
+  await general.claimMaketingBox(admin,3);
+  await general.claimMaketingBox(admin,4);
+  
+  // claim marketing genesis
+  await genesis.claimMaketingBox(admin, 0);
+  await genesis.claimMaketingBox(admin, 1);
+  await genesis.claimMaketingBox(admin, 2);
+  await genesis.claimMaketingBox(admin, 3);
+  await genesis.claimMaketingBox(admin, 4);
+
+  await genesis.claimMaketingWithType(admin, 0, 0);
+  await genesis.claimMaketingWithType(admin, 0, 1);
+  await genesis.claimMaketingWithType(admin, 0, 2);
+  await genesis.claimMaketingWithType(admin, 0, 3);
+
+  await genesis.claimMaketingWithType(admin, 1, 0);
+  await genesis.claimMaketingWithType(admin, 1, 1);
+  await genesis.claimMaketingWithType(admin, 1, 2);
+  await genesis.claimMaketingWithType(admin, 1, 3);
+  
+  await genesis.claimMaketingWithType(admin, 2, 0);
+  await genesis.claimMaketingWithType(admin, 2, 1);
+  await genesis.claimMaketingWithType(admin, 2, 2);
+  await genesis.claimMaketingWithType(admin, 2, 3);
+  await genesis.claimMaketingWithType(admin, 2, 4);
+
+  await genesis.claimMaketingWithType(admin, 3, 0);
+  await genesis.claimMaketingWithType(admin, 3, 1);
+  await genesis.claimMaketingWithType(admin, 3, 2);
+  await genesis.claimMaketingWithType(admin, 3, 3);
+
+  await genesis.claimMaketingWithType(admin, 4, 0);
+  await genesis.claimMaketingWithType(admin, 4, 1);
+  await genesis.claimMaketingWithType(admin, 4, 2);
+  await genesis.claimMaketingWithType(admin, 4, 3);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

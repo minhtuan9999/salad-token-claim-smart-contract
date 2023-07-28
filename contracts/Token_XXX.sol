@@ -38,11 +38,6 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         validator = _msgSender();
-        // token init
-        // tokenBase = IERC20(addressTokenBase);
-
-        _mint(msg.sender, 10000);
-
     }
 
     /**
@@ -115,7 +110,7 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
         uint256 ratio,
         uint256 deadline,
         bytes calldata sig
-    ) public whenNotPaused {
+    ) public whenNotPaused payable {
         require(
             deadline > block.timestamp,
             "TokenXXX::buyToken: Deadline exceeded"
@@ -140,12 +135,12 @@ contract TokenXXX is ERC20, AccessControl, Pausable {
 
         if (typeBuy == TypeBuy.OAS) {
             uint256 totalPrice = amountInWei.mul(ratio).div(10**18);
-
+            require(totalPrice == msg.value,"TokenXXX::buyToken: Amount exceeded");
             // Transfer amount for Owner
-            // require(
-            //     tokenBase.transferFrom(account, address(this), totalPrice),
-            //     "TokenXXX::buyToken: Transfering the cut to the owner failed"
-            // );
+            require(
+                payable(validator).send(totalPrice),
+                "TokenXXX::buyToken: Amount exceeded"
+            );
             usedSignature[account][sig] = true;
             _mint(account, amountInWei);
         } else if (typeBuy == TypeBuy.FIAT) {
