@@ -299,8 +299,21 @@ contract GenesisHash is
         return (_listToken,listTypes);
     }
     //get group detail
-    function getDetailGroup(Group group) external view returns(GroupDetail memory) {
-        return groupDetail[group];
+    function getDetailGroup(uint256 _group) external view returns(GroupDetail memory group) {
+        if (_group == 0) {
+            group = groupDetail[Group.GROUP_A];
+        }
+        if (_group == 1) {
+            group = groupDetail[Group.GROUP_B];
+        }
+        if (_group == 2) {
+            group = groupDetail[Group.GROUP_C];
+        }
+        if (_group == 3) {
+            group = groupDetail[Group.GROUP_D];
+        }
+        if (_group == 4) {
+            group = groupDetail[Group.GROUP_E];
+        }
     }
-
 }
