@@ -118,6 +118,9 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
      */
     constructor(
         address _addressReceice,
+        GeneralBox addressGeneral,
+        GenesisBox addressGenesis,
+        FarmNFT addressFarm,
         uint256 _generalPrice,
         uint256 _genesisPrice,
         uint256 _farmPrice,
@@ -132,6 +135,9 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         genesisPrice = _genesisPrice;
         farmPrice = _farmPrice;
         bitPrice = _bitPrice;
+        generalContract = addressGeneral;
+        genesisContract = addressGenesis;
+        farmContract = addressFarm;
     }
 
     function pause() public onlyRole(ADMIN_ROLE) {
@@ -354,7 +360,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     function getListSale() external view returns (AssetSale[] memory) {
-        AssetSale[] memory listSale;
+        AssetSale[] memory listSale = new AssetSale[](4);
         // Farm
         GroupAsset[] memory groupAssetFarm;
         listSale[0] = AssetSale(
@@ -364,7 +370,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             groupAssetFarm
         );
         // General
-        GroupAsset[] memory groupAssetGeneral;
+        GroupAsset[] memory groupAssetGeneral = new GroupAsset[](5);
         for (uint i = 1; i < 5; i++) {
             groupAssetGeneral[i - 1] = GroupAsset(
                 generalContract.getDetailGroup(i).totalSupply,
@@ -372,8 +378,8 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             );
         }
         listSale[1] = AssetSale(0, 0, generalPrice, groupAssetGeneral);
-        // Genesis
-        GroupAsset[] memory groupAssetGenesis;
+        // // Genesis
+        GroupAsset[] memory groupAssetGenesis  = new GroupAsset[](5);
         for (uint i = 1; i < 5; i++) {
             groupAssetGenesis[i - 1] = GroupAsset(
                 genesisContract.getDetailGroup(i).totalSupply,
@@ -381,7 +387,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             );
         }
         listSale[2] = AssetSale(0, 0, genesisPrice, groupAssetGenesis);
-        // Bit
+        // // Bit
         GroupAsset[] memory groupAssetBit;
         listSale[3] = AssetSale(0, 0, bitPrice, groupAssetBit);
         return listSale;
