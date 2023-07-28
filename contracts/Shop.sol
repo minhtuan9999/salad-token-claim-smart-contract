@@ -382,6 +382,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             farmPrice,
             groupAssetFarm
         );
+        
         // General
         GroupAsset[] memory groupAssetGeneral = new GroupAsset[](5);
         for (uint i = 0; i < 5; i++) {
@@ -392,7 +393,8 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             );
         }
         listSale[1] = AssetSale(0, 0, generalPrice, groupAssetGeneral);
-        // // Genesis
+
+        // Genesis
         GroupAsset[] memory groupAssetGenesis  = new GroupAsset[](5);
         for (uint i = 0; i < 5; i++) {
             uint256 remaining = genesisContract.getDetailGroup(i).totalSupply.sub(genesisContract.getDetailGroup(i).issueAmount);
@@ -402,7 +404,8 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             );
         }
         listSale[2] = AssetSale(0, 0, genesisPrice, groupAssetGenesis);
-        // // Bit
+
+        // Bit
         GroupAsset[] memory groupAssetBit;
         listSale[3] = AssetSale(0, 0, bitPrice, groupAssetBit);
         return listSale;
