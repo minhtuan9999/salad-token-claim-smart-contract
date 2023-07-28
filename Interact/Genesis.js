@@ -1,7 +1,7 @@
 import Web3 from "web3";
 
 //========CONFIG ENV====================================================================
-CHAIN_NETWORK = 29548;
+CHAIN_NETWORK = 20197;
 ADDRESS_GENESIS = "";
 PATH_METAMASK = "";
 
@@ -100,7 +100,7 @@ const changeNetworkInMetamask = async (chainId) => {
 };
 
 //==================CREATE CONTRACT===========================================
-// Prepare the SHOP contract obj
+// Prepare the contract obj
 var genesisContract = new provider.eth.Contract(ABI_GENESIS, ADDRESS_GENESIS);
 
 //==================BUY ITEM===========================================
@@ -123,8 +123,7 @@ const _openGenesisBox = async (group) => {
     const transactionParameters = {
       to: ABI_GENESIS,
       data: genesisContract.methods.openGenesisBox(group).encodeABI(),
-      chainId: CHAIN_NETWORK,
-      value: priceInWei
+      chainId: CHAIN_NETWORK
     };
 
     return sendTransaction(transactionParameters);

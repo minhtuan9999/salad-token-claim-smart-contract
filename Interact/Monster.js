@@ -1,7 +1,7 @@
 import Web3 from "web3";
 
 //========CONFIG ENV====================================================================
-CHAIN_NETWORK = 29548;
+CHAIN_NETWORK = 20197;
 ADDRESS_CONTRACT = "";
 PATH_METAMASK = "";
 
@@ -100,7 +100,7 @@ const changeNetworkInMetamask = async (chainId) => {
 };
 
 //==================CREATE CONTRACT===========================================
-// Prepare the SHOP contract obj
+// Prepare the contract obj
 var contract = new provider.eth.Contract(ABI_CONTRACT, ADDRESS_CONTRACT);
 
 //==================SEND TRANSACTION==========================================
@@ -146,8 +146,7 @@ const _setStatusMonster = async (tokenId, status) => {
     const transactionParameters = {
       to: ABI_CONTRACT,
       data: contract.methods.setStatusMonster(tokenId, status).encodeABI(),
-      chainId: CHAIN_NETWORK,
-      value: priceInWei
+      chainId: CHAIN_NETWORK
     };
 
     return sendTransaction(transactionParameters);
@@ -157,7 +156,7 @@ const _setStatusMonster = async (tokenId, status) => {
 };
 
 //==================MINT MONSTER===========================================
-const mintMonster = async (type,address, tokenId, isOas, cost, deadline, sig) => {
+const mintMonster = async (type,address, tokenId, isOas, priceInWei, deadline, sig) => {
   try {
     await changeNetworkInMetamask(CHAIN_NETWORK);
     let networkId = await window.ethereum.request({
@@ -165,17 +164,17 @@ const mintMonster = async (type,address, tokenId, isOas, cost, deadline, sig) =>
     });
     networkId = await Web3.utils.hexToNumberString(networkId);
     if (networkId != CHAIN_NETWORK) return;
-    _mintMonster(type,address, tokenId, isOas, cost, deadline, sig);
+    _mintMonster(type,address, tokenId, isOas, priceInWei, deadline, sig);
   } catch (error) {
     console.log(error);
   }
 };
 
-const _mintMonster = async (type,address, tokenId, isOas, cost, deadline, sig) => {
+const _mintMonster = async (type,address, tokenId, isOas, priceInWei, deadline, sig) => {
   try {
     const transactionParameters = {
       to: ABI_CONTRACT,
-      data: contract.methods.mintMonster(type,address, tokenId, isOas, cost, deadline, sig).encodeABI(),
+      data: contract.methods.mintMonster(type,address, tokenId, isOas, priceInWei, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
       value: priceInWei
     };
@@ -366,7 +365,7 @@ const _fusionMultipleHash = async () => {
 };
 
 //==================FUSION BY GENERAL X GENESIS===========================================
-const refreshTimesOfRegeneration = async (type, address, tokenId, isOAS, cost, deadline, sig) => {
+const refreshTimesOfRegeneration = async (type, address, tokenId, isOAS, priceInWei, deadline, sig) => {
   try {
     await changeNetworkInMetamask(CHAIN_NETWORK);
     let networkId = await window.ethereum.request({
@@ -374,7 +373,7 @@ const refreshTimesOfRegeneration = async (type, address, tokenId, isOAS, cost, d
     });
     networkId = await Web3.utils.hexToNumberString(networkId);
     if (networkId != CHAIN_NETWORK) return;
-    _refreshTimesOfRegeneration(type, address, tokenId, isOAS, cost, deadline, sig);
+    _refreshTimesOfRegeneration(type, address, tokenId, isOAS, priceInWei, deadline, sig);
   } catch (error) {
     console.log(error);
   }
@@ -384,7 +383,7 @@ const _refreshTimesOfRegeneration = async () => {
   try {
     const transactionParameters = {
       to: ABI_CONTRACT,
-      data: contract.methods.refreshTimesOfRegeneration(type, address, tokenId, isOAS, cost, deadline, sig).encodeABI(),
+      data: contract.methods.refreshTimesOfRegeneration(type, address, tokenId, isOAS, priceInWei, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
       value: priceInWei
     };
