@@ -124,6 +124,10 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         emit mintTrainingItem(_addressTo, _itemId,_number, _data);
     }
     
+    function isMintMonster(uint256 _itemId) external view returns(bool) {
+        return _itemId == REGENERATION_HASH_OOO_R|| _itemId == REGENERATION_HASH_RANDOM_R;
+    }
+
     function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGEMENT_ROLE) {
         _burn(_from, _id, _amount);
         emit burnItem(_from, _id, _amount);

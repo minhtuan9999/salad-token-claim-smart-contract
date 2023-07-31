@@ -31,6 +31,7 @@ interface IRegenerationItem {
         uint256[] memory _id,
         uint256[] memory _amount
     ) external;
+    function isMintMonster(uint256 _itemId) external view returns(bool);
 }
 interface IFusionItem {
     function burn(address _from, uint256 _id, uint256 _amount) external;

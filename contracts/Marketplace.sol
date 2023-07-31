@@ -33,6 +33,10 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
+interface TRAINING_ITEM {
+    function isOnlyShop(uint256 _itemId) external view returns(bool);
+}
+
 contract ReMonsterMarketplace is
     Ownable,
     ReentrancyGuard,
@@ -52,7 +56,6 @@ contract ReMonsterMarketplace is
     uint8 public decimalsFee = 18;
 
     InfoItemSale[] public listSale;
-
     struct Order {
         address contractAddress;
         uint256 tokenId;
@@ -293,7 +296,7 @@ contract ReMonsterMarketplace is
                 priceInWei > 0,
                 "ReMonsterMarketplace::createMarketItemSale: Price should be bigger than 0"
             );
-
+            require(!TRAINING_ITEM(contractAddress).isOnlyShop(tokenId), "MarketPlace:: _createMarketItemSale: item can not sale");
             bytes32 orderId = keccak256(
                 abi.encodePacked(
                     timeNow,

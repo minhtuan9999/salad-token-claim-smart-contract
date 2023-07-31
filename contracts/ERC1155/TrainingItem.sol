@@ -200,7 +200,6 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     ) internal override {
         for(uint256 i = 0; i< ids.length; i++){
             if(from != address(0)) {
-                require(!_isOnlyShop(ids[i]), "TrainingItem:: _beforeTokenTransfer: item cannot be transferred");
                 if((balanceOf(from, ids[i]) - amounts[i]) == 0) {
                     _listTokensOfAddress[from].remove(ids[i]);
                 }
@@ -241,7 +240,7 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         emit mintTrainingItem(_addressTo, _itemId,_number, _data);
     }
     
-    function _isOnlyShop(uint256 _itemId) private view returns(bool) {
+    function isOnlyShop(uint256 _itemId) external view returns(bool) {
         return _itemId == ENERGY_BANANA_SHOP||
             _itemId == REFRESH_HERB_SHOP||
             _itemId == FRESH_MILK_SHOP||

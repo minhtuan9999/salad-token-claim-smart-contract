@@ -75,8 +75,8 @@ contract Monster is MonsterCore {
         season++;
     }
      // Set new season
-    function set() external onlyRole(MANAGEMENT_ROLE) {
-        season++;
+    function setNftRepair(uint256 _cost) external onlyRole(MANAGEMENT_ROLE) {
+        nftRepair = _cost;
     }
     // Set fee mint Monster
     function setCostOfType(
@@ -388,4 +388,5 @@ contract Monster is MonsterCore {
             revert("Monster:::MonsterCore::getFeeOfTokenId: Unsupported type");
         }
     }
+
 }

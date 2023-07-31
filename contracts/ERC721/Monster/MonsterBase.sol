@@ -46,7 +46,7 @@ contract MonsterBase is
         FREE,
         FUSION
     }
-
+    
     // Mapping list token of owner
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     // Infor monster

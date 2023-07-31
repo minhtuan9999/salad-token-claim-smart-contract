@@ -19,8 +19,7 @@ contract MonsterCore is MonsterInterface {
     uint256 public limitExternal = 3;
     uint256 public limitHashChip = 3;
 
-    uint8 public REGENERATION_HASH_OOO_R  = 1;
-    uint8 public REGENERATION_HASH_RANDOM_R  = 2;
+    uint256 public nftRepair = 10;
 
     // Check status mint nft free of address
     mapping(address => bool) public _realdyFreeNFT;
@@ -99,7 +98,7 @@ contract MonsterCore is MonsterInterface {
 
     // mint monster from Regeneration hash
     function _fromRegenerationNFT(uint256 _itemId) internal returns (uint256) {
-        require(_itemId == REGENERATION_HASH_OOO_R || _itemId == REGENERATION_HASH_RANDOM_R, "Monster:: _fromRegenerationNFT: _itemId not exist");
+        require(regenerationItem.isMintMonster(_itemId), "Monster:: _fromRegenerationNFT: _itemId not exist");
         regenerationItem.burn(msg.sender, _itemId, 1);
         uint256 tokenId = _createNFT(msg.sender, TypeMint.REGENERATION_ITEM);
         return tokenId;
