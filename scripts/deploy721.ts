@@ -122,8 +122,9 @@ async function main() {
   await monster.initSetGenesisHashContract(genesis.address);
   await monster.initSetHashChipContract(hashChipNFT.address);
   await monster.initSetMonsterMemoryContract(monsterMemory.address);
-  await monster.initSetMonsterItemContract(regenerationItem.address);
-  await monster.initSetTreasuryAdress(admin);
+  await monster.initSetRegenerationContract(regenerationItem.address);
+  await monster.initSetFusionContract(fusionItem.address);
+  await monster.setTreasuryAdress(admin);
   // Set init contract General
   await general.grantRole(general.MANAGEMENT_ROLE(), monster.address);
   // Set init contract Genesis

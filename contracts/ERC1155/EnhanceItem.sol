@@ -16,12 +16,184 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         baseMetadata = _baseMetadata; 
+
+        itemDetail[HP_SEED_C].amountLimit = 1500;
+        itemDetail[HP_SEED_UC].amountLimit = 300;
+        itemDetail[HP_SEED_R].amountLimit = 60;
+
+        itemDetail[STR_SEED_C].amountLimit = 1500;
+        itemDetail[STR_SEED_UC].amountLimit = 300;
+        itemDetail[STR_SEED_R].amountLimit = 60;
+
+        itemDetail[INT_SEED_C].amountLimit = 1500;
+        itemDetail[INT_SEED_UC].amountLimit = 300;
+        itemDetail[INT_SEED_R].amountLimit = 60;
+
+        itemDetail[DEX_SEED_C].amountLimit = 1500;
+        itemDetail[DEX_SEED_UC].amountLimit = 300;
+        itemDetail[DEX_SEED_R].amountLimit = 60;
+
+        itemDetail[AGI_SEED_C].amountLimit = 1500;
+        itemDetail[AGI_SEED_UC].amountLimit = 300;
+        itemDetail[AGI_SEED_R].amountLimit = 60;
+
+        itemDetail[VIT_SEED_C].amountLimit = 1500;
+        itemDetail[VIT_SEED_UC].amountLimit = 300;
+        itemDetail[VIT_SEED_R].amountLimit = 60;
+
+        itemDetail[ALL_SEED_C].amountLimit = 1000200;
+        itemDetail[ALL_SEED_UC].amountLimit = 200;
+        itemDetail[ALL_SEED_R].amountLimit = 40;
+
+        itemDetail[STAMINA_GUIDE_BOOK_C].amountLimit = 500;
+        itemDetail[STAMINA_GUIDE_BOOK_UC].amountLimit = 100;
+        itemDetail[STAMINA_GUIDE_BOOK_R].amountLimit = 20;
+
+        itemDetail[STRENGTH_GUIDE_BOOK_C].amountLimit = 500;
+        itemDetail[STRENGTH_GUIDE_BOOK_UC].amountLimit = 100;
+        itemDetail[STRENGTH_GUIDE_BOOK_R].amountLimit = 20;
+
+        itemDetail[WISDOM_GUIDE_BOOK_C].amountLimit = 500;
+        itemDetail[WISDOM_GUIDE_BOOK_UC].amountLimit = 100;
+        itemDetail[WISDOM_GUIDE_BOOK_R].amountLimit = 20;
+
+        itemDetail[ACCURACY_GUIDE_BOOK_C].amountLimit = 500;
+        itemDetail[ACCURACY_GUIDE_BOOK_UC].amountLimit = 100;
+        itemDetail[ACCURACY_GUIDE_BOOK_R].amountLimit = 20;
+
+        itemDetail[EVASION_GUIDE_BOOK_C].amountLimit = 500;
+        itemDetail[EVASION_GUIDE_BOOK_UC].amountLimit = 100;
+        itemDetail[EVASION_GUIDE_BOOK_R].amountLimit = 20;
+
+        itemDetail[DEFENSE_GUIDE_BOOK_C].amountLimit = 500;
+        itemDetail[DEFENSE_GUIDE_BOOK_UC].amountLimit = 100;
+        itemDetail[DEFENSE_GUIDE_BOOK_R].amountLimit = 20;
+
+        itemDetail[ULTIMANIA_C].amountLimit = 300;
+        itemDetail[ULTIMANIA_UC].amountLimit = 60;
+        itemDetail[ULTIMANIA_R].amountLimit = 12;
+
+        itemDetail[REFRESHING_AROMA_C].amountLimit = 500;
+        itemDetail[REFRESHING_AROMA_UC].amountLimit = 100;
+        itemDetail[REFRESHING_AROMA_R].amountLimit = 20;
+
+        itemDetail[PITCHER_OF_PRAYER_C].amountLimit = 500;
+        itemDetail[PITCHER_OF_PRAYER_UC].amountLimit = 100;
+        itemDetail[PITCHER_OF_PRAYER_R].amountLimit = 20;
+
+        itemDetail[INCENSE_BURNER_OF_TRANQUILITY_C].amountLimit = 500;
+        itemDetail[INCENSE_BURNER_OF_TRANQUILITY_UC].amountLimit = 100;
+        itemDetail[INCENSE_BURNER_OF_TRANQUILITY_R].amountLimit = 20;
+
+        itemDetail[COMFORTABLE_INTERIOR_SET_C].amountLimit = 300;
+        itemDetail[COMFORTABLE_INTERIOR_SET_UC].amountLimit = 60;
+        itemDetail[COMFORTABLE_INTERIOR_SET_R].amountLimit = 12;
+
+        itemDetail[PITCHER_OF_ANGEL_R].amountLimit = 316;
+
+        itemDetail[PREMIUM_AROMA_R].amountLimit = 316;
     }
     // base metadata
     string public baseMetadata;
+
+    struct ITEM_DETAIL {
+        uint256 amountLimit;
+        uint256 totalAmount;
+    }
+
+    uint8 public HP_SEED_C = 0;
+    uint8 public HP_SEED_UC = 1;
+    uint8 public HP_SEED_R = 2;
+    
+    uint8 public STR_SEED_C = 3;
+    uint8 public STR_SEED_UC = 4;
+    uint8 public STR_SEED_R = 5;
+    
+    uint8 public INT_SEED_C = 6;
+    uint8 public INT_SEED_UC = 7;
+    uint8 public INT_SEED_R = 8;
+
+    uint8 public DEX_SEED_C = 9;
+    uint8 public DEX_SEED_UC = 10;
+    uint8 public DEX_SEED_R = 11;
+
+    uint8 public AGI_SEED_C = 12;
+    uint8 public AGI_SEED_UC = 13;
+    uint8 public AGI_SEED_R = 14;
+
+    uint8 public VIT_SEED_C = 15;
+    uint8 public VIT_SEED_UC = 16;
+    uint8 public VIT_SEED_R = 17;
+
+    uint8 public ALL_SEED_C = 18;
+    uint8 public ALL_SEED_UC = 19;
+    uint8 public ALL_SEED_R = 20;
+
+    uint8 public STAMINA_GUIDE_BOOK_C = 21;
+    uint8 public STAMINA_GUIDE_BOOK_UC = 22;
+    uint8 public STAMINA_GUIDE_BOOK_R = 23;
+
+    uint8 public STRENGTH_GUIDE_BOOK_C = 24;
+    uint8 public STRENGTH_GUIDE_BOOK_UC = 25;
+    uint8 public STRENGTH_GUIDE_BOOK_R = 26;
+
+    uint8 public WISDOM_GUIDE_BOOK_C = 27;
+    uint8 public WISDOM_GUIDE_BOOK_UC = 28;
+    uint8 public WISDOM_GUIDE_BOOK_R = 29;
+
+    uint8 public ACCURACY_GUIDE_BOOK_C = 30;
+    uint8 public ACCURACY_GUIDE_BOOK_UC = 31;
+    uint8 public ACCURACY_GUIDE_BOOK_R = 32;
+
+    uint8 public EVASION_GUIDE_BOOK_C = 33;
+    uint8 public EVASION_GUIDE_BOOK_UC = 34;
+    uint8 public EVASION_GUIDE_BOOK_R = 35;
+
+    uint8 public DEFENSE_GUIDE_BOOK_C = 36;
+    uint8 public DEFENSE_GUIDE_BOOK_UC = 37;
+    uint8 public DEFENSE_GUIDE_BOOK_R = 38;
+
+    uint8 public ULTIMANIA_C = 39;
+    uint8 public ULTIMANIA_UC = 40;
+    uint8 public ULTIMANIA_R = 41;
+
+    uint8 public REFRESHING_AROMA_C = 42;
+    uint8 public REFRESHING_AROMA_UC = 43;
+    uint8 public REFRESHING_AROMA_R = 44;
+
+    uint8 public PITCHER_OF_PRAYER_C = 45;
+    uint8 public PITCHER_OF_PRAYER_UC = 46;
+    uint8 public PITCHER_OF_PRAYER_R = 47;
+
+    uint8 public INCENSE_BURNER_OF_TRANQUILITY_C = 48;
+    uint8 public INCENSE_BURNER_OF_TRANQUILITY_UC = 49;
+    uint8 public INCENSE_BURNER_OF_TRANQUILITY_R = 50;
+
+    uint8 public COMFORTABLE_INTERIOR_SET_C = 51;
+    uint8 public COMFORTABLE_INTERIOR_SET_UC = 52;
+    uint8 public COMFORTABLE_INTERIOR_SET_R = 53;
+    
+    uint8 public PITCHER_OF_ANGEL_R = 54;
+
+    uint8 public PREMIUM_AROMA_R = 55;
+
+    uint8 public CRYSTAL_OF_OO_R = 56;
+
+    uint8 public HP_COACH_R = 57;
+
+    uint8 public STR_COACH_R = 58;
+
+    uint8 public INT_COACH_R = 59;
+
+    uint8 public DEX_COACH_R = 60;
+
+    uint8 public AGI_COACH_R = 61;
+
+    uint8 public VIT_COACH_R = 62;
+
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
-
+    mapping(uint256 => ITEM_DETAIL) public itemDetail;
     // EVENT
     event mintTrainingItem(
         address _addressTo,
@@ -58,6 +230,11 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         return super.supportsInterface(interfaceId);
     }
     
+    // set amount limit
+    function setAmountLimit(uint256 itemId, uint256 _limit) public onlyRole(MANAGEMENT_ROLE) {
+        itemDetail[itemId].amountLimit = _limit;
+    }
+
     // Override _beforeTokenTransfer
     function _beforeTokenTransfer(
         address operator,
@@ -98,7 +275,15 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGEMENT_ROLE) {
-        _mint(_addressTo, _itemId, _number, _data);
+        if(_itemId >= CRYSTAL_OF_OO_R && _itemId <= VIT_COACH_R ) {
+            _mint(_addressTo, _itemId, _number, _data);
+        }else {
+            uint256 remain = itemDetail[_itemId].amountLimit - itemDetail[_itemId].totalAmount;
+            require(remain > 0, "EnhanceItem:: mint: exceeding");
+            _mint(_addressTo, _itemId, _number, _data);
+            itemDetail[_itemId].totalAmount++;
+        }
+        
         emit mintTrainingItem(_addressTo, _itemId,_number, _data);
     }
     

@@ -16,11 +16,24 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         baseMetadata = _baseMetadata; 
+
+        itemDetail[REGENERATION_HASH_OOO_R].amountLimit = 100;
+        itemDetail[REGENERATION_HASH_RANDOM_R].amountLimit = 200;
     }
     // base metadata
     string public baseMetadata;
+
+    struct ITEM_DETAIL {
+        uint256 amountLimit;
+        uint256 totalAmount;
+    }
+
+    uint8 public HASH_FRAGMENT_UC  = 0;
+    uint8 public REGENERATION_HASH_OOO_R  = 1;
+    uint8 public REGENERATION_HASH_RANDOM_R  = 2;
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
+    mapping(uint256 => ITEM_DETAIL) public itemDetail;
 
     // EVENT
     event mintTrainingItem(
@@ -57,7 +70,10 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
     ) public view override(AccessControl, ERC1155) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
-    
+    // set amount limit
+    function setAmountLimit(uint256 itemId, uint256 _limit) public onlyRole(MANAGEMENT_ROLE) {
+        itemDetail[itemId].amountLimit = _limit;
+    }
     // Override _beforeTokenTransfer
     function _beforeTokenTransfer(
         address operator,
@@ -98,10 +114,20 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGEMENT_ROLE) {
-        _mint(_addressTo, _itemId, _number, _data);
+        if(_itemId == HASH_FRAGMENT_UC) {
+            _mint(_addressTo, _itemId, _number, _data);
+        }else{
+            uint256 remain = itemDetail[_itemId].amountLimit - itemDetail[_itemId].totalAmount;
+            require(remain > 0, "RegenerationItem:: mint: exceeding");
+            _mint(_addressTo, _itemId, _number, _data);
+        }
         emit mintTrainingItem(_addressTo, _itemId,_number, _data);
     }
     
+    function isMintMonster(uint256 _itemId) external view returns(bool) {
+        return _itemId == REGENERATION_HASH_OOO_R|| _itemId == REGENERATION_HASH_RANDOM_R;
+    }
+
     function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGEMENT_ROLE) {
         _burn(_from, _id, _amount);
         emit burnItem(_from, _id, _amount);

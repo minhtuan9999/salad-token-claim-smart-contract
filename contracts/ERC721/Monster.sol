@@ -74,9 +74,12 @@ contract Monster is MonsterCore {
     function setNewSeason() external onlyRole(MANAGEMENT_ROLE) {
         season++;
     }
-
+     // Set new season
+    function setNftRepair(uint256 _cost) external onlyRole(MANAGEMENT_ROLE) {
+        nftRepair = _cost;
+    }
     // Set fee mint Monster
-    function initSetCostOfType(
+    function setCostOfType(
         TypeMint _type,
         uint256[] memory cost
     ) external onlyRole(MANAGEMENT_ROLE) {
@@ -94,7 +97,7 @@ contract Monster is MonsterCore {
     }
 
     // Set limit mint Monster
-    function initSetLimitOfType(
+    function setLimitOfType(
         TypeMint _type,
         uint256 limit
     ) external onlyRole(MANAGEMENT_ROLE) {
@@ -112,13 +115,13 @@ contract Monster is MonsterCore {
     }
 
     // Set address Monster Treasury
-    function initSetTreasuryAdress(
+    function setTreasuryAdress(
         address _address
     ) external onlyRole(MANAGEMENT_ROLE) {
         _treasuryAddress = payable(_address);
     }
 
-    function initSetValidator(
+    function setValidator(
         address _address
     ) external whenNotPaused onlyOwner {
         validator = _address;
@@ -193,9 +196,7 @@ contract Monster is MonsterCore {
     /*
      * Create a Monster by type Free
      */
-    function mintMonsterFromRegeneration(
-        uint256 _tokenId
-    ) external nonReentrant whenNotPaused {
+    function mintMonsterFromRegeneration(uint256 _tokenId) external nonReentrant whenNotPaused {
         uint256 tokenId = _fromRegenerationNFT(_tokenId);
         emit createNFTMonster(msg.sender, tokenId, TypeMint.REGENERATION_ITEM);
     }
@@ -211,8 +212,14 @@ contract Monster is MonsterCore {
     function fusionMonsterNFT(
         address _owner,
         uint256 _firstTokenId,
-        uint256 _lastTokenId
+        uint256 _lastTokenId,
+        uint256[] memory _listItem,
+        uint256[] memory _amount
     ) external nonReentrant whenNotPaused {
+        require(_listItem.length == _amount.length, "Monster:: FusionMonsterNFT: input error");
+        if(_amount[0] != 0) {
+            fusionItem.burnMultipleItem(_owner, _listItem, _amount);
+        }
         uint256 tokenId = _fusionMonsterNFT(
             _owner,
             _firstTokenId,
@@ -237,8 +244,14 @@ contract Monster is MonsterCore {
     function fusionGenesisHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId
+        uint256 _lastId,
+        uint256[] memory _listItem,
+        uint256[] memory _amount
     ) external nonReentrant whenNotPaused {
+        require(_listItem.length == _amount.length, "Monster:: FusionMonsterNFT: input error");
+        if(_amount[0] != 0) {
+            fusionItem.burnMultipleItem(_owner, _listItem, _amount);
+        }
         uint256 tokenId = _fusionGenesisHash(
             _owner,
             _firstId,
@@ -258,8 +271,14 @@ contract Monster is MonsterCore {
     function fusionGeneralHash(
         address _owner,
         uint256 _firstId,
-        uint256 _lastId
+        uint256 _lastId,
+        uint256[] memory _listItem,
+        uint256[] memory _amount
     ) external nonReentrant whenNotPaused {
+        require(_listItem.length == _amount.length, "Monster:: FusionMonsterNFT: input error");
+        if(_amount[0] != 0) {
+            fusionItem.burnMultipleItem(_owner, _listItem, _amount);
+        }
         uint256 tokenId = _fusionGeneralHash(
             _owner,
             _firstId,
@@ -279,8 +298,14 @@ contract Monster is MonsterCore {
     function fusionMultipleHash(
         address _owner,
         uint256 _genesisId,
-        uint256 _generalId
+        uint256 _generalId,
+        uint256[] memory _listItem,
+        uint256[] memory _amount
     ) external nonReentrant whenNotPaused {
+        require(_listItem.length == _amount.length, "Monster:: FusionMonsterNFT: input error");
+        if(_amount[0] != 0) {
+            fusionItem.burnMultipleItem(_owner, _listItem, _amount);
+        }
         uint256 tokenId = _fusionMultipleHash(
             _owner,
             _genesisId,
@@ -363,4 +388,5 @@ contract Monster is MonsterCore {
             revert("Monster:::MonsterCore::getFeeOfTokenId: Unsupported type");
         }
     }
+
 }
