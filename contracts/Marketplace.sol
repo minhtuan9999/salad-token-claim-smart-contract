@@ -77,6 +77,8 @@ contract ReMonsterMarketplace is
     // From ERC721 registry assetId to Order (to avoid asset collision)
     mapping(bytes32 => Order) public orderByAssetId;
 
+    mapping(address => InfoItemSale[]) private listSaleOfAddress;
+
     // EVENTS
     event OrderCreated(
         bytes32 orderId,
@@ -110,10 +112,7 @@ contract ReMonsterMarketplace is
      * @param _feeSeller - fee seller
      * @param _addressReceiceFee - fee recipient address
      */
-    constructor(
-        uint256 _feeSeller,
-        address _addressReceiceFee
-    ) {
+    constructor(uint256 _feeSeller, address _addressReceiceFee) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
@@ -135,10 +134,9 @@ contract ReMonsterMarketplace is
      * @dev Set new decimals fee
      * @param _decimalsFee - new decimals fee seller
      */
-    function setDecimalsFee(uint8 _decimalsFee)
-        public
-        onlyRole(MANAGERMENT_ROLE)
-    {
+    function setDecimalsFee(
+        uint8 _decimalsFee
+    ) public onlyRole(MANAGERMENT_ROLE) {
         decimalsFee = _decimalsFee;
     }
 
@@ -146,10 +144,9 @@ contract ReMonsterMarketplace is
      * @dev Set new fee seller
      * @param _feeSeller - new fee seller
      */
-    function setFeeSeller(uint256 _feeSeller)
-        public
-        onlyRole(MANAGERMENT_ROLE)
-    {
+    function setFeeSeller(
+        uint256 _feeSeller
+    ) public onlyRole(MANAGERMENT_ROLE) {
         feeSeller = _feeSeller;
         emit ChangedFeeSeller(feeSeller);
     }
@@ -158,10 +155,9 @@ contract ReMonsterMarketplace is
      * @dev Set new address fee seller
      * @param _newAddressFee: new address fee seller
      */
-    function setNewAddressFee(address _newAddressFee)
-        public
-        onlyRole(MANAGERMENT_ROLE)
-    {
+    function setNewAddressFee(
+        address _newAddressFee
+    ) public onlyRole(MANAGERMENT_ROLE) {
         addressReceiveFee = _newAddressFee;
         emit ChangedAddressReceiveSeller(addressReceiveFee);
     }
@@ -173,6 +169,15 @@ contract ReMonsterMarketplace is
             }
         }
         listSale.pop();
+    }
+
+    function removeListSaleOfAddress(address account, bytes32 orderId) internal {
+        for (uint256 i = 0; i < listSaleOfAddress[account].length; i++) {
+            if (listSaleOfAddress[account][i].orderId == orderId) {
+                listSaleOfAddress[account][i] = listSaleOfAddress[account][listSaleOfAddress[account].length - 1];
+            }
+        }
+        listSaleOfAddress[account].pop();
     }
 
     /**
@@ -211,6 +216,7 @@ contract ReMonsterMarketplace is
             timeNow
         );
         listSale.push(newInfoItem);
+        listSaleOfAddress[msg.sender].push(newInfoItem);
         emit OrderCreated(
             orderId,
             tokenId,
@@ -347,13 +353,12 @@ contract ReMonsterMarketplace is
      * @param orderId - ID of the published NFT
      */
 
-    function cancelMarketItemSale(bytes32 orderId)
-        public
-        nonReentrant
-        whenNotPaused
-    {
+    function cancelMarketItemSale(
+        bytes32 orderId
+    ) public nonReentrant whenNotPaused {
         _cancelMarketItemSale(orderId);
         removeListSale(orderId);
+        removeListSaleOfAddress(orderByAssetId[orderId].seller, orderId);
     }
 
     /**
@@ -361,10 +366,9 @@ contract ReMonsterMarketplace is
      *  can only be canceled by seller or the contract owner
      * @param orderId - ID of the published NFT
      */
-    function _cancelMarketItemSale(bytes32 orderId)
-        internal
-        returns (Order memory order)
-    {
+    function _cancelMarketItemSale(
+        bytes32 orderId
+    ) internal returns (Order memory order) {
         order = orderByAssetId[orderId];
         require(
             order.active,
@@ -389,12 +393,9 @@ contract ReMonsterMarketplace is
      * @dev Buy item directly from a published NFT
      * @param orderId - The NFT registry
      */
-    function buyItem(bytes32 orderId)
-        public
-        payable
-        nonReentrant
-        whenNotPaused
-    {
+    function buyItem(
+        bytes32 orderId
+    ) public payable nonReentrant whenNotPaused {
         Order memory order = orderByAssetId[orderId];
         require(
             order.active,
@@ -411,7 +412,10 @@ contract ReMonsterMarketplace is
             seller != msg.sender,
             "ReMonsterMarketplace::buyItem: Unauthorized user"
         );
-        require(order.price == msg.value, "ReMonsterMarketplace::buyItem: The price is not correct");
+        require(
+            order.price == msg.value,
+            "ReMonsterMarketplace::buyItem: The price is not correct"
+        );
 
         if (isERC721(order.contractAddress)) {
             IERC721 nftContract = IERC721(order.contractAddress);
@@ -441,7 +445,7 @@ contract ReMonsterMarketplace is
         if (feeSeller > 0) {
             // Calculate sale share
             saleShareAmount = order.price.mul(feeSeller).div(
-                100 * 10**decimalsFee
+                100 * 10 ** decimalsFee
             );
 
             // Transfer share amount for marketplace Owner
@@ -459,6 +463,7 @@ contract ReMonsterMarketplace is
 
         delete orderByAssetId[orderId];
         removeListSale(orderId);
+        removeListSaleOfAddress(seller, orderId);
 
         emit OrderSuccessful(
             orderId,
@@ -474,15 +479,9 @@ contract ReMonsterMarketplace is
         return listSale;
     }
 
-    function getInfoSaleByAddress(address seller)
-        public
-        view
-        returns (InfoItemSale memory result)
-    {
-        for (uint256 i = 0; i < listSale.length; i++) {
-            if (listSale[i].seller == seller) {
-                result = listSale[i];
-            }
-        }
+    function getInfoSaleByAddress(
+        address seller
+    ) public view returns (InfoItemSale[] memory) {
+        return listSaleOfAddress[seller];
     }
 }
