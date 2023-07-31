@@ -19,6 +19,9 @@ contract MonsterCore is MonsterInterface {
     uint256 public limitExternal = 3;
     uint256 public limitHashChip = 3;
 
+    uint8 public REGENERATION_HASH_OOO_R  = 1;
+    uint8 public REGENERATION_HASH_RANDOM_R  = 2;
+
     // Check status mint nft free of address
     mapping(address => bool) public _realdyFreeNFT;
     // NFT detail: Season =>( TypeMint => (tokenId => number Of Regenerations))
@@ -95,8 +98,9 @@ contract MonsterCore is MonsterInterface {
     }
 
     // mint monster from Regeneration hash
-    function _fromRegenerationNFT(uint256 _tokenId) internal returns (uint256) {
-        item.burn(msg.sender, _tokenId, 1);
+    function _fromRegenerationNFT(uint256 _itemId) internal returns (uint256) {
+        require(_itemId == REGENERATION_HASH_OOO_R || _itemId == REGENERATION_HASH_RANDOM_R, "Monster:: _fromRegenerationNFT: _itemId not exist");
+        regenerationItem.burn(msg.sender, _itemId, 1);
         uint256 tokenId = _createNFT(msg.sender, TypeMint.REGENERATION_ITEM);
         return tokenId;
     }
@@ -174,6 +178,7 @@ contract MonsterCore is MonsterInterface {
         if (!lifeSpanLastMonster) {
             monsterMemory.mint(_owner, _lastTokenId);
         }
+
         uint256 newTokenId = _createNFT(_owner, TypeMint.FUSION);
         _burn(_firstTokenId);
         _burn(_lastTokenId);

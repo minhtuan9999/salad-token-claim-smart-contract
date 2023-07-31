@@ -23,16 +23,8 @@ interface IMonsterMemory {
     function mint(address _address, uint256 _monsterId) external;
 }
 
-interface IMonsterItem {
+interface IRegenerationItem {
     function burn(address _from, uint256 _id, uint256 _amount) external;
-
-    function mint(
-        address _addressTo,
-        uint256 _itemType,
-        uint256 _collectionType,
-        uint256 _number,
-        bytes memory _data
-    ) external;
 
     function burnMultipleItem(
         address _from,
@@ -40,7 +32,15 @@ interface IMonsterItem {
         uint256[] memory _amount
     ) external;
 }
+interface IFusionItem {
+    function burn(address _from, uint256 _id, uint256 _amount) external;
 
+    function burnMultipleItem(
+        address _from,
+        uint256[] memory _id,
+        uint256[] memory _amount
+    ) external;
+}
 contract MonsterInterface is MonsterBase {
     IToken tokenBaseContract;
     IERC721 externalNFTContract;
@@ -48,7 +48,8 @@ contract MonsterInterface is MonsterBase {
     IGeneralHash generalHashContract;
     IERC721 hashChipNFTContract;
     IMonsterMemory monsterMemory;
-    IMonsterItem item;
+    IRegenerationItem regenerationItem;
+    IFusionItem fusionItem;
 
     // Set contract token OAS
     function initSetTokenBaseContract(
@@ -93,9 +94,16 @@ contract MonsterInterface is MonsterBase {
     }
 
     // Set contract Monster Item
-    function initSetMonsterItemContract(
-        IMonsterItem _monsterItem
+    function initSetRegenerationContract(
+        IRegenerationItem _regenerationItem
     ) external onlyRole(MANAGEMENT_ROLE) {
-        item = _monsterItem;
+        regenerationItem = _regenerationItem;
+    }
+
+    // Set contract Fusion Item
+    function initSetFusionContract(
+        IFusionItem _fusionItem
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        fusionItem = _fusionItem;
     }
 }
