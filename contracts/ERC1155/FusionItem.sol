@@ -115,10 +115,17 @@ contract FusionItem is ERC1155, AccessControl, Ownable {
     }
 
     // EVENT
-    event mintTrainingItem(
+    event mintFusionItem(
         address _addressTo,
         uint256 itemId,
         uint256 number,
+        bytes data
+    );
+    
+    event mintBatchFusionItem(
+        address _addressTo,
+        uint256[] itemId,
+        uint256[] number,
         bytes data
     );
     event burnItem(address _from, uint256 _id, uint256 _amount);
@@ -181,6 +188,20 @@ contract FusionItem is ERC1155, AccessControl, Ownable {
         return _listTokensOfAddress[_address].values();
     }
 
+    // Update total amount
+    function _updateTotalAmount(
+        uint256[] memory _itemId,
+        uint256[] memory _number
+    ) internal {
+        for (uint i = 0; i < _itemId.length; i++) {
+            require(_itemId[i] < 36, "FusionItem::_updateTotalAmount: Unsupported itemId");
+            uint256 remain = itemDetail[_itemId[i]].amountLimit - itemDetail[_itemId[i]].totalAmount;
+            require(remain >= _number[_itemId[i]], "FusionItem::_updateTotalAmount: exceeding");
+            itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[_itemId[i]];
+        }
+    }
+
+
     /**
      * @dev Mint monster item.
      * @param _addressTo: address 
@@ -194,11 +215,28 @@ contract FusionItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGEMENT_ROLE) {
+        require(_itemId < 36, "FusionItem::mint: Unsupported itemId");
         uint256 remain = itemDetail[_itemId].amountLimit - itemDetail[_itemId].totalAmount;
         require(remain > 0, "FusionItem:: mint: exceeding");
         _mint(_addressTo, _itemId, _number, _data);
         itemDetail[_itemId].totalAmount++;
-        emit mintTrainingItem(_addressTo, _itemId,_number, _data);
+        emit mintFusionItem(_addressTo, _itemId,_number, _data);
+    }
+
+    /**
+     * @dev Mint multiple monster item.
+     * @param _addressTo: address
+     * @param _itemId: itemId
+     * @param _number: number of item
+     */
+    function mintMultipleItem(
+        address _addressTo,
+        uint256[] memory _itemId,
+        uint256[] memory _number
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        _updateTotalAmount(_itemId, _number);
+        _mintBatch(_addressTo, _itemId, _number, "");
+        emit mintBatchFusionItem(_addressTo, _itemId, _number, "");
     }
     
     function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGEMENT_ROLE) {

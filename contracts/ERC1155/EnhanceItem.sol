@@ -195,10 +195,17 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     mapping(uint256 => ITEM_DETAIL) public itemDetail;
     // EVENT
-    event mintTrainingItem(
+    event mintEnhanceItem(
         address _addressTo,
         uint256 itemId,
         uint256 number,
+        bytes data
+    );
+
+    event mintBatchEnhanceItem(
+        address _addressTo,
+        uint256[] itemId,
+        uint256[] number,
         bytes data
     );
     event burnItem(address _from, uint256 _id, uint256 _amount);
@@ -262,6 +269,20 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         return _listTokensOfAddress[_address].values();
     }
 
+    // Update total amount
+    function _updateTotalAmount(
+        uint256[] memory _itemId,
+        uint256[] memory _number
+    ) internal {
+        for (uint i = 0; i < _itemId.length; i++) {
+            require(_itemId[i] < 63, "EnhanceItem::_updateTotalAmount: Unsupported itemId");
+            if(_itemId[i] >= CRYSTAL_OF_OO_R && _itemId[i] <= VIT_COACH_R ) continue;
+            uint256 remain = itemDetail[_itemId[i]].amountLimit - itemDetail[_itemId[i]].totalAmount;
+            require(remain >= _number[_itemId[i]], "EnhanceItem::_updateTotalAmount: exceeding");
+            itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[_itemId[i]];
+        }
+    }
+
     /**
      * @dev Mint monster item.
      * @param _addressTo: address 
@@ -275,16 +296,33 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGEMENT_ROLE) {
+        require(_itemId < 63, "EnhanceItem::mint: Unsupported itemId");
         if(_itemId >= CRYSTAL_OF_OO_R && _itemId <= VIT_COACH_R ) {
             _mint(_addressTo, _itemId, _number, _data);
         }else {
             uint256 remain = itemDetail[_itemId].amountLimit - itemDetail[_itemId].totalAmount;
-            require(remain > 0, "EnhanceItem:: mint: exceeding");
+            require(remain > 0, "EnhanceItem::mint: exceeding");
             _mint(_addressTo, _itemId, _number, _data);
             itemDetail[_itemId].totalAmount++;
         }
         
-        emit mintTrainingItem(_addressTo, _itemId,_number, _data);
+        emit mintEnhanceItem(_addressTo, _itemId,_number, _data);
+    }
+
+    /**
+     * @dev Mint multiple monster item.
+     * @param _addressTo: address
+     * @param _itemId: itemId
+     * @param _number: number of item
+     */
+    function mintMultipleItem(
+        address _addressTo,
+        uint256[] memory _itemId,
+        uint256[] memory _number
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        _updateTotalAmount(_itemId, _number);
+        _mintBatch(_addressTo, _itemId, _number, "");
+        emit mintBatchEnhanceItem(_addressTo, _itemId, _number, "");
     }
     
     function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGEMENT_ROLE) {
