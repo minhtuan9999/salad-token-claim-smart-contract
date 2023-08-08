@@ -4,8 +4,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./MonsterInterface.sol";
 
 contract MonsterCore is MonsterInterface {
-    // Payable address can receive Ether
-    address payable public _treasuryAddress;
+    // address can receive Ether
+    address public _treasuryAddress;
     // Season
     uint256 public season;
 
@@ -301,7 +301,7 @@ contract MonsterCore is MonsterInterface {
                 msg.value == _cost,
                 "Monster:::MonsterCore::_refreshTimesOfRegeneration: wrong msg value"
             );
-            bool sent = _treasuryAddress.send(_cost);
+            bool sent = payable(_treasuryAddress).send(_cost);
             require(
                 sent,
                 "Monster:::MonsterCore::_refreshTimesOfRegeneration: Failed to send Ether"

@@ -2,6 +2,8 @@ import { ethers } from "hardhat";
 
 async function main() {
   let admin = "0x3C971ccf2F799EBa65EA25E7461D7Ad438c811aD";
+  let testAddress = "0x926A80dEfCfb7130E02E1BE68fF52354E865d6c8";
+
   const feeSeller = (10 * 10**18).toString();
   const generalPrice = (10**18).toString();
   const genesisPrice = (10**18).toString();
@@ -124,7 +126,20 @@ async function main() {
   await monster.initSetMonsterMemoryContract(monsterMemory.address);
   await monster.initSetRegenerationContract(regenerationItem.address);
   await monster.initSetFusionContract(fusionItem.address);
-  await monster.setTreasuryAdress(admin);
+  await monster.setTreasuryAddress(admin);
+
+  await monster.createMonster(testAddress, 0, 10);
+  await monster.createMonster(testAddress, 1, 10);
+  await monster.createMonster(testAddress, 2, 10);
+  await monster.createMonster(testAddress, 3, 10);
+  await monster.createMonster(testAddress, 4, 10);
+  await monster.createMonster(testAddress, 5, 10);
+  await monster.createMonster(testAddress, 6, 10);
+
+  for(let i=0;i < 10; i++){
+    await reMonsterFarm.createNFT(testAddress, 1);
+  }
+
   // Set init contract General
   await general.grantRole(general.MANAGEMENT_ROLE(), monster.address);
   // Set init contract Genesis
@@ -134,8 +149,11 @@ async function main() {
   await ehanceItem.grantRole(ehanceItem.MANAGEMENT_ROLE(), accessories.address);
   // Set init contract HashChip
   await hashChipNFT.grantRole(hashChipNFT.MANAGEMENT_ROLE(), monster.address);
-  // shop
-
+ // Set init contract General
+  await general.grantRole(general.MANAGEMENT_ROLE(), shop.address);
+  // Set init contract Genesis
+  await genesis.grantRole(genesis.MANAGEMENT_ROLE(), shop.address);
+  await reMonsterFarm.grantRole(reMonsterFarm.MANAGEMENT_ROLE(), shop.address);
   // mint marketing general
   await general.claimMaketingBox(admin,0);
   await general.claimMaketingBox(admin,1);

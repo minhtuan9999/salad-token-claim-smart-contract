@@ -42,7 +42,7 @@ interface GenesisBox {
         uint256[] amountType;
     }
 
-    function createGenesisBox(address _address, uint256 _type) external;
+    function createBox(address _address, uint8 _type) external;
 
     function getDetailGroup(
         uint256 group
@@ -59,7 +59,7 @@ interface GeneralBox {
         uint256[] amountType;
     }
 
-    function createGeneralBox(address _address, uint256 _type) external;
+    function createBox(address _address, uint8 _type) external;
 
     function getDetailGroup(
         uint256 group
@@ -87,18 +87,17 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    address payable public treasuryAddress;
+    address public treasuryAddress;
     address public validator;
 
-    uint256 public generalPrice = 30;
-    uint256 public genesisPrice = 100;
-    uint256 public farmPrice = 80;
-    uint256 public bitPrice = 5;
+    uint256 public generalPrice;
+    uint256 public genesisPrice;
+    uint256 public farmPrice;
 
     struct AssetSale {
         uint256 total;
         uint256 remaining;
-        uint256 price;
+        uint256[] price;
         GroupAsset[] detail;
     }
 
@@ -107,16 +106,21 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 remaining;
     }
 
-    mapping(bytes => bool) public _isSigned;
-    mapping(uint256 => uint256) public packageBit;
+    struct PackageBit{
+        uint256 priceOAS;
+        uint256 priceBit;
+    }
 
+    mapping(bytes => bool) public _isSigned;
+    mapping(uint256 => PackageBit) public packageBit;
+    EnumerableSet.UintSet listBitPackage;
     enum TypeAsset {
         GENERAL_BOX,
         GENESIS_BOX,
         FARM_NFT,
         BIT
     }
-    event BuyAssetSuccessful(address owner, TypeAsset _type);
+    event BuyAssetSuccessful(address owner, TypeAsset _type, uint256 package);
     event ChangedAddressReceive(address _treasuryAddress);
 
     /**
@@ -141,10 +145,13 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         generalPrice = _generalPrice;
         genesisPrice = _genesisPrice;
         farmPrice = _farmPrice;
-        bitPrice = _bitPrice;
         generalContract = addressGeneral;
         genesisContract = addressGenesis;
         farmContract = addressFarm;
+        validator = _msgSender();
+        packageBit[0].priceOAS = _bitPrice;
+        packageBit[0].priceBit = 10000;
+        listBitPackage.add(0);
     }
 
     function pause() public onlyRole(ADMIN_ROLE) {
@@ -155,19 +162,18 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         _unpause();
     }
 
+    // set Validator
+    function setValidator(
+        address _validator
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        validator = _validator;
+    }
+
     // set Price farm
     function setNewPriceFarm(
         uint256 newPrice
     ) external onlyRole(MANAGERMENT_ROLE) {
         farmPrice = newPrice;
-    }
-
-    // set Package bit
-    function addNewPackageBit(
-        uint256 package,
-        uint256 price
-    ) external onlyRole(MANAGERMENT_ROLE) {
-        packageBit[package] = price;
     }
 
     // set Price Genesis
@@ -185,10 +191,14 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     // set Price BIT
-    function setNewPriceBit(
-        uint256 newPrice
+    function setPricePackageBit(
+        uint256 package,
+        uint256 newOAS,
+        uint256 newBit
     ) external onlyRole(MANAGERMENT_ROLE) {
-        bitPrice = newPrice;
+        packageBit[package].priceOAS = newOAS;
+        packageBit[package].priceBit = newBit;
+        listBitPackage.add(package);
     }
 
     // set General Contract
@@ -219,26 +229,34 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     function setTreasuryAddress(
         address _newAddress
     ) public onlyRole(MANAGERMENT_ROLE) {
-        treasuryAddress = payable(_newAddress);
+        treasuryAddress = _newAddress;
         emit ChangedAddressReceive(treasuryAddress);
+    }
+
+    /**
+     * @dev get list package
+     */
+    function getListBitPackage() public view returns(uint256[] memory) {
+        return listBitPackage.values();
     }
 
     function _buyItem(
         TypeAsset _type,
-        uint256 _group,
+        uint8 _group,
         uint256 _number
     ) private {
         if (_type == TypeAsset.GENERAL_BOX) {
             uint256 remaining = generalContract.getDetailGroup(_group).totalSupply.sub(generalContract.getDetailGroup(_group).issueAmount);
             require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
             for (uint256 i = 0; i < _number; i++) {
-                generalContract.createGeneralBox(msg.sender, _group);
+                generalContract.createBox(msg.sender, _group);
             }
-        } else if (_type == TypeAsset.GENESIS_BOX) {
+        } 
+        else if (_type == TypeAsset.GENESIS_BOX) {
             uint256 remaining = genesisContract.getDetailGroup(_group).totalSupply.sub(genesisContract.getDetailGroup(_group).issueAmount);
             require(_number <= remaining, "ReMonsterShop::_buyItem: Exceeding");
             for (uint256 i = 0; i < _number; i++) {
-                genesisContract.createGenesisBox(msg.sender, _group);
+                genesisContract.createBox(msg.sender, _group);
             }
         } else if (_type == TypeAsset.FARM_NFT) {
             uint256 remaining = farmContract.getTotalLimit().sub(
@@ -255,17 +273,12 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     /**
      * @dev Creates a new market item.
-     * @param _type: type asset
-     * @param _account: account buyer
-     * @param _price: price of nft
-     * @param _number: number of nft
-     * @param _deadline: deadline signature
-     * @param _sig: signature
      */
     function buyItem(
         TypeAsset _type,
         address _account,
-        uint256 _group,
+        uint256 _package,
+        uint8 _group,
         uint256 _price,
         uint256 _number,
         uint256 _deadline,
@@ -295,15 +308,15 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             "ReMonsterShop::buyItem: Validator fail signature"
         );
         require(msg.value == _price, "ReMonsterShop::buyItem: wrong msg value");
-        bool sent = treasuryAddress.send(_price);
+        bool sent = payable(treasuryAddress).send(_price);
         require(sent, "ReMonsterShop::buyItem: Failed to send Ether");
-        if (_type != TypeAsset.BIT) {
+        if (_type == TypeAsset.BIT) {
+            require(packageBit[_package].priceOAS > 0, "Shop:: buyItem: package not found");
+        }else {
             _buyItem(_type, _group, _number);
         }
-        emit BuyAssetSuccessful(msg.sender, _type);
+        emit BuyAssetSuccessful(msg.sender, _type, _package);
     }
-
-    
 
     /*
      * encode data
@@ -379,7 +392,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         listSale[0] = AssetSale(
             farmContract.getTotalLimit(),
             farmContract.getTotalLimit().sub(farmContract.totalSupply()),
-            farmPrice,
+            _asSingletonArrays(farmPrice),
             groupAssetFarm
         );
         
@@ -392,7 +405,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
                 remaining
             );
         }
-        listSale[1] = AssetSale(0, 0, generalPrice, groupAssetGeneral);
+        listSale[1] = AssetSale(0, 0, _asSingletonArrays(generalPrice), groupAssetGeneral);
 
         // Genesis
         GroupAsset[] memory groupAssetGenesis  = new GroupAsset[](5);
@@ -403,11 +416,39 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
                 remaining
             );
         }
-        listSale[2] = AssetSale(0, 0, genesisPrice, groupAssetGenesis);
+        listSale[2] = AssetSale(0, 0, _asSingletonArrays(genesisPrice), groupAssetGenesis);
 
         // Bit
         GroupAsset[] memory groupAssetBit;
-        listSale[3] = AssetSale(0, 0, bitPrice, groupAssetBit);
+        uint256[] memory listBitPrice = new uint256[](listBitPackage.length());        
+        for(uint i = 0 ; i < listBitPackage.length(); i++ ) {
+            listBitPrice[i] = packageBit[listBitPackage.at(i)].priceOAS;
+        }
+
+        listSale[3] = AssetSale(0, 0, listBitPrice, groupAssetBit);
         return listSale;
     }
+
+    /**
+     * @dev Creates an array in memory with only one value for each of the elements provided.
+     */
+    function _asSingletonArrays(uint256 element)
+        private
+        pure
+        returns (uint256[] memory array)
+    {
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Load the free memory pointer
+            array := mload(0x40)
+            // Set array length to 1
+            mstore(array, 1)
+            // Store the single element at the next word after the length (where content starts)
+            mstore(add(array, 0x20), element)
+
+            // Update the free memory pointer by pointing after the array
+            mstore(0x40, add(array, 0x40))
+        }
+    }
+
 }

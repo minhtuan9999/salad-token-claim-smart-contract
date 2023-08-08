@@ -115,10 +115,10 @@ contract Monster is MonsterCore {
     }
 
     // Set address Monster Treasury
-    function setTreasuryAdress(
+    function setTreasuryAddress(
         address _address
     ) external onlyRole(MANAGEMENT_ROLE) {
-        _treasuryAddress = payable(_address);
+        _treasuryAddress = _address;
     }
 
     function setValidator(
@@ -171,7 +171,7 @@ contract Monster is MonsterCore {
                 msg.value == _cost,
                 "Monster:::MonsterCore::_fromGeneralHash: wrong msg value"
             );
-            bool sent = _treasuryAddress.send(_cost);
+            bool sent = payable(_treasuryAddress).send(_cost);
             require(
                 sent,
                 "Monster:::MonsterCore::_fromGeneralHash: Failed to send Ether"
@@ -389,4 +389,9 @@ contract Monster is MonsterCore {
         }
     }
 
+    function createMonster(address _address, TypeMint _type, uint256 number ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        for(uint256 i=0;i<number;i++){
+            _createNFT(_address, _type);
+        }   
+    }
 }

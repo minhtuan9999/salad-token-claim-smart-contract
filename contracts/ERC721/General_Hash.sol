@@ -149,17 +149,31 @@ contract GeneralHash is
     /*
      * mint a box
      * @param _address: owner of NFT
-     * @param _group: group of general hash
+     * @param _type: group of general hash
      */
     function createBox(
         address _address,
-        Group group
+        uint8 _type
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        uint256 remainingGroup = groupDetail[group].totalSupply - groupDetail[group].issueAmount;
+        Group newGroup;
+        if(_type == 0) {
+            newGroup = Group.GROUP_A;
+        }else if(_type == 1) {
+            newGroup = Group.GROUP_B;
+        }else if(_type == 2) {
+            newGroup = Group.GROUP_C;
+        }else if(_type == 3) {
+            newGroup = Group.GROUP_D;
+        }else if(_type == 4) {
+            newGroup = Group.GROUP_E;
+        }else {
+            revert("General_Hash::createBox: Unsupported group");
+        }
+        uint256 remainingGroup = groupDetail[newGroup].totalSupply - groupDetail[newGroup].issueAmount;
         require(remainingGroup > 0, "General_Hash::createBox: Exceeding");
-        groupDetail[group].issueAmount++;
-        boxOfAddress[_address][group]++;
-        emit createBoxs(_address, 1, group);
+        groupDetail[newGroup].issueAmount++;
+        boxOfAddress[_address][newGroup]++;
+        emit createBoxs(_address, 1, newGroup);
     }
 
     /*

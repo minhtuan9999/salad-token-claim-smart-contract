@@ -46,7 +46,7 @@ contract ReMonsterFarm is
     using EnumerableSet for EnumerableSet.UintSet;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
 
     // stored current packageId
     Counters.Counter private _tokenIds;
@@ -85,16 +85,16 @@ contract ReMonsterFarm is
         uint256 limit
     ) ERC721(name_, symbol_) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
-        _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
-        _setupRole(MANAGERMENT_ROLE, _msgSender());
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
         totalLimit = limit;
     }
 
-    function setBaseURI(string memory baseURI_) external onlyRole(MANAGERMENT_ROLE) {
+    function setBaseURI(string memory baseURI_) external onlyRole(MANAGEMENT_ROLE) {
         _baseURIextended = baseURI_;
     }
-    function setTotalLimit(uint256 _total) external onlyRole(MANAGERMENT_ROLE) {
+    function setTotalLimit(uint256 _total) external onlyRole(MANAGEMENT_ROLE) {
         totalLimit = _total;
     }
     function _baseURI() internal view virtual override returns (string memory) {
@@ -141,7 +141,7 @@ contract ReMonsterFarm is
     function createNFT(
         address _address,
         uint256 _type
-    ) external nonReentrant whenNotPaused onlyRole(MANAGERMENT_ROLE) {
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _createFarm(_address, _type);
     }
 
@@ -187,7 +187,7 @@ contract ReMonsterFarm is
         uint256 tokenId,
         address user,
         uint64 expires
-    ) external onlyRole(MANAGERMENT_ROLE) {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         require(
             _isApprovedOrOwner(msg.sender, tokenId),
             "ReMonsterFarm::setUser::ERC721: transfer caller is not owner nor approved"

@@ -127,7 +127,7 @@ var genesisContract = new provider.eth.Contract(ABI_GENESIS, ADDRESS_GENESIS);
 // Prepare the General hash contract obj
 var generalContract = new provider.eth.Contract(ABI_GENERAL, ADDRESS_GENERAL);
 // Prepare the SHOP contract obj
-var shopContract = new provider.eth.Contract(ABI_SHOP, ABI_SHOP);
+var shopContract = new provider.eth.Contract(ABI_SHOP, ADDRESS_SHOP);
 
 //==================MARKETPLACE===========================================================================
 // Get list sale
@@ -360,7 +360,9 @@ const _buyItem = async (orderId, priceInWei) => {
       to: ADDRESS_MARKETPLACE,
       data: marketplaceContract.methods.buyItem(orderId).encodeABI(),
       chainId: CHAIN_NETWORK,
-      value: priceInWei,
+      value: Web3.utils.toHex(
+        Number(priceInWei),
+      )
     };
 
     return sendTransaction(transactionParameters);
@@ -432,10 +434,12 @@ const buyItemShop = async (type, account, group, priceInWei, number, deadline, s
 const _buyItemShop = async (type, account, group, priceInWei, number, deadline, sig) => {
   try {
     const transactionParameters = {
-      to: ABI_SHOP,
-      data: shopContract.methods.buyItem(type, account, group, price, number, deadline, sig).encodeABI(),
+      to: ADDRESS_SHOP,
+      data: shopContract.methods.buyItem(type, account, 0, group, priceInWei, number, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
-      value: priceInWei
+      value: Web3.utils.toHex(
+        Number(priceInWei),
+      )
     };
 
     return sendTransaction(transactionParameters);
@@ -482,7 +486,7 @@ const openGenesisBox = async (group) => {
 const _openGenesisBox = async (group) => {
   try {
     const transactionParameters = {
-      to: ABI_GENESIS,
+      to: ADDRESS_GENESIS,
       data: genesisContract.methods.openGenesisBox(group).encodeABI(),
       chainId: CHAIN_NETWORK
     };
@@ -519,7 +523,7 @@ const openGeneralBox = async (group) => {
 const _openGeneralBox = async (group) => {
   try {
     const transactionParameters = {
-      to: ABI_GENERAL,
+      to: ADDRESS_GENERAL,
       data: generalContract.methods.openGeneralBox(group).encodeABI(),
       chainId: CHAIN_NETWORK
     };
@@ -573,7 +577,7 @@ const trainingMonster = async (farmId, monsterId) => {
 
 const _trainingMonster = async (farmId, monsterId) => {
   const transactionParameters = {
-    to: ADDRESS_FARM,
+    to: ADDRESS_MONSTER,
     data: monsterContract.methods
       .trainingMonster(ADDRESS_MONSTER, farmId, monsterId)
       .encodeABI(),
@@ -602,7 +606,7 @@ const endTrainingMonster = async (farmId, monsterId) => {
 
 const _endTrainingMonster = async (farmId, monsterId) => {
   const transactionParameters = {
-    to: ADDRESS_FARM,
+    to: ADDRESS_MONSTER,
     data: monsterContract.methods
       .endTrainingMonster(ADDRESS_MONSTER, farmId, monsterId)
       .encodeABI(),
@@ -641,10 +645,12 @@ const mintMonster = async (type,address, tokenId, isOas, priceInWei, deadline, s
 const _mintMonster = async (type,address, tokenId, isOas, priceInWei, deadline, sig) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.mintMonster(type,address, tokenId, isOas, priceInWei, deadline, sig).encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.mintMonster(type,address, tokenId, isOas, priceInWei, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
-      value: isOas ? priceInWei : 0
+      value: Web3.utils.toHex(
+        Number(isOas ? priceInWei : 0),
+      )
     };
 
     return sendTransaction(transactionParameters);
@@ -671,8 +677,8 @@ const mintMonsterFree = async () => {
 const _mintMonsterFree = async () => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.mintMonsterFree().encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.mintMonsterFree().encodeABI(),
       chainId: CHAIN_NETWORK
     };
 
@@ -700,8 +706,8 @@ const mintMonsterFromRegeneration = async (itemId) => {
 const _mintMonsterFromRegeneration = async (itemId) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.mintMonsterFromRegeneration(itemId).encodeABI(),
+      to: ABI_MONSTER,
+      data: monsterContract.methods.mintMonsterFromRegeneration(itemId).encodeABI(),
       chainId: CHAIN_NETWORK
     };
 
@@ -729,8 +735,8 @@ const fusionMonsterNFT = async (address, firstToken, lastToken) => {
 const _fusionMonsterNFT = async (address, firstToken, lastToken) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.fusionMonsterNFT(address, firstToken, lastToken).encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.fusionMonsterNFT(address, firstToken, lastToken).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
@@ -758,8 +764,8 @@ const fusionGenesisHash = async (address, firstToken, lastToken) => {
 const _fusionGenesisHash = async (address, firstToken, lastToken) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.fusionGenesisHash(address, firstToken, lastToken).encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.fusionGenesisHash(address, firstToken, lastToken).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
@@ -786,8 +792,8 @@ const fusionGeneralHash = async (address, firstToken, lastToken) => {
 const _fusionGeneralHash = async (address, firstToken, lastToken) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.fusionGeneralHash(address, firstToken, lastToken).encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.fusionGeneralHash(address, firstToken, lastToken).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
@@ -815,8 +821,8 @@ const fusionMultipleHash = async (address, firstToken, lastToken) => {
 const _fusionMultipleHash = async (address, firstToken, lastToken) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.fusionMultipleHash(address, firstToken, lastToken).encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.fusionMultipleHash(address, firstToken, lastToken).encodeABI(),
       chainId: CHAIN_NETWORK,
     };
 
@@ -844,10 +850,12 @@ const refreshTimesOfRegeneration = async (type, address, tokenId, isOAS, priceIn
 const _refreshTimesOfRegeneration = async (type, address, tokenId, isOAS, priceInWei, deadline, sig) => {
   try {
     const transactionParameters = {
-      to: ABI_CONTRACT,
-      data: contract.methods.refreshTimesOfRegeneration(type, address, tokenId, isOAS, priceInWei, deadline, sig).encodeABI(),
+      to: ADDRESS_MONSTER,
+      data: monsterContract.methods.refreshTimesOfRegeneration(type, address, tokenId, isOAS, priceInWei, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
-      value: isOAS ? priceInWei : 0
+      value: Web3.utils.toHex(
+        Number(isOas ? priceInWei : 0),
+      )
     };
 
     return sendTransaction(transactionParameters);

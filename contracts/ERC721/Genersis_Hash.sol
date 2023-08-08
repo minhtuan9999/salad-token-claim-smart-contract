@@ -63,7 +63,7 @@ contract GenesisHash is
     mapping(address => mapping(Group => uint256)) public boxOfAddress;
 
     //
-    constructor() ERC721("General Hash", "GeneralHash") {
+    constructor() ERC721("Genesis Hash", "GenesislHash") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
 
@@ -153,17 +153,31 @@ contract GenesisHash is
     /*
      * mint a box
      * @param _address: owner of NFT
-     * @param _group: group of genesis hash
+     * @param _type: group of genesis hash
      */
     function createBox(
         address _address,
-        Group group
+        uint8 _type
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        uint256 remainingGroup = groupDetail[group].totalSupply - groupDetail[group].issueAmount;
-        require(remainingGroup > 0, "General_Hash::createBox: Exceeding");
-        groupDetail[group].issueAmount++;
-        boxOfAddress[_address][group]++;
-        emit createBoxs(_address, 1, group);
+        Group newGroup;
+        if(_type == 0) {
+            newGroup = Group.GROUP_A;
+        }else if(_type == 1) {
+            newGroup = Group.GROUP_B;
+        }else if(_type == 2) {
+            newGroup = Group.GROUP_C;
+        }else if(_type == 3) {
+            newGroup = Group.GROUP_D;
+        }else if(_type == 4) {
+            newGroup = Group.GROUP_E;
+        }else {
+            revert("Genesis_Hash::createBox: Unsupported group");
+        }
+        uint256 remainingGroup = groupDetail[newGroup].totalSupply - groupDetail[newGroup].issueAmount;
+        require(remainingGroup > 0, "Genesis_Hash::createBox: Exceeding");
+        groupDetail[newGroup].issueAmount++;
+        boxOfAddress[_address][newGroup]++;
+        emit createBoxs(_address, 1, newGroup);
     }
 
     // /*
@@ -255,7 +269,7 @@ contract GenesisHash is
     function openGenesisBox(Group group) external whenNotPaused nonReentrant {
         require(
             boxOfAddress[msg.sender][group] > 0,
-            "General Hash:: openGenesisBox: Exceeding box"
+            "Genesis Hash:: openGenesisBox: Exceeding box"
         );
         uint256 _type = _getTypeOfGroup(group);
         uint256 tokenId = _tokenIds.current();
