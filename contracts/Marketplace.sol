@@ -70,6 +70,7 @@ contract ReMonsterMarketplace is
 
     struct InfoItemSale {
         bytes32 orderId;
+        address contractAddress;
         uint256 tokenId;
         address seller;
         uint256 priceInWei;
@@ -212,6 +213,7 @@ contract ReMonsterMarketplace is
 
         InfoItemSale memory newInfoItem = InfoItemSale(
             orderId,
+            contracAddress,
             tokenId,
             msg.sender,
             priceInWei,

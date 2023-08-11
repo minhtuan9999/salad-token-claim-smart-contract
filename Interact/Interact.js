@@ -140,18 +140,6 @@ const getListSale = async () => {
   }
 };
 
-// Get info sale by address
-const getInfoSaleByAddress = async (address) => {
-  try {
-    return await marketplaceContract.methods
-      .getInfoSaleByAddress(address)
-      .call();
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
-};
-
 // Set fee seller
 const setFeeSeller = async (fee) => {
   try {
