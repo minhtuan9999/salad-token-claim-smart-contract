@@ -177,20 +177,6 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
 
     uint8 public PREMIUM_AROMA_R = 55;
 
-    uint8 public CRYSTAL_OF_OO_R = 56;
-
-    uint8 public HP_COACH_R = 57;
-
-    uint8 public STR_COACH_R = 58;
-
-    uint8 public INT_COACH_R = 59;
-
-    uint8 public DEX_COACH_R = 60;
-
-    uint8 public AGI_COACH_R = 61;
-
-    uint8 public VIT_COACH_R = 62;
-
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     mapping(uint256 => ITEM_DETAIL) public itemDetail;
@@ -275,8 +261,7 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         uint256[] memory _number
     ) internal {
         for (uint i = 0; i < _itemId.length; i++) {
-            require(_itemId[i] < 63, "EnhanceItem::_updateTotalAmount: Unsupported itemId");
-            if(_itemId[i] >= CRYSTAL_OF_OO_R && _itemId[i] <= VIT_COACH_R ) continue;
+            require(_itemId[i] < 56, "EnhanceItem::_updateTotalAmount: Unsupported itemId");
             uint256 remain = itemDetail[_itemId[i]].amountLimit - itemDetail[_itemId[i]].totalAmount;
             require(remain >= _number[_itemId[i]], "EnhanceItem::_updateTotalAmount: exceeding");
             itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[_itemId[i]];
@@ -296,16 +281,11 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGEMENT_ROLE) {
-        require(_itemId < 63, "EnhanceItem::mint: Unsupported itemId");
-        if(_itemId >= CRYSTAL_OF_OO_R && _itemId <= VIT_COACH_R ) {
-            _mint(_addressTo, _itemId, _number, _data);
-        }else {
-            uint256 remain = itemDetail[_itemId].amountLimit - itemDetail[_itemId].totalAmount;
-            require(remain > 0, "EnhanceItem::mint: exceeding");
-            _mint(_addressTo, _itemId, _number, _data);
-            itemDetail[_itemId].totalAmount++;
-        }
-        
+        require(_itemId < 56, "EnhanceItem::mint: Unsupported itemId");
+        uint256 remain = itemDetail[_itemId].amountLimit - itemDetail[_itemId].totalAmount;
+        require(remain > 0, "EnhanceItem::mint: exceeding");
+        _mint(_addressTo, _itemId, _number, _data);
+        itemDetail[_itemId].totalAmount++;
         emit mintEnhanceItem(_addressTo, _itemId,_number, _data);
     }
 

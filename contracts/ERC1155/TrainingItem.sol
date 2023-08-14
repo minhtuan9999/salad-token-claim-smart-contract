@@ -318,7 +318,7 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
             _itemId == GLORIOUS_MEAT_SHOP ||
             _itemId == SUNNY_BLOSSOM_SHOP ||
             _itemId == LUNAR_GRASS_SHOP ||
-            _itemId == TOUNAMENT_TICKET_UC ||
+            _itemId == TOURNAMENT_TICKET_UC ||
             _itemId == EXPLORATION_TICKET_UC ||
             _itemId == FLOWER_CROWN_C ||
             _itemId == DEKAUSA_DOLL_C ||
