@@ -124,7 +124,7 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     uint8 public LIFE_WATER_UC = 41;
     uint8 public LIFE_WATER_R = 42;
 
-    uint8 public TOUNAMENT_TICKET_UC = 43;
+    uint8 public TOURNAMENT_TICKET_UC = 43;
 
     uint8 public EXPLORATION_TICKET_UC = 44;
 
