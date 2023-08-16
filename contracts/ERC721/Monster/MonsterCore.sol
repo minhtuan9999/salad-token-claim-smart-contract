@@ -4,8 +4,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./MonsterInterface.sol";
 
 contract MonsterCore is MonsterInterface {
-    // address can receive Ether
-    address public _treasuryAddress;
     // Season
     uint256 public season;
 
@@ -297,15 +295,7 @@ contract MonsterCore is MonsterInterface {
         uint256 _cost
     ) internal {
         if (_isOAS) {
-            require(
-                msg.value == _cost,
-                "Monster:::MonsterCore::_refreshTimesOfRegeneration: wrong msg value"
-            );
-            bool sent = payable(_treasuryAddress).send(_cost);
-            require(
-                sent,
-                "Monster:::MonsterCore::_refreshTimesOfRegeneration: Failed to send Ether"
-            );
+            treasuryContract.deposit{value: msg.value}(_cost);
         } else {
             tokenBaseContract.burnToken(msg.sender, _cost);
         }

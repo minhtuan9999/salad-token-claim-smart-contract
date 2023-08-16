@@ -114,13 +114,6 @@ contract Monster is MonsterCore {
         }
     }
 
-    // Set address Monster Treasury
-    function setTreasuryAddress(
-        address _address
-    ) external onlyRole(MANAGEMENT_ROLE) {
-        _treasuryAddress = _address;
-    }
-
     function setValidator(
         address _address
     ) external whenNotPaused onlyOwner {
@@ -167,15 +160,7 @@ contract Monster is MonsterCore {
                 signer == validator,
                 "Monster:::Monster::mintMonster: Validator fail signature"
             );
-            require(
-                msg.value == _cost,
-                "Monster:::MonsterCore::_fromGeneralHash: wrong msg value"
-            );
-            bool sent = payable(_treasuryAddress).send(_cost);
-            require(
-                sent,
-                "Monster:::MonsterCore::_fromGeneralHash: Failed to send Ether"
-            );
+            treasuryContract.deposit{value: msg.value}(_cost);
         } else {
             uint256 cost = getFeeOfTokenId(_type, _tokenId);
             tokenBaseContract.burnToken(msg.sender, cost*decimal );

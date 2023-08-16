@@ -42,15 +42,19 @@ interface IFusionItem {
         uint256[] memory _amount
     ) external;
 }
+interface ITreasuryContract {
+    function deposit(uint256 totalAmount) external payable;
+}
 contract MonsterInterface is MonsterBase {
-    IToken tokenBaseContract;
-    IERC721 externalNFTContract;
-    IGenesisHash genesisHashContract;
-    IGeneralHash generalHashContract;
-    IERC721 hashChipNFTContract;
-    IMonsterMemory monsterMemory;
-    IRegenerationItem regenerationItem;
-    IFusionItem fusionItem;
+    IToken public tokenBaseContract;
+    IERC721 public externalNFTContract;
+    IGenesisHash public genesisHashContract;
+    IGeneralHash public generalHashContract;
+    IERC721 public hashChipNFTContract;
+    IMonsterMemory public monsterMemory;
+    IRegenerationItem public regenerationItem;
+    IFusionItem public fusionItem;
+    ITreasuryContract public treasuryContract;
 
     // Set contract token OAS
     function initSetTokenBaseContract(
@@ -106,5 +110,12 @@ contract MonsterInterface is MonsterBase {
         IFusionItem _fusionItem
     ) external onlyRole(MANAGEMENT_ROLE) {
         fusionItem = _fusionItem;
+    }
+
+    // Set Treasury contract
+    function initSetTreasuryContract(
+        ITreasuryContract _treasuryContract
+    ) external onlyRole(MANAGEMENT_ROLE) {
+        treasuryContract = _treasuryContract;
     }
 }
