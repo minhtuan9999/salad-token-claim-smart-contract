@@ -899,7 +899,7 @@ const _setGuild = async (type,address, isOas, priceInWei, deadline, sig) => {
    PERSONAL_CYCLE: 3
 */
 
-const reward = async (type, address, isOas, priceInWei, deadline, sig) => {
+const reward = async (type, address, priceInWei, deadline, sig) => {
   try {   
     await changeNetworkInMetamask(CHAIN_NETWORK);
     let networkId = await window.ethereum.request({
@@ -907,20 +907,20 @@ const reward = async (type, address, isOas, priceInWei, deadline, sig) => {
     });
     networkId = await Web3.utils.hexToNumberString(networkId);
     if (networkId != CHAIN_NETWORK) return;
-    _reward(type,address, isOas, priceInWei, deadline, sig);
+    _reward(type,address, priceInWei, deadline, sig);
   } catch (error) {
     console.log(error);
   }
 };
 
-const _reward = async (type,address, isOas, priceInWei, deadline, sig) => {
+const _reward = async (type,address, priceInWei, deadline, sig) => {
   try {
     const transactionParameters = {
       to: ADDRESS_TREASURY,
-      data: treasuryContract.methods.reward(type,address, isOas, priceInWei, deadline, sig).encodeABI(),
+      data: treasuryContract.methods.reward(type,address, priceInWei, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
       value: Web3.utils.toHex(
-        Number(isOas ? priceInWei : 0),
+        Number(priceInWei),
       )
     };
 
