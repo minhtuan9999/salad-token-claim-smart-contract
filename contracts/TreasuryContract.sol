@@ -68,6 +68,7 @@ contract TreasuryContract is
     */ 
     function setGuild(
         GuildType _type,
+        address _account,
         bool _isOAS,
         uint256 _cost,
         uint256 _deadline,
@@ -82,7 +83,10 @@ contract TreasuryContract is
                 !_isSigned[_sig],
                 "TreasuryContract::setGuild: Signature used"
             );
-
+            require(
+                _account == msg.sender,
+                "TreasuryContract::setGuild: wrong account"
+            );
             address signer = recoverOAS(
                 msg.sender,
                 _cost,
@@ -111,6 +115,7 @@ contract TreasuryContract is
 
     function reward(
         RewardType _type,
+        address _account,
         uint256 _totalAmount,
         uint256 _deadline,
         bytes calldata _sig
@@ -123,7 +128,10 @@ contract TreasuryContract is
             !_isSigned[_sig],
             "TreasuryContract::reward: Signature used"
         );
-
+        require(
+            _account == msg.sender,
+            "TreasuryContract::reward: wrong account"
+        );
         address signer = recoverOAS(
             msg.sender,
             _totalAmount,

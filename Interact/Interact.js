@@ -14,6 +14,7 @@ ADDRESS_FARM = "";
 ADDRESS_GENESIS = "";
 ADDRESS_GENERAL = "";
 ADDRESS_SHOP = "";
+ADDRESS_TREASURY = "";
 
 //========CREATE ABI CONTRACT===========================================================================
 const ABI_MARKETPLACE = [];
@@ -22,6 +23,7 @@ const ABI_FARM = [];
 const ABI_GENESIS = [];
 const ABI_GENERAL = [];
 const ABI_SHOP = [];
+const ABI_TREASURY = [];
 
 //========CREATE PROVINDE===============================================================================
 if (window.ethereum && ethereum.networkVersion == CHAIN_NETWORK) {
@@ -128,6 +130,8 @@ var genesisContract = new provider.eth.Contract(ABI_GENESIS, ADDRESS_GENESIS);
 var generalContract = new provider.eth.Contract(ABI_GENERAL, ADDRESS_GENERAL);
 // Prepare the SHOP contract obj
 var shopContract = new provider.eth.Contract(ABI_SHOP, ADDRESS_SHOP);
+// Prepare the TREASURY contract obj
+var treasuryContract = new provider.eth.Contract(ABI_TREASURY, ADDRESS_TREASURY);
 
 //==================MARKETPLACE===========================================================================
 // Get list sale
@@ -840,6 +844,80 @@ const _refreshTimesOfRegeneration = async (type, address, tokenId, isOAS, priceI
     const transactionParameters = {
       to: ADDRESS_MONSTER,
       data: monsterContract.methods.refreshTimesOfRegeneration(type, address, tokenId, isOAS, priceInWei, deadline, sig).encodeABI(),
+      chainId: CHAIN_NETWORK,
+      value: Web3.utils.toHex(
+        Number(isOas ? priceInWei : 0),
+      )
+    };
+
+    return sendTransaction(transactionParameters);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+//==================TREASURY===================================================================================
+/* GuildType 
+   CREATE_GUILD: 0
+   RENAME_GUILD: 1
+*/
+const setGuild = async (type, address, isOas, priceInWei, deadline, sig) => {
+  try {   
+    await changeNetworkInMetamask(CHAIN_NETWORK);
+    let networkId = await window.ethereum.request({
+      method: "eth_chainId",
+    });
+    networkId = await Web3.utils.hexToNumberString(networkId);
+    if (networkId != CHAIN_NETWORK) return;
+    _setGuild(type,address, isOas, priceInWei, deadline, sig);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const _setGuild = async (type,address, isOas, priceInWei, deadline, sig) => {
+  try {
+    const transactionParameters = {
+      to: ADDRESS_TREASURY,
+      data: treasuryContract.methods.setGuild(type,address, isOas, priceInWei, deadline, sig).encodeABI(),
+      chainId: CHAIN_NETWORK,
+      value: Web3.utils.toHex(
+        Number(isOas ? priceInWei : 0),
+      )
+    };
+
+    return sendTransaction(transactionParameters);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+/* RewardType 
+   SECTOR_CYCLE: 0
+   GUILD_MONTHLY: 1
+   PERSONAL_WEEKLY: 2
+   PERSONAL_CYCLE: 3
+*/
+
+const reward = async (type, address, isOas, priceInWei, deadline, sig) => {
+  try {   
+    await changeNetworkInMetamask(CHAIN_NETWORK);
+    let networkId = await window.ethereum.request({
+      method: "eth_chainId",
+    });
+    networkId = await Web3.utils.hexToNumberString(networkId);
+    if (networkId != CHAIN_NETWORK) return;
+    _reward(type,address, isOas, priceInWei, deadline, sig);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const _reward = async (type,address, isOas, priceInWei, deadline, sig) => {
+  try {
+    const transactionParameters = {
+      to: ADDRESS_TREASURY,
+      data: treasuryContract.methods.reward(type,address, isOas, priceInWei, deadline, sig).encodeABI(),
       chainId: CHAIN_NETWORK,
       value: Web3.utils.toHex(
         Number(isOas ? priceInWei : 0),

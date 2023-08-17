@@ -11,6 +11,14 @@ async function main() {
   const bitPrice = (10**18).toString();
 
   // Deploy contract token (OAS) 
+  const TokenXXX= await ethers.getContractFactory("TokenXXX");
+  const tokenXXX = await TokenXXX.deploy("xxx", "xxx");
+  tokenXXX.deployed();
+
+  const Treasury= await ethers.getContractFactory("TreasuryContract");
+  const treasury = await Treasury.deploy(tokenXXX.address);
+  treasury.deployed();
+
   const Accessories = await ethers.getContractFactory("Accessories");
   const accessories = await Accessories.deploy();
   accessories.deployed();
@@ -68,16 +76,12 @@ async function main() {
   reMonsterFarm.deployed();
 
   const Shop= await ethers.getContractFactory("ReMonsterShop");
-  const shop = await Shop.deploy(admin, general.address, genesis.address, reMonsterFarm.address,generalPrice,genesisPrice,farmPrice,bitPrice);
+  const shop = await Shop.deploy(treasury.address, general.address, genesis.address, reMonsterFarm.address,generalPrice,genesisPrice,farmPrice,bitPrice);
   shop.deployed();
 
   const ReMonsterMarketplace= await ethers.getContractFactory("ReMonsterMarketplace");
-  const reMonsterMarketplace = await ReMonsterMarketplace.deploy(feeSeller, admin);
+  const reMonsterMarketplace = await ReMonsterMarketplace.deploy(feeSeller, trainingItem.address, treasury.address);
   reMonsterMarketplace.deployed();
-
-  const TokenXXX= await ethers.getContractFactory("TokenXXX");
-  const tokenXXX = await TokenXXX.deploy("xxx", "xxx");
-  tokenXXX.deployed();
 
   // Log results
   console.log(`ADDRESS_CONTRACT_ACCESSORIES: ${accessories.address}`);
@@ -126,7 +130,7 @@ async function main() {
   await monster.initSetMonsterMemoryContract(monsterMemory.address);
   await monster.initSetRegenerationContract(regenerationItem.address);
   await monster.initSetFusionContract(fusionItem.address);
-  await monster.setTreasuryAddress(admin);
+  await monster.initSetTreasuryContract(treasury.address);
 
   await monster.createMonster(testAddress, 0, 10);
   await monster.createMonster(testAddress, 1, 10);

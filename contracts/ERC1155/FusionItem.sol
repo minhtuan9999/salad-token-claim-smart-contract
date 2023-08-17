@@ -21,7 +21,7 @@ contract FusionItem is ERC1155, AccessControl, Ownable {
 
     uint8 public FAIRY_FEATHER_UC = 0;
     uint8 public GOLEM_CORE_UC = 1;
-    uint8 public YUBA = 2;
+    uint8 public YUBA_UC = 2;
     uint8 public UNICORN_HORN_UC = 3;
     uint8 public RED_JEWEL_UC = 4;
     uint8 public CAT_WHISKER_UC = 5;
@@ -73,7 +73,7 @@ contract FusionItem is ERC1155, AccessControl, Ownable {
 
         itemDetail[FAIRY_FEATHER_UC].amountLimit = 200;
         itemDetail[GOLEM_CORE_UC].amountLimit = 200;
-        itemDetail[YUBA].amountLimit = 200;
+        itemDetail[YUBA_UC].amountLimit = 200;
         itemDetail[UNICORN_HORN_UC].amountLimit = 200;
         itemDetail[RED_JEWEL_UC].amountLimit = 200;
         itemDetail[CAT_WHISKER_UC].amountLimit = 200;
