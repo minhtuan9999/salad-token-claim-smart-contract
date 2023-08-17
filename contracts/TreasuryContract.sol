@@ -22,7 +22,7 @@ contract TreasuryContract is
     address public validator;
     uint256 decimal = 10**18;
 
-    mapping(GuildType => uint256) private costType;
+    mapping(GuildType => uint256) public costType;
     mapping(bytes => bool) public _isSigned;
 
     enum RewardType {
@@ -44,6 +44,8 @@ contract TreasuryContract is
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         validator = msg.sender;
         tokenBaseContract = tokenBase;
+        costType[GuildType.CREATE_GUILD] = 10;
+        costType[GuildType.RENAME_GUILD] = 5;
     }
 
     function pause() public onlyRole(MANAGEMENT_ROLE) {
@@ -56,6 +58,10 @@ contract TreasuryContract is
 
     function setValidator(address _validator) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         validator = _validator;
+    }
+    
+    function setCostGuild(uint256 _cost, GuildType _type) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        costType[_type] = _cost;
     }
 
     /*
@@ -152,7 +158,7 @@ contract TreasuryContract is
        
         emit rewardEvent(msg.sender, _type);
     }
-
+    // Deposit OAS to treasury contract
     function deposit(uint256 totalAmount) external whenNotPaused nonReentrant payable{
         require(msg.value == totalAmount, "TreasuryContract::deposit: wrong value");
     }
@@ -164,7 +170,6 @@ contract TreasuryContract is
 
     // Function to withdraw by MANAGEMENT_ROLE
     function withdraw(uint256 amount) external whenNotPaused nonReentrant onlyRole(MANAGEMENT_ROLE) {
-        require(amount <= getContractBalance(), "Insufficient balance");
         bool sent = payable(msg.sender).send(amount);
         require(
             sent,

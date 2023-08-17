@@ -101,6 +101,7 @@ async function main() {
   console.log(`ADDRESS_CONTRACT_MARKET: ${reMonsterMarketplace.address}`)
   console.log(`ADDRESS_CONTRACT_FARM: ${reMonsterFarm.address}`)
   console.log(`ADDRESS_CONTRACT_TOKEN_XXX: ${tokenXXX.address}`)
+  console.log(`ADDRESS_CONTRACT_TREASURY: ${treasury.address}`)
 
   // Set init contract Accessories
   await accessories.setMonsterItem(ehanceItem.address);
