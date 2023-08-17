@@ -33,10 +33,12 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
-interface TRAINING_ITEM {
+interface ITrainingItemContract {
     function isOnlyShop(uint256 _itemId) external view returns(bool);
 }
-
+interface ITreasuryContract {
+    function deposit(uint256 totalAmount) external payable;
+}
 contract ReMonsterMarketplace is
     Ownable,
     ReentrancyGuard,
@@ -52,8 +54,9 @@ contract ReMonsterMarketplace is
 
     // fee seller
     uint256 public feeSeller;
-    address public addressReceiveFee;
     uint8 public decimalsFee = 18;
+    ITrainingItemContract public trainingItemContract;
+    ITreasuryContract public treasuryContract;
 
     InfoItemSale[] public listSale;
     struct Order {
@@ -109,21 +112,22 @@ contract ReMonsterMarketplace is
     );
 
     event ChangedFeeSeller(uint256 newFee);
-    event ChangedAddressReceiveSeller(address addressReceiveFee);
+    event ChangedAddressTreasury(address addressTreasury);
+    event ChangedAddressTrainingItem(address addressTrainintItem);
 
     /**
      * @dev Initialize this contract. Acts as a constructor
      * @param _feeSeller - fee seller
-     * @param _addressReceiceFee - fee recipient address
      */
-    constructor(uint256 _feeSeller, address _addressReceiceFee) {
+    constructor(uint256 _feeSeller, ITrainingItemContract _addressTrainingItem, ITreasuryContract _addressTreasury ) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
         _setupRole(MANAGERMENT_ROLE, _msgSender());
         // Fee init
         setFeeSeller(_feeSeller);
-        setNewAddressFee(_addressReceiceFee);
+        trainingItemContract = _addressTrainingItem;
+        treasuryContract = _addressTreasury;
     }
 
     function pause() public onlyRole(ADMIN_ROLE) {
@@ -156,14 +160,25 @@ contract ReMonsterMarketplace is
     }
 
     /**
-     * @dev Set new address fee seller
-     * @param _newAddressFee: new address fee seller
+     * @dev Set treasury contract
+     * @param _treasuryAddress: new address treasury
      */
-    function setNewAddressFee(
-        address _newAddressFee
+    function setTreasuryAddress(
+        ITreasuryContract _treasuryAddress
     ) public onlyRole(MANAGERMENT_ROLE) {
-        addressReceiveFee = _newAddressFee;
-        emit ChangedAddressReceiveSeller(addressReceiveFee);
+        treasuryContract = _treasuryAddress;
+        emit ChangedAddressTreasury(address(_treasuryAddress));
+    }
+
+    /**
+     * @dev Set training item contract
+     * @param _trainingItemAddress: new address treasury
+     */
+    function setTrainingItemAddress(
+        ITrainingItemContract _trainingItemAddress
+    ) public onlyRole(MANAGERMENT_ROLE) {
+        trainingItemContract = _trainingItemAddress;
+        emit ChangedAddressTrainingItem(address(_trainingItemAddress));
     }
 
     function removeListSale(bytes32 orderId) internal {
@@ -298,7 +313,7 @@ contract ReMonsterMarketplace is
                 priceInWei > 0,
                 "ReMonsterMarketplace::createMarketItemSale: Price should be bigger than 0"
             );
-            require(!TRAINING_ITEM(contractAddress).isOnlyShop(tokenId), "MarketPlace:: _createMarketItemSale: item can not sale");
+            require(!trainingItemContract.isOnlyShop(tokenId), "MarketPlace:: _createMarketItemSale: item can not sale");
             bytes32 orderId = keccak256(
                 abi.encodePacked(
                     timeNow,
@@ -452,12 +467,7 @@ contract ReMonsterMarketplace is
             saleShareAmount = order.price.mul(feeSeller).div(
                 100 * 10 ** decimalsFee
             );
-
-            // Transfer share amount for marketplace Owner
-            require(
-                payable(addressReceiveFee).send(saleShareAmount),
-                "ReMonsterMarketplace::buyItem: Transfering the cut to the Marketplace owner failed"
-            );
+            treasuryContract.deposit{value: saleShareAmount}(saleShareAmount);
         }
 
         // Transfer sale amount to seller

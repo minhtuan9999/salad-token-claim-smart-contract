@@ -73,11 +73,14 @@ interface FarmNFT {
 
     function totalSupply() external view returns (uint256);
 }
-
+interface ITreasuryContract {
+    function deposit(uint256 totalAmount) external payable;
+}
 contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     GenesisBox genesisContract;
     GeneralBox generalContract;
     FarmNFT farmContract;
+    ITreasuryContract public treasuryContract;
 
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -87,7 +90,6 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant MANAGERMENT_ROLE = keccak256("MANAGERMENT_ROLE");
 
-    address public treasuryAddress;
     address public validator;
 
     uint256 public generalPrice;
@@ -121,14 +123,13 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         BIT
     }
     event BuyAssetSuccessful(address owner, TypeAsset _type, uint256 package);
-    event ChangedAddressReceive(address _treasuryAddress);
+    event ChangedAddressTreasury(address _newAddress);
 
     /**
      * @dev Initialize this contract. Acts as a constructor
-     * @param _addressReceice - Recipient address
      */
     constructor(
-        address _addressReceice,
+        ITreasuryContract addressTreasury,
         GeneralBox addressGeneral,
         GenesisBox addressGenesis,
         FarmNFT addressFarm,
@@ -141,13 +142,13 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
         _setupRole(MANAGERMENT_ROLE, _msgSender());
-        setTreasuryAddress(payable(_addressReceice));
         generalPrice = _generalPrice;
         genesisPrice = _genesisPrice;
         farmPrice = _farmPrice;
         generalContract = addressGeneral;
         genesisContract = addressGenesis;
         farmContract = addressFarm;
+        treasuryContract = addressTreasury;
         validator = _msgSender();
         packageBit[0].priceOAS = _bitPrice;
         packageBit[0].priceBit = 10000;
@@ -216,21 +217,21 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
 
     // set Farm Contract
-    function setFarmNFT(
+    function setFarmContract(
         FarmNFT _farmContract
     ) external onlyRole(MANAGERMENT_ROLE) {
         farmContract = _farmContract;
     }
 
     /**
-     * @dev Set new address
+     * @dev Set new treasury address
      * @param _newAddress: new address
      */
-    function setTreasuryAddress(
-        address _newAddress
+    function setTreasuryContract(
+        ITreasuryContract _newAddress
     ) public onlyRole(MANAGERMENT_ROLE) {
-        treasuryAddress = _newAddress;
-        emit ChangedAddressReceive(treasuryAddress);
+        treasuryContract = _newAddress;
+        emit ChangedAddressTreasury(address(_newAddress));
     }
 
     /**
@@ -307,9 +308,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             signer == validator,
             "ReMonsterShop::buyItem: Validator fail signature"
         );
-        require(msg.value == _price, "ReMonsterShop::buyItem: wrong msg value");
-        bool sent = payable(treasuryAddress).send(_price);
-        require(sent, "ReMonsterShop::buyItem: Failed to send Ether");
+        treasuryContract.deposit{value: msg.value}(_price);
         if (_type == TypeAsset.BIT) {
             require(packageBit[_package].priceOAS > 0, "Shop:: buyItem: package not found");
         }else {
