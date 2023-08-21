@@ -263,8 +263,8 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         for (uint i = 0; i < _itemId.length; i++) {
             require(_itemId[i] < 56, "EnhanceItem::_updateTotalAmount: Unsupported itemId");
             uint256 remain = itemDetail[_itemId[i]].amountLimit - itemDetail[_itemId[i]].totalAmount;
-            require(remain >= _number[_itemId[i]], "EnhanceItem::_updateTotalAmount: exceeding");
-            itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[_itemId[i]];
+            require(remain >= _number[i], "EnhanceItem::_updateTotalAmount: exceeding");
+            itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[i];
         }
     }
 

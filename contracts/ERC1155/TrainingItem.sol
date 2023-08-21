@@ -241,16 +241,17 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
             uint256 remain = itemDetail[_itemId[i]].amountLimit -
                 itemDetail[_itemId[i]].totalAmount;
             require(
-                remain >= _number[_itemId[i]],
+                remain >= _number[i],
                 "TrainingItem::_updateTotalAmount: exceeding"
             );
             itemDetail[_itemId[i]].totalAmount =
                 itemDetail[_itemId[i]].totalAmount +
-                _number[_itemId[i]];
+                _number[i];
         }
     }
 
     /**
+     * 
      * @dev Mint monster item.
      * @param _addressTo: address
      * @param _itemId: itemId

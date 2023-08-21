@@ -116,8 +116,8 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
             require(_itemId[i] < 3, "RegenerationItem::_updateTotalAmount: Unsupported itemId");
             if(_itemId[i] == HASH_FRAGMENT_UC) continue;
             uint256 remain = itemDetail[_itemId[i]].amountLimit - itemDetail[_itemId[i]].totalAmount;
-            require(remain >= _number[_itemId[i]], "RegenerationItem::_updateTotalAmount: exceeding");
-            itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[_itemId[i]];
+            require(remain >= _number[i], "RegenerationItem::_updateTotalAmount: exceeding");
+            itemDetail[_itemId[i]].totalAmount = itemDetail[_itemId[i]].totalAmount + _number[i];
         }
     }
 
