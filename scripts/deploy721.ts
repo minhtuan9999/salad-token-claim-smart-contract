@@ -33,7 +33,7 @@ async function main() {
 
   const Genesis= await ethers.getContractFactory("GenesisHash");
   const genesis = await Genesis.deploy();
-  general.deployed();
+  genesis.deployed();
 
   const HashChipNFT= await ethers.getContractFactory("HashChipNFT");
   const hashChipNFT = await HashChipNFT.deploy();
@@ -59,6 +59,8 @@ async function main() {
   const trainingItem = await TrainingItem.deploy("baseURL");
   trainingItem.deployed();
   
+
+
   const RegenerationItem= await ethers.getContractFactory("RegenerationItem");
   const regenerationItem = await RegenerationItem.deploy("baseURL");
   regenerationItem.deployed();
@@ -83,6 +85,15 @@ async function main() {
   const reMonsterMarketplace = await ReMonsterMarketplace.deploy(feeSeller, trainingItem.address, treasury.address);
   reMonsterMarketplace.deployed();
 
+  const BridgeOAS= await ethers.getContractFactory("Bridge");
+  const bridgeOAS = await BridgeOAS.deploy(hashChipNFT.address, genesis.address, reMonsterFarm.address, ehanceItem.address);
+  bridgeOAS.deployed();
+
+  await genesis.grantRole(genesis.MANAGEMENT_ROLE(), bridgeOAS.address);
+  await hashChipNFT.grantRole(hashChipNFT.MANAGEMENT_ROLE(), bridgeOAS.address);
+  await ehanceItem.grantRole(ehanceItem.MANAGEMENT_ROLE(), bridgeOAS.address);
+  await reMonsterFarm.grantRole(reMonsterFarm.MANAGEMENT_ROLE(), bridgeOAS.address);
+
   // Log results
   console.log(`ADDRESS_CONTRACT_ACCESSORIES: ${accessories.address}`);
   console.log(`ADDRESS_CONTRACT_COACH: ${coach.address}`);
@@ -102,6 +113,7 @@ async function main() {
   console.log(`ADDRESS_CONTRACT_FARM: ${reMonsterFarm.address}`)
   console.log(`ADDRESS_CONTRACT_TOKEN_XXX: ${tokenXXX.address}`)
   console.log(`ADDRESS_CONTRACT_TREASURY: ${treasury.address}`)
+  console.log(`ADDRESS_CONTRACT_BRIDGE: ${bridgeOAS.address}`)
 
   // Set init contract Accessories
   await accessories.setMonsterItem(ehanceItem.address);
@@ -149,9 +161,13 @@ async function main() {
   await general.grantRole(general.MANAGEMENT_ROLE(), monster.address);
   // Set init contract Genesis
   await genesis.grantRole(genesis.MANAGEMENT_ROLE(), monster.address);
+
   // Set init contract Item
   await regenerationItem.grantRole(regenerationItem.MANAGEMENT_ROLE(), monster.address);
   await ehanceItem.grantRole(ehanceItem.MANAGEMENT_ROLE(), accessories.address);
+  await trainingItem.grantRole(trainingItem.MANAGEMENT_ROLE(), reMonsterMarketplace.address);
+  await fusionItem.grantRole(fusionItem.MANAGEMENT_ROLE(), monster.address);
+
   // Set init contract HashChip
   await hashChipNFT.grantRole(hashChipNFT.MANAGEMENT_ROLE(), monster.address);
  // Set init contract General

@@ -18,6 +18,16 @@ const config: HardhatUserConfig = {
       url: "https://rpc.oasys.mycryptoheroes.net/",
       accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
       allowUnlimitedContractSize: true,
+    },
+    polygonTestnet: {
+      url: "https://rpc-mumbai.maticvigil.com/",
+      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
+    },
+    polygonMainnet: {
+      url: "https://polygon.llamarpc.com/",
+      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
     }
   },
   solidity: {

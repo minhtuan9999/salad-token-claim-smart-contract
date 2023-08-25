@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy-test": "npx hardhat run --network mchVerseTestnet scripts/deploy721.ts",
-    "deploy-mainnet": "npx hardhat run --network mchVerseMainnet scripts/deploy721.ts"
+    "deploy-mainnet": "npx hardhat run --network mchVerseMainnet scripts/deploy721.ts",
+    "deploy-testPolygon": "npx hardhat run --network polygonTestnet scripts/deployBridge.ts",
+    "deploy-mainnetPolygon": "npx hardhat run --network polygonMainnet scripts/deployBridge.ts"
   },
   "repository": {
     "type": "git",
