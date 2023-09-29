@@ -67,6 +67,7 @@ contract ReMonsterFarm is
     }
 
     mapping(address => EnumerableSet.UintSet) private userToListFarm;
+    mapping(address => EnumerableSet.UintSet) private userToListFreeFarm;
 
     // Optional mapping for token URIs
     mapping(uint256 => string) private _tokenURIs;
@@ -75,6 +76,12 @@ contract ReMonsterFarm is
 
     // ID Farm => Info Monster
     mapping(uint256 => MonsterInfo) internal training;
+
+    // address => have owned free farm
+    mapping(address => bool) public haveOwned;
+
+    // Free farm
+    mapping(uint256 => bool) public isFree;
 
     // EVENTS
     event NewFarm(uint256 typeNFT, uint256 tokenId, address owner);
@@ -142,19 +149,32 @@ contract ReMonsterFarm is
         address _address,
         uint256 _type
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        _createFarm(_address, _type);
+        _createFarm(_address, false, _type);
+    }
+
+    function createFreeNFT(
+        address _address,
+        uint256 _type
+    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+        require(!haveOwned[_address], "You have owned");
+        _createFarm(_address, true, _type);
     }
 
     /**
      * create a farm and mint to owner
      * @param owner: owner of farm
      */
-    function _createFarm(address owner, uint256 typeNFT) internal {
+    function _createFarm(address owner, bool free, uint256 typeNFT) internal {
         require(totalSupply() < totalLimit, "Total supply reached the limit");
         uint256 tokenId = _tokenIds.current();
         _mint(owner, tokenId);
         userToListFarm[owner].add(tokenId);
         _tokenIds.increment();
+        if(free){
+            haveOwned[owner] = true;
+            isFree[tokenId] = true;
+            userToListFreeFarm[owner].add(tokenId);
+        }
         emit NewFarm(typeNFT, tokenId, owner);
     }
 
@@ -176,6 +196,14 @@ contract ReMonsterFarm is
         address _address
     ) public view returns (uint256[] memory listFarm) {
         listFarm = userToListFarm[_address].values();
+    }
+    /**
+     * Get list free farm by address
+     */
+    function getListFreeFarmByAddress(
+        address _address
+    ) public view returns (uint256[] memory listFarm) {
+        listFarm = userToListFreeFarm[_address].values();
     }
 
     /// @notice set the user and expires of a NFT
