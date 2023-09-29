@@ -31,6 +31,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 interface GenesisBox {
     // Detail of Group
@@ -73,6 +74,19 @@ interface FarmNFT {
 
     function totalSupply() external view returns (uint256);
 }
+interface TrainingItem {
+    function mint(
+        address _addressTo,
+        uint256 _itemId,
+        uint256 _number,
+        bytes memory _data
+    ) external;
+    function burn(
+        address _from,
+        uint256 _id,
+        uint256 _amount
+    ) external;
+}
 interface ITreasuryContract {
     function deposit(uint256 totalAmount) external payable;
 }
@@ -80,6 +94,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     GenesisBox genesisContract;
     GeneralBox generalContract;
     FarmNFT farmContract;
+    TrainingItem trainingItem;
     ITreasuryContract public treasuryContract;
 
     using Counters for Counters.Counter;
@@ -96,11 +111,32 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     uint256 public genesisPrice;
     uint256 public farmPrice;
 
+    uint8 public ENERGY_BANANA_SHOP = 3;
+    uint8 public REFRESH_HERB_SHOP = 7;
+    uint8 public FRESH_MILK_SHOP = 11;
+    uint8 public FAIRY_BERRY_SHOP = 15;
+    uint8 public CARAMEL_CAKE_SHOP = 19;
+    uint8 public CHIA_YOGURT_SHOP = 23;
+    uint8 public SATIETY_KONJACT_SHOP = 27;
+    uint8 public GLORIOUS_MEAT_SHOP = 31;
+    uint8 public SUNNY_BLOSSOM_SHOP = 35;
+    uint8 public LUNAR_GRASS_SHOP = 39;
+
+
     struct AssetSale {
         uint256 total;
         uint256 remaining;
         uint256[] price;
         GroupAsset[] detail;
+    }
+
+    struct AssetItemSale {
+        uint256 itemId;
+        uint256 limitPerDay;
+        uint256 quantitySold;
+        uint256 quantityReSold;
+        uint256 initPrice;
+        uint256 maxPrice;
     }
 
     struct GroupAsset {
@@ -113,8 +149,22 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         uint256 priceBit;
     }
 
+    struct ItemSale {
+        uint256 quantitySold;
+        uint256 quantityReSold;
+    }
+    struct ItemDetail {
+        uint256 limit;
+        uint256 initPrice;
+        uint256 maxPrice;
+    }
+
     mapping(bytes => bool) public _isSigned;
     mapping(uint256 => PackageBit) public packageBit;
+
+    mapping(uint256 => ItemDetail) public itemDetail;
+    mapping(uint256 => mapping (uint256 => ItemSale)) public itemSale;
+
     EnumerableSet.UintSet listBitPackage;
     enum TypeAsset {
         GENERAL_BOX,
@@ -124,6 +174,8 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     }
     event BuyAssetSuccessful(address owner, TypeAsset _type, uint256 package);
     event ChangedAddressTreasury(address _newAddress);
+    event SaleTraningItem(address _newAddress, uint256 itemId, uint256 number, AssetItemSale );
+    event ReSoldTraningItem(address _newAddress, uint256 itemId, uint256 number);
 
     /**
      * @dev Initialize this contract. Acts as a constructor
@@ -133,6 +185,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         GeneralBox addressGeneral,
         GenesisBox addressGenesis,
         FarmNFT addressFarm,
+        TrainingItem addressTrainingItem,
         uint256 _generalPrice,
         uint256 _genesisPrice,
         uint256 _farmPrice,
@@ -149,10 +202,51 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         genesisContract = addressGenesis;
         farmContract = addressFarm;
         treasuryContract = addressTreasury;
+        trainingItem = addressTrainingItem;
         validator = _msgSender();
         packageBit[0].priceOAS = _bitPrice;
         packageBit[0].priceBit = 10000;
         listBitPackage.add(0);
+
+        itemDetail[ENERGY_BANANA_SHOP].limit = 100;
+        itemDetail[ENERGY_BANANA_SHOP].initPrice = 2000;
+        itemDetail[ENERGY_BANANA_SHOP].maxPrice = 4000;
+
+        itemDetail[REFRESH_HERB_SHOP].limit = 100;
+        itemDetail[REFRESH_HERB_SHOP].initPrice = 2000;
+        itemDetail[REFRESH_HERB_SHOP].maxPrice = 4000;
+
+        itemDetail[FRESH_MILK_SHOP].limit = 100;
+        itemDetail[FRESH_MILK_SHOP].initPrice = 2000;
+        itemDetail[FRESH_MILK_SHOP].maxPrice = 4000;
+
+        itemDetail[FAIRY_BERRY_SHOP].limit = 100;
+        itemDetail[FAIRY_BERRY_SHOP].initPrice = 2000;
+        itemDetail[FAIRY_BERRY_SHOP].maxPrice = 4000;
+
+        itemDetail[CARAMEL_CAKE_SHOP].limit = 100;
+        itemDetail[CARAMEL_CAKE_SHOP].initPrice = 2000;
+        itemDetail[CARAMEL_CAKE_SHOP].maxPrice = 4000;
+
+        itemDetail[CHIA_YOGURT_SHOP].limit = 100;
+        itemDetail[CHIA_YOGURT_SHOP].initPrice = 2000;
+        itemDetail[CHIA_YOGURT_SHOP].maxPrice = 4000;
+
+        itemDetail[SATIETY_KONJACT_SHOP].limit = 100;
+        itemDetail[SATIETY_KONJACT_SHOP].initPrice = 3000;
+        itemDetail[SATIETY_KONJACT_SHOP].maxPrice = 6000;
+
+        itemDetail[GLORIOUS_MEAT_SHOP].limit = 100;
+        itemDetail[GLORIOUS_MEAT_SHOP].initPrice = 3000;
+        itemDetail[GLORIOUS_MEAT_SHOP].maxPrice = 6000;
+
+        itemDetail[SUNNY_BLOSSOM_SHOP].limit = 100;
+        itemDetail[SUNNY_BLOSSOM_SHOP].initPrice = 3500;
+        itemDetail[SUNNY_BLOSSOM_SHOP].maxPrice = 7000;
+
+        itemDetail[LUNAR_GRASS_SHOP].limit = 100;
+        itemDetail[LUNAR_GRASS_SHOP].initPrice = 3500;            
+        itemDetail[LUNAR_GRASS_SHOP].maxPrice = 7000;
     }
 
     function pause() public onlyRole(ADMIN_ROLE) {
@@ -202,6 +296,24 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         listBitPackage.add(package);
     }
 
+    // set Price item
+    function setNewPriceItem(
+        uint256 id,
+        uint256 initPrice,
+        uint256 maxPrice
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        itemDetail[id].initPrice = initPrice;
+        itemDetail[id].initPrice = maxPrice;
+    }
+
+    // set limit item
+    function setNewLimitItem(
+        uint256 id,
+        uint256 limit
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        itemDetail[id].limit = limit;
+    }
+
     // set General Contract
     function setGeneralContract(
         GeneralBox _generalContract
@@ -232,6 +344,13 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
     ) public onlyRole(MANAGERMENT_ROLE) {
         treasuryContract = _newAddress;
         emit ChangedAddressTreasury(address(_newAddress));
+    }
+
+    // set Training Contract
+    function setTrainingItemContract(
+        TrainingItem _trainingItem
+    ) external onlyRole(MANAGERMENT_ROLE) {
+        trainingItem = _trainingItem;
     }
 
     /**
@@ -315,6 +434,30 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             _buyItem(_type, _group, _number);
         }
         emit BuyAssetSuccessful(msg.sender, _type, _package);
+    }
+
+    function mintTrainingItem(address _address,uint256 itemId, uint256 number) external onlyRole(MANAGERMENT_ROLE) {
+        uint256 limitPerDay = itemDetail[itemId].limit + itemSale[getCurrentDay()][itemId].quantityReSold;
+        uint256 quantitySold = itemSale[getCurrentDay()][itemId].quantitySold + number;
+        require( quantitySold + itemSale[getCurrentDay()][itemId].quantityReSold <= limitPerDay, "TrainingItem::Shop:Limit reached");
+        itemSale[getCurrentDay()][itemId].quantitySold = quantitySold;
+        trainingItem.mint(_address, itemId, number,"");
+        AssetItemSale memory newAsset;
+        newAsset = AssetItemSale({
+            itemId: itemId,               
+            limitPerDay: itemDetail[itemId].limit,          
+            quantitySold: itemSale[getCurrentDay()][itemId].quantitySold,         
+            quantityReSold: itemSale[getCurrentDay()][itemId].quantityReSold,        
+            initPrice: itemDetail[itemId].initPrice,           
+            maxPrice: itemDetail[itemId].maxPrice   
+        }); 
+        emit SaleTraningItem(_address, itemId, number, newAsset);
+    }
+
+    function reSoldToShop(address _address, uint256 _id, uint256 _amount) external onlyRole(MANAGERMENT_ROLE) {
+        itemSale[getCurrentDay()][_id].quantityReSold += _amount;    
+        trainingItem.burn(_address, _id, _amount);
+        emit ReSoldTraningItem(_address, _id, _amount);
     }
 
     /*
@@ -428,6 +571,30 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         return listSale;
     }
 
+    function getListItemSale() public view returns(AssetItemSale[] memory) {
+        AssetItemSale[] memory itemList = new AssetItemSale[](10);
+        uint256[] memory listItemId = new uint256[](10);
+        listItemId[0] = uint256(ENERGY_BANANA_SHOP);
+        listItemId[1] = uint256(REFRESH_HERB_SHOP);
+        listItemId[2] = uint256(FRESH_MILK_SHOP);
+        listItemId[3] = uint256(FAIRY_BERRY_SHOP);
+        listItemId[4] = uint256(CARAMEL_CAKE_SHOP);
+        listItemId[5] = uint256(CHIA_YOGURT_SHOP);
+        listItemId[6] = uint256(SATIETY_KONJACT_SHOP);
+        listItemId[7] = uint256(GLORIOUS_MEAT_SHOP);
+        listItemId[8] = uint256(SUNNY_BLOSSOM_SHOP);
+        listItemId[9] = uint256(LUNAR_GRASS_SHOP);
+        for (uint i = 0; i < 10; i++) {
+            itemList[i].itemId = listItemId[i];
+            itemList[i].limitPerDay = itemDetail[listItemId[i]].limit;
+            itemList[i].quantitySold = itemSale[getCurrentDay()][listItemId[i]].quantitySold;
+            itemList[i].quantityReSold = itemSale[getCurrentDay()][listItemId[i]].quantityReSold;
+            itemList[i].initPrice = itemDetail[listItemId[i]].initPrice;
+            itemList[i].maxPrice = itemDetail[listItemId[i]].maxPrice;
+        }
+
+        return itemList;
+    }
     /**
      * @dev Creates an array in memory with only one value for each of the elements provided.
      */
@@ -449,5 +616,9 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
             mstore(0x40, add(array, 0x40))
         }
     }
-
+    function getCurrentDay() public view returns (uint256) {
+        uint256 currentTime = block.timestamp; // Current timestamp
+        uint256 currentDay = currentTime / 1 days;
+        return currentDay * (1 days);
+    }
 }
