@@ -4,8 +4,14 @@ import Web3 from "web3";
 CHAIN_NETWORK = 20197; // Testnet
 // CHAIN_NETWORK = 29548; // Mainnet
 
+CHAIN_NETWORK_POLYGON = 80001 ; // Testnet
+// CHAIN_NETWORK_POLYGON = 137  ; // Mainnet
+
 RPC = "https://rpc.sandverse.oasys.games"; // Testnet
 // RPC = "https://rpc.oasys.mycryptoheroes.net" // Mainnet
+
+RPC_POLYGON = "https://rpc-mumbai.maticvigil.com"; // Testnet
+// RPC_POLYGON = "https://polygon.llamarpc.com" // Mainnet
 
 PATH_METAMASK = "";
 ADDRESS_MARKETPLACE = "";
@@ -15,6 +21,9 @@ ADDRESS_GENESIS = "";
 ADDRESS_GENERAL = "";
 ADDRESS_SHOP = "";
 ADDRESS_TREASURY = "";
+ADDRESS_BRIDGE_POLYGON = "";
+ADDRESS_BRIDGE_OAS = "";
+ADDRESS_HASHCHIP_POLYGON = "";
 
 //========CREATE ABI CONTRACT===========================================================================
 const ABI_MARKETPLACE = [];
@@ -24,6 +33,9 @@ const ABI_GENESIS = [];
 const ABI_GENERAL = [];
 const ABI_SHOP = [];
 const ABI_TREASURY = [];
+const ABI_BRIDGE_POLYGON = [];
+const ABI_BRIDGE_OAS = [];
+const ABI_HASHCHIP_POLYGON = [];
 
 //========CREATE PROVINDE===============================================================================
 if (window.ethereum && ethereum.networkVersion == CHAIN_NETWORK) {
@@ -32,6 +44,7 @@ if (window.ethereum && ethereum.networkVersion == CHAIN_NETWORK) {
 } else {
   console.log("Provider RPC");
   var provider = new Web3(new Web3.providers.HttpProvider(RPC));
+  var providerPolygon = new Web3(new Web3.providers.HttpProvider(RPC_POLYGON));
 }
 
 //==================DEEPLINK INSTALL METAMASK==============================================================
@@ -71,6 +84,34 @@ const changeNetworkInMetamask = async (chainId) => {
         },
       ];
       break;
+    case 137:
+      params = [
+        {
+          chainId: "0x89",
+          chainName: "Polygon Mainnet",
+          nativeCurrency: {
+            symbol: "MATIC",
+            decimals: 18,
+          },
+          rpcUrls: ["https://polygon.llamarpc.com/"],
+          blockExplorerUrls: ["https://polygonscan.com/"],
+        },
+      ];
+      break;
+    case 80001 :
+      params = [
+        {
+          chainId: "0x13881",
+          chainName: "Mumbai",
+          nativeCurrency: {
+            symbol: "MATIC",
+            decimals: 18,
+          },
+          rpcUrls: ["https://rpc-mumbai.maticvigil.com/"],
+          blockExplorerUrls: ["https://mumbai.polygonscan.com/"],
+        },
+      ];
+      break;
   }
   // Check if MetaMask is installed
   // MetaMask injects the global API into window.ethereum
@@ -89,6 +130,20 @@ const changeNetworkInMetamask = async (chainId) => {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: "0x4EE5" }], // chainId must be in hexadecimal numbers
+          });
+          break;
+        case 137:
+          // check if the chain to connect to is installed
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x89" }], // chainId must be in hexadecimal numbers
+          });
+          break;
+        case 80001:
+          // check if the chain to connect to is installed
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: "0x13881" }], // chainId must be in hexadecimal numbers
           });
           break;
       }
@@ -132,7 +187,12 @@ var generalContract = new provider.eth.Contract(ABI_GENERAL, ADDRESS_GENERAL);
 var shopContract = new provider.eth.Contract(ABI_SHOP, ADDRESS_SHOP);
 // Prepare the TREASURY contract obj
 var treasuryContract = new provider.eth.Contract(ABI_TREASURY, ADDRESS_TREASURY);
-
+// Prepare the BRIDGE contract obj on Polygon
+var bridgePolygonContract = new providerPolygon.eth.Contract(ABI_BRIDGE_POLYGON, ADDRESS_BRIDGE_POLYGON);
+// Prepare the BRIDGE contract obj on Oas
+var bridgeOasContract = new provider.eth.Contract(ABI_BRIDGE_OAS, ADDRESS_BRIDGE_OAS);
+// Prepare the HASHCHIP contract obj on Polygon
+var hashChipPolygonContract = new provider.eth.Contract(ABI_HASHCHIP_POLYGON, ADDRESS_HASHCHIP_POLYGON);
 //==================MARKETPLACE===========================================================================
 // Get list sale
 const getListSale = async () => {
@@ -569,8 +629,8 @@ const trainingMonster = async (farmId, monsterId) => {
 
 const _trainingMonster = async (farmId, monsterId) => {
   const transactionParameters = {
-    to: ADDRESS_MONSTER,
-    data: monsterContract.methods
+    to: ADDRESS_FARM,
+    data: farmContract.methods
       .trainingMonster(ADDRESS_MONSTER, farmId, monsterId)
       .encodeABI(),
     chainId: CHAIN_NETWORK,
@@ -598,8 +658,8 @@ const endTrainingMonster = async (farmId, monsterId) => {
 
 const _endTrainingMonster = async (farmId, monsterId) => {
   const transactionParameters = {
-    to: ADDRESS_MONSTER,
-    data: monsterContract.methods
+    to: ADDRESS_FARM,
+    data: farmContract.methods
       .endTrainingMonster(ADDRESS_MONSTER, farmId, monsterId)
       .encodeABI(),
     chainId: CHAIN_NETWORK,
@@ -967,4 +1027,87 @@ const checkTransaction = async (txid) => {
       return false;
     }
   }, 2000);
+};
+
+//==================BRIDGE ON POLYGON============================================================================================
+// Deposit hashchip NFT
+const depositHashchip = async (hashChipId) => {
+  try {
+    await changeNetworkInMetamask(CHAIN_NETWORK_POLYGON);
+    let networkId = await window.ethereum.request({
+      method: "eth_chainId",
+    });
+    networkId = await Web3.utils.hexToNumberString(networkId);
+
+    if (networkId != CHAIN_NETWORK_POLYGON) return;
+
+    if (
+      (await hashChipPolygonContract.methods.getApproved(hashChipId).call()) ==
+      ADDRESS_BRIDGE_POLYGON
+    ) {
+      _depositHashChip(hashChipId);
+    } else {
+      const transactionParametersApprove = {
+        from: ethereum.selectedAddress,
+        to: ADDRESS_HASHCHIP_POLYGON,
+        data: hashChipPolygonContract.methods
+          .approve(ADDRESS_BRIDGE_POLYGON, hashChipId)
+          .encodeABI(),
+        chainId: CHAIN_NETWORK_POLYGON,
+      };
+      let txidApprove = await sendTransaction(transactionParametersApprove);
+      console.log("txidApprove: ", txidApprove);
+      await checkTransaction(txidApprove).then((status) => {
+        if (status == true) {
+          _depositHashChip(hashChipId);
+        } else if (status == false) {
+          console.log("Fail Transaction");
+        }
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const _depositHashChip = async (hashChipId) => {
+  const transactionParameters = {
+    to: ADDRESS_BRIDGE_POLYGON,
+    data: bridgePolygonContract.methods
+      .bridgeNFT(hashChipId, CHAIN_NETWORK)
+      .encodeABI(),
+    chainId: CHAIN_NETWORK_POLYGON,
+  };
+
+  return sendTransaction(transactionParameters);
+};
+
+//==================BRIDGE ON OAS============================================================================================
+// Reward hashchip NFT
+const claimNFTBridge = async (address, tokenId, typeGenesis, typeFarm, deadline, sig) => {
+  try {   
+    await changeNetworkInMetamask(CHAIN_NETWORK);
+    let networkId = await window.ethereum.request({
+      method: "eth_chainId",
+    });
+    networkId = await Web3.utils.hexToNumberString(networkId);
+    if (networkId != CHAIN_NETWORK) return;
+    _claimNFTBridge(address, tokenId, typeGenesis, typeFarm, deadline, sig);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const _claimNFTBridge = async (address, tokenId, typeGenesis, typeFarm, deadline, sig) => {
+  try {
+    const transactionParameters = {
+      to: ADDRESS_BRIDGE_OAS,
+      data: bridgeOasContract.methods.claimNFT(address, tokenId, typeGenesis, typeFarm, deadline, sig).encodeABI(),
+      chainId: CHAIN_NETWORK
+    };
+
+    return sendTransaction(transactionParameters);
+  } catch (error) {
+    console.log(error);
+  }
 };

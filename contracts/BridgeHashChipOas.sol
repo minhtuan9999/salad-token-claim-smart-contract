@@ -127,7 +127,7 @@ contract Bridge is AccessControl, Pausable {
      * @param sig: signature
      * 
      */
-    function bridgeNFT(
+    function claimNFT(
         address to,
         uint256 tokenId,
         uint8 typeGenesis,

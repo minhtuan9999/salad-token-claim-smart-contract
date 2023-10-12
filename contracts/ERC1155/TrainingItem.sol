@@ -119,7 +119,7 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     uint8 public LUNAR_GRASS_UC = 37;
     uint8 public LUNAR_GRASS_R = 38;
     uint8 public LUNAR_GRASS_SHOP = 39;
-
+  
     uint8 public LIFE_WATER_C = 40;
     uint8 public LIFE_WATER_UC = 41;
     uint8 public LIFE_WATER_R = 42;
@@ -147,7 +147,6 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     mapping(uint256 => ITEM_DETAIL) public itemDetail;
-
     // EVENT
     event mintTrainingItem(
         address _addressTo,
@@ -227,29 +226,6 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         return _listTokensOfAddress[_address].values();
     }
 
-    // Update total amount
-    function _updateTotalAmount(
-        uint256[] memory _itemId,
-        uint256[] memory _number
-    ) internal {
-        for (uint i = 0; i < _itemId.length; i++) {
-            require(
-                _itemId[i] < 53,
-                "TrainingItem::_updateTotalAmount: Unsupported itemId"
-            );
-            if (_isUnlimited(_itemId[i])) continue;
-            uint256 remain = itemDetail[_itemId[i]].amountLimit -
-                itemDetail[_itemId[i]].totalAmount;
-            require(
-                remain >= _number[i],
-                "TrainingItem::_updateTotalAmount: exceeding"
-            );
-            itemDetail[_itemId[i]].totalAmount =
-                itemDetail[_itemId[i]].totalAmount +
-                _number[i];
-        }
-    }
-
     /**
      * 
      * @dev Mint monster item.
@@ -277,6 +253,29 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         emit mintTrainingItem(_addressTo, _itemId, _number, _data);
     }
 
+    // Update total amount
+    function _updateTotalAmount(
+        uint256[] memory _itemId,
+        uint256[] memory _number
+    ) internal {
+        for (uint i = 0; i < _itemId.length; i++) {
+            require(
+                _itemId[i] < 53,
+                "TrainingItem::_updateTotalAmount: Unsupported itemId"
+            );
+            if (_isUnlimited(_itemId[i])) continue;
+            uint256 remain = itemDetail[_itemId[i]].amountLimit -
+                itemDetail[_itemId[i]].totalAmount;
+            require(
+                remain >= _number[i],
+                "TrainingItem::_updateTotalAmount: exceeding"
+            );
+            itemDetail[_itemId[i]].totalAmount =
+                itemDetail[_itemId[i]].totalAmount +
+                _number[i];
+        }
+    }
+
     /**
      * @dev Mint multiple monster item.
      * @param _addressTo: address
@@ -291,20 +290,6 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         _updateTotalAmount(_itemId, _number);
         _mintBatch(_addressTo, _itemId, _number, "");
         emit mintBatchTrainingItem(_addressTo, _itemId, _number, "");
-    }
-
-    function isOnlyShop(uint256 _itemId) external view returns (bool) {
-        return
-            _itemId == ENERGY_BANANA_SHOP ||
-            _itemId == REFRESH_HERB_SHOP ||
-            _itemId == FRESH_MILK_SHOP ||
-            _itemId == FAIRY_BERRY_SHOP ||
-            _itemId == CARAMEL_CAKE_SHOP ||
-            _itemId == CHIA_YOGURT_SHOP ||
-            _itemId == SATIETY_KONJACT_SHOP ||
-            _itemId == GLORIOUS_MEAT_SHOP ||
-            _itemId == SUNNY_BLOSSOM_SHOP ||
-            _itemId == LUNAR_GRASS_SHOP;
     }
 
     function _isUnlimited(uint256 _itemId) private view returns (bool) {

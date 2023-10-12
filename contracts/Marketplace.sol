@@ -32,6 +32,7 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 interface ITrainingItemContract {
     function isOnlyShop(uint256 _itemId) external view returns(bool);
@@ -43,7 +44,8 @@ contract ReMonsterMarketplace is
     Ownable,
     ReentrancyGuard,
     AccessControl,
-    Pausable
+    Pausable,
+    ERC1155Holder
 {
     using Counters for Counters.Counter;
     using SafeMath for uint256;
@@ -55,7 +57,6 @@ contract ReMonsterMarketplace is
     // fee seller
     uint256 public feeSeller;
     uint8 public decimalsFee = 18;
-    ITrainingItemContract public trainingItemContract;
     ITreasuryContract public treasuryContract;
 
     InfoItemSale[] public listSale;
@@ -92,7 +93,8 @@ contract ReMonsterMarketplace is
         uint256 indexed tokenId,
         address indexed seller,
         address nftAddress,
-        uint256 priceInWei
+        uint256 priceInWei,
+        uint256 amount
     );
 
     event OrderSuccessful(
@@ -101,14 +103,16 @@ contract ReMonsterMarketplace is
         address indexed seller,
         address nftAddress,
         uint256 priceInWei,
-        address indexed buyer
+        address indexed buyer,
+        uint256 amount
     );
 
     event OrderCancelled(
         bytes32 orderId,
         uint256 indexed tokenId,
         address indexed seller,
-        address nftAddress
+        address nftAddress,
+        uint256 amount
     );
 
     event ChangedFeeSeller(uint256 newFee);
@@ -119,14 +123,13 @@ contract ReMonsterMarketplace is
      * @dev Initialize this contract. Acts as a constructor
      * @param _feeSeller - fee seller
      */
-    constructor(uint256 _feeSeller, ITrainingItemContract _addressTrainingItem, ITreasuryContract _addressTreasury ) {
+    constructor(uint256 _feeSeller, ITreasuryContract _addressTreasury ) {
         _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
         _setRoleAdmin(MANAGERMENT_ROLE, MANAGERMENT_ROLE);
         _setupRole(ADMIN_ROLE, _msgSender());
         _setupRole(MANAGERMENT_ROLE, _msgSender());
         // Fee init
         setFeeSeller(_feeSeller);
-        trainingItemContract = _addressTrainingItem;
         treasuryContract = _addressTreasury;
     }
 
@@ -136,6 +139,9 @@ contract ReMonsterMarketplace is
 
     function unpause() public onlyRole(ADMIN_ROLE) {
         _unpause();
+    }
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC1155Receiver) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 
     /**
@@ -168,17 +174,6 @@ contract ReMonsterMarketplace is
     ) public onlyRole(MANAGERMENT_ROLE) {
         treasuryContract = _treasuryAddress;
         emit ChangedAddressTreasury(address(_treasuryAddress));
-    }
-
-    /**
-     * @dev Set training item contract
-     * @param _trainingItemAddress: new address treasury
-     */
-    function setTrainingItemAddress(
-        ITrainingItemContract _trainingItemAddress
-    ) public onlyRole(MANAGERMENT_ROLE) {
-        trainingItemContract = _trainingItemAddress;
-        emit ChangedAddressTrainingItem(address(_trainingItemAddress));
     }
 
     function removeListSale(bytes32 orderId) internal {
@@ -242,10 +237,11 @@ contract ReMonsterMarketplace is
             tokenId,
             nftOwner,
             contracAddress,
-            priceInWei
+            priceInWei,
+            amount
         );
-    }
-
+    } 
+    
     /**
      * @dev Creates a new market item.
      * @param contractAddress: address of nft contract
@@ -270,11 +266,6 @@ contract ReMonsterMarketplace is
                 "ReMonsterMarketplace::createMarketItemSale: Only the owner can create orders"
             );
             require(
-                nftContract.getApproved(tokenId) == address(this) ||
-                    nftContract.isApprovedForAll(nftOwner, address(this)),
-                "ReMonsterMarketplace::createMarketItemSale: The contract is not authorized to manage the asset"
-            );
-            require(
                 priceInWei > 0,
                 "ReMonsterMarketplace::createMarketItemSale: Price should be bigger than 0"
             );
@@ -297,7 +288,7 @@ contract ReMonsterMarketplace is
                 price: priceInWei,
                 amount: amount
             });
-
+            nftContract.transferFrom(nftOwner, address(this), tokenId);
             return (orderId, nftOwner);
         } else if (isERC1155(contractAddress)) {
             IERC1155 nftContract = IERC1155(contractAddress);
@@ -306,14 +297,9 @@ contract ReMonsterMarketplace is
                 "ReMonsterMarketplace::createMarketItemSale: Insufficient balance"
             );
             require(
-                nftContract.isApprovedForAll(msg.sender, address(this)),
-                "ReMonsterMarketplace::createMarketItemSale: The contract is not authorized to manage the asset"
-            );
-            require(
                 priceInWei > 0,
                 "ReMonsterMarketplace::createMarketItemSale: Price should be bigger than 0"
             );
-            require(!trainingItemContract.isOnlyShop(tokenId), "MarketPlace:: _createMarketItemSale: item can not sale");
             bytes32 orderId = keccak256(
                 abi.encodePacked(
                     timeNow,
@@ -324,7 +310,6 @@ contract ReMonsterMarketplace is
                     amount
                 )
             );
-            // mo shi wa ke go dai ma se de shi ka
 
             orderByAssetId[orderId] = Order({
                 contractAddress: contractAddress,
@@ -334,7 +319,7 @@ contract ReMonsterMarketplace is
                 price: priceInWei,
                 amount: amount
             });
-
+            nftContract.safeTransferFrom(msg.sender, address(this), tokenId, amount, "");
             return (orderId, msg.sender);
         } else {
             revert(
@@ -376,9 +361,9 @@ contract ReMonsterMarketplace is
     function cancelMarketItemSale(
         bytes32 orderId
     ) public nonReentrant whenNotPaused {
-        _cancelMarketItemSale(orderId);
         removeListSale(orderId);
         removeListSaleOfAddress(orderByAssetId[orderId].seller, orderId);
+        _cancelMarketItemSale(orderId);
     }
 
     /**
@@ -390,6 +375,7 @@ contract ReMonsterMarketplace is
         bytes32 orderId
     ) internal returns (Order memory order) {
         order = orderByAssetId[orderId];
+        address contractAddress = order.contractAddress;
         require(
             order.active,
             "ReMonsterMarketplace::cancelMarketItemSale: Asset not published"
@@ -400,12 +386,21 @@ contract ReMonsterMarketplace is
         );
 
         address orderSeller = order.seller;
+        uint256 tokenId = order.tokenId;
+        if (isERC721(contractAddress)) {
+            IERC721 nftContract = IERC721(contractAddress);
+            nftContract.transferFrom(address(this), orderSeller, tokenId);
+        } else if(isERC1155(contractAddress)) {
+            IERC1155 nftContract = IERC1155(contractAddress);
+            nftContract.safeTransferFrom(address(this), orderSeller, tokenId, order.amount, "");
+        }
         delete orderByAssetId[orderId];
         emit OrderCancelled(
             orderId,
-            order.tokenId,
+            tokenId,
             orderSeller,
-            order.contractAddress
+            contractAddress,
+            order.amount
         );
     }
 
@@ -423,7 +418,7 @@ contract ReMonsterMarketplace is
         );
 
         address seller = order.seller;
-
+        
         require(
             seller != address(0),
             "ReMonsterMarketplace::buyItem: Invalid address"
@@ -439,18 +434,13 @@ contract ReMonsterMarketplace is
 
         if (isERC721(order.contractAddress)) {
             IERC721 nftContract = IERC721(order.contractAddress);
-            require(
-                seller == nftContract.ownerOf(order.tokenId),
-                "ReMonsterMarketplace::buyItem: The seller is no longer the owner"
-            );
-
             // Transfer asset owner
-            nftContract.safeTransferFrom(seller, msg.sender, order.tokenId);
+            nftContract.transferFrom(address(this), msg.sender, order.tokenId);
         } else if (isERC1155(order.contractAddress)) {
             IERC1155 nftContract = IERC1155(order.contractAddress);
             // Transfer asset owner
             nftContract.safeTransferFrom(
-                seller,
+                address(this),
                 msg.sender,
                 order.tokenId,
                 order.amount,
@@ -476,17 +466,17 @@ contract ReMonsterMarketplace is
             "ReMonsterMarketplace::buyItem: Transfering the cut to the Marketplace owner failed"
         );
 
-        delete orderByAssetId[orderId];
         removeListSale(orderId);
         removeListSaleOfAddress(seller, orderId);
-
+        delete orderByAssetId[orderId];
         emit OrderSuccessful(
             orderId,
             order.tokenId,
-            seller,
+            seller,  
             order.contractAddress,
             order.price,
-            msg.sender
+            msg.sender,
+            order.amount
         );
     }
 
