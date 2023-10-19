@@ -23,7 +23,7 @@ contract GeneralHash is
 
     // Detail of Group
     struct GroupDetail {
-        uint256 totalSupply;
+        uint256 totalSupply; 
         uint256 issueAmount;
         uint256 issueMarketing;
         uint256[] limitType;
@@ -35,6 +35,7 @@ contract GeneralHash is
         uint256 tokenId;
         Group group;
         uint256 species;
+        uint256 timesRegeneration;
     }
 
     enum Group {
@@ -52,7 +53,8 @@ contract GeneralHash is
     string private _baseURIextended;
     // set value group
     uint256[] public listGroup;
-
+    // NFT detail: Season => (tokenId => number Of Regenerations))
+    mapping(uint256 =>  mapping(uint256 => uint256)) public _numberOfRegenerations;
     //=======================================MAPPING=======================================//
     // Mapping tokenId detail
     mapping(uint256 => GeneralDetail) public generalDetail;
@@ -309,5 +311,8 @@ contract GeneralHash is
             group = groupDetail[Group.GROUP_E];
         }
     }
-
+     function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
+        _numberOfRegenerations[season][tokenId] = times;
+        generalDetail[tokenId].timesRegeneration =times;
+    }
 }

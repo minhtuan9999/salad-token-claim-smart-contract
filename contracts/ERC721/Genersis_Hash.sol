@@ -36,6 +36,7 @@ contract GenesisHash is
         uint256 tokenId;
         Group group;
         uint256 species;
+        uint256 timesRegeneration;
     }
 
     enum Group {
@@ -51,7 +52,9 @@ contract GenesisHash is
     bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     // Base URI
     string private _baseURIextended;
-
+    
+    // NFT detail: Season => (tokenId => number Of Regenerations))
+    mapping(uint256 =>  mapping(uint256 => uint256)) public _numberOfRegenerations;
     //=======================================MAPPING=======================================//
     // Mapping tokenId detail
     mapping(uint256 => GenesisDetail) public genesisDetail;
@@ -332,5 +335,9 @@ contract GenesisHash is
         if (_group == 4) {
             group = groupDetail[Group.GROUP_E];
         }
+    }
+    function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
+        _numberOfRegenerations[season][tokenId] = times;
+        genesisDetail[tokenId].timesRegeneration =times;
     }
 }

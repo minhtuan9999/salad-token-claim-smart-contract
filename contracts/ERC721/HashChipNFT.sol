@@ -17,9 +17,16 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
-
+    // Detail of token id
+    struct HashChipDetail {
+        uint256 tokenId;
+        uint256 timesRegeneration;
+    }
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) private _listTokensOfAddress;
+
+    mapping(uint256 =>  mapping(uint256 => uint256)) public _numberOfRegenerations;
+    mapping(uint256 => HashChipDetail) public hashChipDetail;
 
     // Event create HashChipNFT
     event createHashChipNFT(address _address, uint256 tokenId);
@@ -82,6 +89,14 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         emit createHashChipNFT(_address, _tokenId);
     }
 
+    // get type of list Token
+    function getTypeOfListToken(uint256[] memory _listToken) public view returns(HashChipDetail[] memory) {
+        HashChipDetail[] memory listTypes = new HashChipDetail[](_listToken.length);
+        for(uint256 i=0; i< _listToken.length; i++) {
+            listTypes[i] = hashChipDetail[_listToken[i]];
+        }
+        return listTypes;
+    }
     /*
      * burn a HashChipNFT
      * @param _tokenId: tokenId burn
@@ -90,5 +105,9 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256 _tokenId
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         _burn(_tokenId);
+    }
+    function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
+        _numberOfRegenerations[season][tokenId] = times;
+        hashChipDetail[tokenId].timesRegeneration =times;
     }
 }

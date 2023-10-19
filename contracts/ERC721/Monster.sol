@@ -5,7 +5,7 @@ import "./Monster/MonsterCore.sol";
 contract Monster is MonsterCore {
     // Validator
     address private validator;
-    // Decimal
+    // Decimal  
     uint256 public decimal = 10^18;
     // Status signature
     mapping(bytes => bool) public _isSigned;
@@ -130,6 +130,8 @@ contract Monster is MonsterCore {
      */
     function mintMonster(
         TypeMint _type,
+        address _addressContract,
+        uint256 _chainId,
         address _account,
         uint256 _tokenId,
         bool _isOAS,
@@ -162,11 +164,11 @@ contract Monster is MonsterCore {
             );
             treasuryContract.deposit{value: msg.value}(_cost);
         } else {
-            uint256 cost = getFeeOfTokenId(_type, _tokenId);
+            uint256 cost = getFeeOfTokenId(_type, _chainId, _addressContract, _tokenId);
             tokenBaseContract.burnToken(msg.sender, cost*decimal );
         }
 
-        uint256 tokenId = _mintMonster(_type, _tokenId);
+        uint256 tokenId = _mintMonster(_type, _chainId, _addressContract, _tokenId);
         emit createNFTMonster(msg.sender, tokenId, _type);
     }
 
@@ -309,6 +311,8 @@ contract Monster is MonsterCore {
      */
     function refreshTimesOfRegeneration(
         TypeMint _type,
+        uint256 _chainId,
+        address _addressContract,
         address _account,
         uint256 _tokenId,
         bool _isOAS,
@@ -337,7 +341,7 @@ contract Monster is MonsterCore {
             signer == validator,
             "Monster:::Monster::mintMonster: Validator fail signature"
         );
-        _refreshTimesOfRegeneration(_type, _tokenId, _isOAS, _cost);
+        _refreshTimesOfRegeneration(_type, _chainId, _addressContract, _tokenId, _isOAS, _cost);
     }
 
     /*
@@ -347,27 +351,21 @@ contract Monster is MonsterCore {
      */
     function getFeeOfTokenId(
         TypeMint _type,
+        uint256 _chainId,
+        address _address,
         uint256 _tokenId
     ) public view whenNotPaused returns (uint256 fee) {
         if (_type == TypeMint.EXTERNAL_NFT) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.EXTERNAL_NFT
-            ][_tokenId];
+            uint256 countRegeneration = _timesRegenExternal[season][_chainId][_address][_tokenId];
             fee = costOfExternal[countRegeneration];
         } else if (_type == TypeMint.GENESIS_HASH) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.GENESIS_HASH
-            ][_tokenId];
+            uint256 countRegeneration = genesisHashContract._numberOfRegenerations(season, _tokenId);
             fee = costOfExternal[countRegeneration];
         } else if (_type == TypeMint.GENERAL_HASH) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.GENERAL_HASH
-            ][_tokenId];
+            uint256 countRegeneration = generalHashContract._numberOfRegenerations(season, _tokenId);
             fee = costOfExternal[countRegeneration];
         } else if (_type == TypeMint.HASH_CHIP_NFT) {
-            uint256 countRegeneration = _numberOfRegenerations[season][
-                TypeMint.HASH_CHIP_NFT
-            ][_tokenId];
+            uint256 countRegeneration = hashChipNFTContract._numberOfRegenerations(season, _tokenId);
             fee = costOfExternal[countRegeneration];
         } else {
             revert("Monster:::MonsterCore::getFeeOfTokenId: Unsupported type");

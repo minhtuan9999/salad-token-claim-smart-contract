@@ -124,7 +124,6 @@ async function main() {
   /* Set init contract Monster crystal*/
   await monsterCrystal.initSetMonsterContract(monster.address);
   await monsterCrystal.initSetMonsterMemory(monsterMemory.address);
-  await monster.grantRole(monster.MANAGEMENT_ROLE(), monsterCrystal.address);
   await monsterMemory.grantRole(monsterMemory.MANAGEMENT_ROLE(), monsterCrystal.address);
 
   // Set init contract Memory
@@ -174,6 +173,7 @@ async function main() {
   await general.grantRole(general.MANAGEMENT_ROLE(), shop.address);
   // Set init contract Genesis
   await genesis.grantRole(genesis.MANAGEMENT_ROLE(), shop.address);
+  await trainingItem.grantRole(trainingItem.MANAGEMENT_ROLE(), shop.address);
   await reMonsterFarm.grantRole(reMonsterFarm.MANAGEMENT_ROLE(), shop.address);
   // mint marketing general
   await general.claimMaketingBox(admin,0);

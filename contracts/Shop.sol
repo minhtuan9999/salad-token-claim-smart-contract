@@ -172,7 +172,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         FARM_NFT,
         BIT
     }
-    event BuyAssetSuccessful(address owner, TypeAsset _type, uint256 package);
+    event BuyAssetSuccessful(address owner, TypeAsset _type, uint256 package, uint256  );
     event ChangedAddressTreasury(address _newAddress);
     event SaleTraningItem(address _newAddress, uint256 itemId, uint256 number, AssetItemSale );
     event ReSoldTraningItem(address _newAddress, uint256 itemId, uint256 number);
@@ -433,7 +433,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         }else {
             _buyItem(_type, _group, _number);
         }
-        emit BuyAssetSuccessful(msg.sender, _type, _package);
+        emit BuyAssetSuccessful(msg.sender, _type, _package, _number);
     }
 
     function mintTrainingItem(address _address,uint256 itemId, uint256 number) external onlyRole(MANAGERMENT_ROLE) {

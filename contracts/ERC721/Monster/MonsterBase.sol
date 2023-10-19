@@ -94,8 +94,7 @@ contract MonsterBase is
         uint256 batchSize
     ) internal virtual override {
         require(
-            _monster[firstTokenId].typeMint != TypeMint.FREE,
-            "Monster:::MonsterBase::_beforeTokenTransfer: NFT free is not transferrable"
+            _monster[firstTokenId].typeMint != TypeMint.FREE,"NFT free is not transferrable"
         );
 
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
@@ -171,10 +170,7 @@ contract MonsterBase is
      * @param _tokenId: tokenId
      */
     function getStatusMonster(uint256 _tokenId) public view returns (bool) {
-        require(
-            _exists(_tokenId),
-            "Monster:::MonsterBase::getStatusMonster: Monster not exists"
-        );
+        require(_exists(_tokenId),"Monster not exists");
         return _monster[_tokenId].lifeSpan;
     }
 
@@ -187,10 +183,7 @@ contract MonsterBase is
         uint256 _tokenId,
         bool _status
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE ) {
-        require(
-            _exists(_tokenId),
-            "Monster:::MonsterBase::setStatusMonster: Monster not exists"
-        );
+        require(_exists(_tokenId),"Monster not exists");
         _monster[_tokenId].lifeSpan = _status;
         emit setStatusMonsters(_tokenId,_status);
     }
@@ -200,10 +193,7 @@ contract MonsterBase is
      * @param _tokenId: tokenId
      */
     function isFreeMonster(uint256 _tokenId) external view returns (bool) {
-        require(
-            _exists(_tokenId),
-            "Monster:::MonsterBase::isFreeMonster: Monster does not exist"
-        );
+        require(_exists(_tokenId),"Monster does not exist");
         return _monster[_tokenId].typeMint == TypeMint.FREE;
     }
     /*
