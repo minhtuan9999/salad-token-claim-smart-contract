@@ -169,10 +169,10 @@ contract GeneralHash is
         }else if(_type == 4) {
             newGroup = Group.GROUP_E;
         }else {
-            revert("General_Hash::createBox: Unsupported group");
+            revert("Unsupported group");
         }
         uint256 remainingGroup = groupDetail[newGroup].totalSupply - groupDetail[newGroup].issueAmount;
-        require(remainingGroup > 0, "General_Hash::createBox: Exceeding");
+        require(remainingGroup > 0, "Exceeding");
         groupDetail[newGroup].issueAmount++;
         boxOfAddress[_address][newGroup]++;
         emit createBoxs(_address, 1, newGroup);
@@ -188,7 +188,7 @@ contract GeneralHash is
         Group group
     ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         uint256 amount = groupDetail[group].issueMarketing;
-        require(amount > 0, "General_Hash::claimMaketingBox: Exceeding limit marketing");
+        require(amount > 0, "Exceeding limit marketing");
         groupDetail[group].issueAmount += amount;
         boxOfAddress[_address][group] += amount;
         groupDetail[group].issueMarketing = 0;
@@ -197,7 +197,7 @@ contract GeneralHash is
 
     // send group maketing by admin
     function sendGroup(address to, Group group, uint256 number) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        require(boxOfAddress[msg.sender][group] > number, "General_Hash::sendGroup: Exceeding group");
+        require(boxOfAddress[msg.sender][group] > number, "Exceeding group");
         boxOfAddress[msg.sender][group] -= number;
         boxOfAddress[to][group] += number;
     }
@@ -243,7 +243,7 @@ contract GeneralHash is
     ) external whenNotPaused nonReentrant {
         require(
             boxOfAddress[msg.sender][group] > 0,
-            "General Hash:: openGeneralBox: Exceeding box"
+            "Exceeding box"
         );
         uint256 _type = _getTypeOfGroup(group);
         uint256 tokenId = _tokenIds.current();

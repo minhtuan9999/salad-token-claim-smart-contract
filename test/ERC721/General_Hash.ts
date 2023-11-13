@@ -85,7 +85,6 @@ describe("GeneralHash", function () {
                     token1 = createEvent.args?._type.toString();
                 }
             }
-            console.log(token1);
             
             let tx2 = await generalHash.connect(owner).openGeneralBox(group);
 
@@ -100,7 +99,6 @@ describe("GeneralHash", function () {
                     token2 = createEvent.args?._type.toString();
                 }
             }
-            console.log(token2);
 
             let tx3 = await generalHash.connect(owner).openGeneralBox(group);
 
@@ -115,7 +113,6 @@ describe("GeneralHash", function () {
                     token3 = createEvent.args?._type.toString();
                 }
             }
-            console.log(token3);
         });
     })
     describe("burn", function () {
@@ -132,13 +129,8 @@ describe("GeneralHash", function () {
         it('should check when the caller address has permission', async function () {
             const { generalHash, userAddress, owner } = await loadFixture(deployERC721Fixture);
             const group = 1;
-
             await generalHash.connect(owner).createBox(owner.address, group);
-            console.log(await generalHash.getDetailAddress(owner.address));
-            console.log(await generalHash.getTypeOfListToken([0]));
-            console.log(await generalHash.getDetailGroup(group));
             await expect(generalHash.connect(owner).openGeneralBox(group)).not.to.be.reverted;
-            console.log(await generalHash.getDetailAddress(owner.address));
             
             
         });

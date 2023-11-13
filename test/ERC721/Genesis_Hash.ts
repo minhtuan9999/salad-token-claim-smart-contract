@@ -1,5 +1,4 @@
 import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -23,7 +22,6 @@ describe("GenesisHash", function () {
     describe("Deployment", function () {
         it('should deploy and set the owner correctly', async function () {
             const { genesisHash, owner } = await loadFixture(deployERC721Fixture);
-
             expect(await genesisHash.owner()).to.equal(owner.address);
         });
     })
@@ -63,10 +61,9 @@ describe("GenesisHash", function () {
         it('should check when the caller address has permission', async function () {
             const { genesisHash, userAddress, owner } = await loadFixture(deployERC721Fixture);
             const group = 2;
-            await genesisHash.connect(owner).claimMaketingWithType(owner.address, group);
-            await expect(genesisHash.connect(userAddress).claimMaketingWithType(owner.address, group)).to.be.reverted;
-            console.log("===================================")
-            console.log(await genesisHash.getDetailGroup(group));
+            const type = 1;
+            await genesisHash.connect(owner).claimMaketingWithType(owner.address, group, type);
+            await expect(genesisHash.connect(userAddress).claimMaketingWithType(owner.address, group,type)).to.be.reverted;
         });
     })
 
@@ -96,7 +93,6 @@ describe("GenesisHash", function () {
                     token1 = createEvent.args?._type.toString();
                 }
             }
-            console.log(token1);
         });
     })
     describe("burn", function () {

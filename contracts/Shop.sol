@@ -296,21 +296,15 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         listBitPackage.add(package);
     }
 
-    // set Price item
-    function setNewPriceItem(
+    // set new detail item
+    function setNewDetailItem(
         uint256 id,
         uint256 initPrice,
-        uint256 maxPrice
+        uint256 maxPrice,
+        uint256 limit
     ) external onlyRole(MANAGERMENT_ROLE) {
         itemDetail[id].initPrice = initPrice;
         itemDetail[id].initPrice = maxPrice;
-    }
-
-    // set limit item
-    function setNewLimitItem(
-        uint256 id,
-        uint256 limit
-    ) external onlyRole(MANAGERMENT_ROLE) {
         itemDetail[id].limit = limit;
     }
 

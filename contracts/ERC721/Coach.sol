@@ -140,7 +140,7 @@ contract Coach is Ownable, ERC721Enumerable, AccessControl, Pausable, Reentrancy
     /*
      * Create coach from Monster
      * @param _owner: address of owner
-     * @param _idBurn: last tokenId monster fusion
+     * @param _idBurn: id monster burn
      */
     function createCoachFromMonster(
         address _owner,
@@ -148,28 +148,26 @@ contract Coach is Ownable, ERC721Enumerable, AccessControl, Pausable, Reentrancy
     ) external nonReentrant whenNotPaused {
         require(
             IERC721(address(monsterContract)).ownerOf(_monsterId) == _owner,
-            "MonsterManagerment: createCoachNFT: The owner is not correct"
+            "The owner is not correct"
         );
         bool isStatusMonster = monsterContract.getStatusMonster(_monsterId);
-        require(
-            !isStatusMonster,
-            "MonsterManagerment: createCoachNFT: The monster is alive"
-        );
+        require(!isStatusMonster,"The monster is alive");
         bool isFreeMonster = monsterContract.isFreeMonster(_monsterId);
         uint256 tokenId = _createNFT(msg.sender);
         if (isFreeMonster) {
             _coach[tokenId].isFree = true;
         }
-        monsterContract.burn(_monsterId);
         monsterMemory.mint(_owner, _monsterId);
-        emit createCoachByMonster(_owner, tokenId, _monsterId);
+        monsterContract.burn(_monsterId);
+        emit createCoachByMonster(_owner, tokenId, _monsterId); 
     }
 
     /*
      * burn a Coach
      * @param _tokenId: tokenId burn
      */
-    function burn(uint256 _tokenId) external nonReentrant onlyRole(MANAGEMENT_ROLE) {
+    function burn(uint256 _tokenId) external nonReentrant {
+        require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         _burn(_tokenId);
     }
 

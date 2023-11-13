@@ -10,9 +10,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 interface IMonsterItem {
-    // burn item from tokenid
     function burn(address _from, uint256 _id, uint256 _amount) external;
-
     function mint(
         address _addressTo,
         uint256 _itemType,
@@ -146,8 +144,7 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         uint256[] memory _number
     ) external nonReentrant whenNotPaused {
         require(
-            _materialId.length == _number.length,
-            "Accessories::createAccessoriesByItem: Invalid input"
+            _materialId.length == _number.length,"Invalid input"
         );
         item.burnMultipleItem(msg.sender, _materialId, _number);
         uint256 tokenId = _createNFT(msg.sender);
@@ -160,7 +157,8 @@ contract Accessories is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+    ) external nonReentrant whenNotPaused{
+        require(hasRole(MANAGEMENT_ROLE, _msgSender())|| ownerOf(_tokenId) == _msgSender(), "You not owner!");
         _burn(_tokenId);
     }
 }
