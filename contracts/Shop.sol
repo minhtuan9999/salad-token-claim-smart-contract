@@ -33,7 +33,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
-interface GenesisBox {
+interface IGenesisBox {
     // Detail of Group
     struct GroupDetail {
         uint256 totalSupply;
@@ -50,7 +50,7 @@ interface GenesisBox {
     ) external view returns (GroupDetail memory);
 }
 
-interface GeneralBox {
+interface IGeneralBox {
     // Detail of Group
     struct GroupDetail {
         uint256 totalSupply;
@@ -67,14 +67,14 @@ interface GeneralBox {
     ) external view returns (GroupDetail memory);
 }
 
-interface FarmNFT {
+interface IFarmNFT {
     function getTotalLimit() external view returns (uint256);
 
     function createNFT(address _address, uint256 _type) external;
 
     function totalSupply() external view returns (uint256);
 }
-interface TrainingItem {
+interface ITrainingItem {
     function mint(
         address _addressTo,
         uint256 _itemId,
@@ -91,10 +91,10 @@ interface ITreasuryContract {
     function deposit(uint256 totalAmount) external payable;
 }
 contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
-    GenesisBox genesisContract;
-    GeneralBox generalContract;
-    FarmNFT farmContract;
-    TrainingItem trainingItem;
+    IGenesisBox genesisContract;
+    IGeneralBox generalContract;
+    IFarmNFT farmContract;
+    ITrainingItem trainingItem;
     ITreasuryContract public treasuryContract;
 
     using Counters for Counters.Counter;
@@ -182,10 +182,10 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
      */
     constructor(
         ITreasuryContract addressTreasury,
-        GeneralBox addressGeneral,
-        GenesisBox addressGenesis,
-        FarmNFT addressFarm,
-        TrainingItem addressTrainingItem,
+        IGeneralBox addressGeneral,
+        IGenesisBox addressGenesis,
+        IFarmNFT addressFarm,
+        ITrainingItem addressTrainingItem,
         uint256 _generalPrice,
         uint256 _genesisPrice,
         uint256 _farmPrice,
@@ -296,35 +296,41 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
         listBitPackage.add(package);
     }
 
-    // set new detail item
-    function setNewDetailItem(
+    // set Price item
+    function setNewPriceItem(
         uint256 id,
         uint256 initPrice,
-        uint256 maxPrice,
-        uint256 limit
+        uint256 maxPrice
     ) external onlyRole(MANAGERMENT_ROLE) {
         itemDetail[id].initPrice = initPrice;
         itemDetail[id].initPrice = maxPrice;
+    }
+
+    // set limit item
+    function setNewLimitItem(
+        uint256 id,
+        uint256 limit
+    ) external onlyRole(MANAGERMENT_ROLE) {
         itemDetail[id].limit = limit;
     }
 
     // set General Contract
     function setGeneralContract(
-        GeneralBox _generalContract
+        IGeneralBox _generalContract
     ) external onlyRole(MANAGERMENT_ROLE) {
         generalContract = _generalContract;
     }
 
     // set Genesis Contract
     function setGenesisContract(
-        GenesisBox _genesisContract
+        IGenesisBox _genesisContract
     ) external onlyRole(MANAGERMENT_ROLE) {
         genesisContract = _genesisContract;
     }
 
     // set Farm Contract
     function setFarmContract(
-        FarmNFT _farmContract
+        IFarmNFT _farmContract
     ) external onlyRole(MANAGERMENT_ROLE) {
         farmContract = _farmContract;
     }
@@ -342,7 +348,7 @@ contract ReMonsterShop is Ownable, ReentrancyGuard, AccessControl, Pausable {
 
     // set Training Contract
     function setTrainingItemContract(
-        TrainingItem _trainingItem
+        ITrainingItem _trainingItem
     ) external onlyRole(MANAGERMENT_ROLE) {
         trainingItem = _trainingItem;
     }

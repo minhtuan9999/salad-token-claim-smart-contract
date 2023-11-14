@@ -1,7 +1,8 @@
 import { ethers } from "hardhat";
+require('dotenv').config();
 
 async function main() {
-  let admin = "0x3C971ccf2F799EBa65EA25E7461D7Ad438c811aD";
+  let admin = process.env.ADMIN_ADDRESS as string;
   let testAddress = "0x926A80dEfCfb7130E02E1BE68fF52354E865d6c8";
   // Deploy contract bridge OAS
   const HashChip= await ethers.getContractFactory("T2WebERC721");
