@@ -33,9 +33,6 @@ interface IRegenerationItem {
     function isMintMonster(uint256 _itemId) external view returns (bool);
 }
 interface IFusionItem is IRegenerationItem {}
-interface ITreasuryContract {
-    function deposit(uint256 totalAmount) external payable;
-}
 interface IMonsterContract {
     function mintMonster(address _address, uint8 _type) external returns (uint256);
     function getStatusMonster(uint256 _tokenId) external view returns (bool);
@@ -54,7 +51,6 @@ contract RegenFusionMonster is Ownable,
     IMonsterMemory public monsterMemory;
     IRegenerationItem public regenerationItem;
     IFusionItem public fusionItem;
-    ITreasuryContract public treasuryContract;
     IMonsterContract public monsterContract;
 
     bytes32 public constant MANAGEMENT_ROLE  = keccak256("MANAGEMENT_ROLE");
@@ -62,8 +58,10 @@ contract RegenFusionMonster is Ownable,
 
     // Season
     uint256 public season;
-        // Validator
+    // Validator
     address validator;
+    // Address receive fee
+    address receiveFee;
     // Decimal  
     uint256 public DECIMAL = 10^18;
     // Status signature
@@ -96,33 +94,41 @@ contract RegenFusionMonster is Ownable,
         address owner,
         uint256 newMonster,
         uint256 firstTokenId,
-        uint256 lastTokenId
+        uint256 lastTokenId,
+        uint8 mainSeed,
+        uint8 subSeed
     );
 
     event FusionGenesisHash(
         address owner,
         uint256 fistId,
         uint256 lastId,
-        uint256 newTokenId
+        uint256 newTokenId,
+        uint8 mainSeed,
+        uint8 subSeed
     );
 
     event FusionGeneralHash(
         address owner,
         uint256 fistId,
         uint256 lastId,
-        uint256 newTokenId
+        uint256 newTokenId,
+        uint8 mainSeed,
+        uint8 subSeed
     );
 
     event FusionMultipleHash(
         address owner,
         uint256 genesisId,
         uint256 generalId,
-        uint256 newTokenId
+        uint256 newTokenId,
+        uint8 mainSeed,
+        uint8 subSeed
     );
 
     event RefreshTimesRegeneration(uint8 _type, uint256 tokenId);
     
-    event RegenerationMonster(address owner, uint256 tokenId, uint8 _type);
+    event RegenerationMonster(address owner, uint256 tokenId, uint8 _type, uint8 mainSeed, uint8 subSeed);
 
     // Check status mint nft free of address
     mapping(address => bool) public _realdyFreeNFT;
@@ -139,8 +145,8 @@ contract RegenFusionMonster is Ownable,
         IMonsterMemory _monsterMemory,
         IRegenerationItem _regenerationItem,
         IFusionItem _fusionItem,
-        ITreasuryContract _treasuryContract,
-        IMonsterContract _monsterContract
+        IMonsterContract _monsterContract,
+        address receiveFreeAddress
     ) external onlyRole(MANAGEMENT_ROLE) {
         tokenBaseContract = _tokenBase;
         generalHashContract = _generalHash;
@@ -149,8 +155,8 @@ contract RegenFusionMonster is Ownable,
         monsterMemory = _monsterMemory;
         regenerationItem = _regenerationItem;
         fusionItem = _fusionItem;
-        treasuryContract = _treasuryContract;
         monsterContract = _monsterContract;
+        receiveFee = receiveFreeAddress;
     }
 
     constructor(){
@@ -255,7 +261,9 @@ contract RegenFusionMonster is Ownable,
         bool _isOAS,
         uint256 _cost,
         uint256 _deadline,
-        bytes calldata _sig
+        bytes calldata _sig,
+        uint8 _mainSeed,
+        uint8 _subSeed
     ) external payable nonReentrant whenNotPaused {
         if (_isOAS) {
             require(_deadline > block.timestamp,"Deadline exceeded");
@@ -270,7 +278,11 @@ contract RegenFusionMonster is Ownable,
                 _sig
             );
             require(signer == validator, "Validator fail signature");
-            treasuryContract.deposit{value: msg.value}(_cost);
+            bool sent = payable(receiveFee).send(_cost);
+            require(
+                sent,
+                "TreasuryContract::reward: Failed to claim OAS"
+            );
         } else {
             uint256 cost = getFeeOfTokenId(_type, _chainId, _addressContract, _tokenId);
             tokenBaseContract.burnToken(msg.sender, cost*DECIMAL );
@@ -288,16 +300,16 @@ contract RegenFusionMonster is Ownable,
         } else {
             revert("Unsupported type");
         }
-        emit RegenerationMonster(msg.sender, tokenId, _type);
+        emit RegenerationMonster(msg.sender, tokenId, _type, _mainSeed, _subSeed);
     }
 
     /*
      * Create a Monster by type Free
      */
-    function mintMonsterFromRegeneration(uint256 _itemId) external nonReentrant whenNotPaused {
+    function mintMonsterFromRegeneration(uint256 _itemId, uint8 _mainSeed, uint8 _subSeed) external nonReentrant whenNotPaused {
         require(regenerationItem.isMintMonster(_itemId), "Wrong id");
         regenerationItem.burn(msg.sender, _itemId, 1);
-        emit RegenerationMonster(msg.sender,monsterContract.mintMonster(msg.sender, REGENERATION_ITEM), REGENERATION_ITEM);
+        emit RegenerationMonster(msg.sender,monsterContract.mintMonster(msg.sender, REGENERATION_ITEM), REGENERATION_ITEM, _mainSeed, _subSeed);
     }
     
     /*
@@ -313,7 +325,9 @@ contract RegenFusionMonster is Ownable,
         uint256 _firstTokenId,
         uint256 _lastTokenId,
         uint256[] memory _listItem,
-        uint256[] memory _amount
+        uint256[] memory _amount,
+        uint8 _mainSeed,
+        uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
         if(_amount[0] != 0) {
@@ -335,7 +349,9 @@ contract RegenFusionMonster is Ownable,
             _owner,
             monsterContract.mintMonster(_owner, FUSION_MONSTER),
             _firstTokenId,
-            _lastTokenId
+            _lastTokenId,
+            _mainSeed,
+            _subSeed
         );
     }
 
@@ -352,7 +368,9 @@ contract RegenFusionMonster is Ownable,
         uint256 _firstId,
         uint256 _lastId,
         uint256[] memory _listItem,
-        uint256[] memory _amount
+        uint256[] memory _amount,
+        uint8 _mainSeed,
+        uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
         if(_amount[0] != 0) {
@@ -376,7 +394,7 @@ contract RegenFusionMonster is Ownable,
 
         genesisHashContract.setTimesOfRegeneration(season, _firstId, timesRegeneration1 + 1);
         genesisHashContract.setTimesOfRegeneration(season, _lastId, timesRegeneration2 + 1);
-        emit FusionGenesisHash(_owner, _firstId, _lastId, monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH));
+        emit FusionGenesisHash(_owner, _firstId, _lastId, monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH), _mainSeed, _subSeed);
     }
      /*
      * Create monster from fusion general hash
@@ -391,7 +409,9 @@ contract RegenFusionMonster is Ownable,
         uint256 _firstId,
         uint256 _lastId,
         uint256[] memory _listItem,
-        uint256[] memory _amount
+        uint256[] memory _amount,
+        uint8 _mainSeed,
+        uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
         if(_amount[0] != 0) {
@@ -421,7 +441,7 @@ contract RegenFusionMonster is Ownable,
         if (timesRegeneration2 + 1 == limits[GENERAL_HASH]) {
             generalHashContract.burn(_lastId);
         }
-        emit FusionGeneralHash(_owner, _firstId, _lastId, monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH));
+        emit FusionGeneralHash(_owner, _firstId, _lastId, monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH), _mainSeed, _subSeed);
     }
 
     /*
@@ -437,7 +457,9 @@ contract RegenFusionMonster is Ownable,
         uint256 _genesisId,
         uint256 _generalId,
         uint256[] memory _listItem,
-        uint256[] memory _amount
+        uint256[] memory _amount,
+        uint8 _mainSeed,
+        uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
         if(_amount[0] != 0) {
@@ -462,7 +484,7 @@ contract RegenFusionMonster is Ownable,
         if (timesGeneral + 1 == limits[GENERAL_HASH]) {
             generalHashContract.burn(_generalId);
         }
-        emit FusionMultipleHash(_owner, _genesisId, _generalId, monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH));
+        emit FusionMultipleHash(_owner, _genesisId, _generalId, monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH), _mainSeed, _subSeed);
     }
 
     function _refreshTimesOfRegeneration(
@@ -474,7 +496,11 @@ contract RegenFusionMonster is Ownable,
         uint256 _cost
     ) private {
         if (_isOAS) {
-            treasuryContract.deposit{value: msg.value}(_cost);
+            bool sent = payable(receiveFee).send(_cost);
+            require(
+                sent,
+                "TreasuryContract::reward: Failed to claim OAS"
+            );
         } else {
             tokenBaseContract.burnToken(msg.sender, _cost);
         }

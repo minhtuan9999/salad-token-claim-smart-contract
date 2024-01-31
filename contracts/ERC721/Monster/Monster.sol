@@ -41,7 +41,7 @@ contract Monster is
 
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     mapping(uint256 => MonsterDetail) public _monster;
-    mapping(address => bool) public _hasFreeNFT;
+    mapping(address => bool) public _alreadyOwnNftForFree;
     //struct Monster
     struct MonsterDetail {
         bool lifeSpan;
@@ -61,7 +61,6 @@ contract Monster is
     event setStatusMonsters(uint256 tokenId, bool status);
 
     event MintMonster(address owner, uint256 tokenId, uint8 _type);
-    event MintFreeMonster(address owner, uint256 tokenId);
 
     // Get list Tokens of address
     function getListTokenOfAddress(address _address)
@@ -132,8 +131,8 @@ contract Monster is
         _monster[tokenId].lifeSpan = true;
         _monster[tokenId].typeMint = _type;
         if (_type == FREE) {
-            require(!_hasFreeNFT[_address], "You owned free NFT");
-            _hasFreeNFT[_address] = true;
+            require(!_alreadyOwnNftForFree[_address], "You owned free NFT");
+            _alreadyOwnNftForFree[_address] = true;
         }
         _tokenIds.increment();
         emit MintMonster(_address, tokenId, _type);
