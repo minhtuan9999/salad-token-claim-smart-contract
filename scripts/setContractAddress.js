@@ -84,18 +84,31 @@ async function callRegenFusionMonsterSmartContract() {
 
 async function callGenesisHashSmartContract() {
   try {
-    const GENESIS_HASH = await contractGenesis.MANAGEMENT_ROLE();
+    // const GENESIS_HASH = await contractGenesis.MANAGEMENT_ROLE();
     // const tx1 = await contractGenesis.grantRole(GENESIS_HASH, process.env.ADDRESS_CONTRACT_BRIDGE);
     // await tx1.wait();
     // const tx2 = await contractGenesis.grantRole(GENESIS_HASH, process.env.ADDRESS_CONTRACT_MONSTER);
     // await tx2.wait();
-    const tx3 = await contractGenesis.grantRole(GENESIS_HASH, process.env.ADDRESS_CONTRACT_SHOP);
-    await tx3.wait();
-    console.log("contractGenesis: DONE ");
+    // const tx3 = await contractGenesis.grantRole(GENESIS_HASH, process.env.ADDRESS_CONTRACT_SHOP);
+    // await tx3.wait();
+
+    const list = [7,8,9,18,19,20,22,23,24,25,26,42,44];
+    setTimeout(async function() {
+      for (var i = 0; i < list.length ; i++) {
+        const randomNumber = Math.floor(Math.random() * 5) + 1;
+        const tx3 = await contractGenesis.setTimesOfRegeneration(0, list[i], randomNumber.toString());
+        await tx3.wait();
+        console.log("contractGenesis: DONE ");
+      } 
+    }, 2000);
+    
+
   } catch (error) {
     console.error('Error:', error);
   }
 }
+
+// callGenesisHashSmartContract()
 
 async function callGeneralHashSmartContract() {
   try {
@@ -148,16 +161,15 @@ async function callMemory() {
 async function callFarm() {
   try {
     const ROLE = await contractFarm.MANAGEMENT_ROLE();
-    const tx1 = await contractFarm.grantRole(ROLE, process.env.ADDRESS_CONTRACT_SHOP);
-    await tx1.wait();
-    // const tx2 = await contractMemory.grantRole(ROLE, process.env.BRIDGE_OAS_ADDRESS);
-    // await tx2.wait();  
+    // const tx1 = await contractFarm.grantRole(ROLE, process.env.ADDRESS_CONTRACT_SHOP);
+    // await tx1.wait();
+    const tx2 = await contractFarm.grantRole(ROLE, process.env.ADDRESS_CONTRACT_BRIDGE);
+    await tx2.wait();  
     console.log("contracFarm: DONE ");
   } catch (error) {
     console.error('Error:', error);
   }
 }
-
 async function callShop() {
   try {
     // const ROLE = await contractShop.MANAGEMENT_ROLE();
@@ -184,14 +196,13 @@ async function callShop() {
 async function callHashChip() {
   try {
     const ROLE = await contractHashChip.MANAGEMENT_ROLE();
-    const tx1 = await contractHashChip.grantRole(ROLE, process.env.BRIDGE_OAS_ADDRESS);
+    const tx1 = await contractHashChip.grantRole(ROLE, process.env.ADDRESS_CONTRACT_BRIDGE);
     await tx1.wait();
     console.log("contractHashChip: DONE ");
   } catch (error) {
     console.error('Error:', error);
   }
 }
-
 async function callCrystal() {
   try {
     const ROLE = await contractCrystal.MANAGEMENT_ROLE();
@@ -233,7 +244,7 @@ const executeCalls = async () => {
 };
 
 // Call the function to start the sequence
-executeCalls();
+// executeCalls();
 
 async function callRegenItem() {
   try {
@@ -248,9 +259,9 @@ async function callRegenItem() {
 async function callEhanceItem() {
   try {
     const ROLE = await contractEhanceItem.MANAGEMENT_ROLE();
-    const tx1 = await contractEhanceItem.grantRole(ROLE, process.env.ADDRESS_CONTRACT_ACCESSORIES);
-    await tx1.wait();
-    const tx2 = await contractEhanceItem.grantRole(ROLE, process.env.BRIDGE_OAS_ADDRESS);
+    // const tx1 = await contractEhanceItem.grantRole(ROLE, process.env.ADDRESS_CONTRACT_ACCESSORIES);
+    // await tx1.wait();
+    const tx2 = await contractEhanceItem.grantRole(ROLE, process.env.ADDRESS_CONTRACT_BRIDGE);
     await tx2.wait();
     console.log("contractEhanceItem: DONE ");
   } catch (error) {

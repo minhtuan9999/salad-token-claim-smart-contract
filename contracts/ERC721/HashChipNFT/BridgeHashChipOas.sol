@@ -158,6 +158,8 @@ contract Bridge is AccessControl, Pausable {
         hashChipAddress.createNFT(to, tokenId);
         genesisAddress.createBox(to, typeGenesis);
         farmAddress.createNFT(to, typeFarm);
+        farmAddress.createNFT(to, typeFarm);
+        farmAddress.createNFT(to, typeFarm);
         itemFarmAddress.mintMultipleItem(to, permanentItemIds, permanentNumbers);
         listTokenBridgeOfAddress[to].add(tokenId);
         emit BridgeNFT(to, tokenId);
