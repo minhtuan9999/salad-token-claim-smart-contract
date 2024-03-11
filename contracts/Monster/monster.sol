@@ -1,6 +1,6 @@
 // Sources flattened with hardhat v2.19.4 https://hardhat.org
 
-// SPDX-License-Identifier: CC0-1.0 AND MIT
+// SPDX-License-Identifier: MIT
 
 // File @openzeppelin/contracts/access/IAccessControl.sol@v4.9.3
 
@@ -2284,88 +2284,6 @@ abstract contract ReentrancyGuard {
 }
 
 
-// File @openzeppelin/contracts/token/ERC20/IERC20.sol@v4.9.3
-
-// Original license: SPDX_License_Identifier: MIT
-// OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/IERC20.sol)
-
-pragma solidity ^0.8.0;
-
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
-interface IERC20 {
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    /**
-     * @dev Returns the amount of tokens in existence.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the amount of tokens owned by `account`.
-     */
-    function balanceOf(address account) external view returns (uint256);
-
-    /**
-     * @dev Moves `amount` tokens from the caller's account to `to`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transfer(address to, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through {transferFrom}. This is
-     * zero by default.
-     *
-     * This value changes when {approve} or {transferFrom} are called.
-     */
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    /**
-     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * IMPORTANT: Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an {Approval} event.
-     */
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Moves `amount` tokens from `from` to `to` using the
-     * allowance mechanism. `amount` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(address from, address to, uint256 amount) external returns (bool);
-}
-
-
 // File @openzeppelin/contracts/utils/Counters.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
@@ -2795,323 +2713,211 @@ library EnumerableSet {
 }
 
 
-// File contracts/ERC721/Interface/IERC4907.sol
+// File contracts/ERC721/Monster/Monster.sol
 
-// Original license: SPDX_License_Identifier: CC0-1.0
-
+// Original license: SPDX_License_Identifier: MIT
 pragma solidity ^0.8.0;
-
-interface IERC4907 {
-    // Logged when the user of a token assigns a new user or updates expires
-    /// @notice Emitted when the `user` of an NFT or the `expires` of the `user` is changed
-    /// The zero address for user indicates that there is no user address
-    event UpdateUser(uint256 indexed tokenId, address indexed user, uint64 expires);
-
-    /// @notice set the user and expires of a NFT
-    /// @dev The zero address indicates there is no user
-    /// Throws if `tokenId` is not valid NFT
-    /// @param user  The new user of the NFT
-    /// @param expires  UNIX timestamp, The new user could use the NFT before expires
-    function setUser(uint256 tokenId, address user, uint64 expires) external ;
-
-    /// @notice Get the user address of an NFT
-    /// @dev The zero address indicates that there is no user or the user is expired
-    /// @param tokenId The NFT to get the user address for
-    /// @return The user address for this NFT
-    function userOf(uint256 tokenId) external view returns(address);
-
-    /// @notice Get the user expires of an NFT
-    /// @dev The zero value indicates that there is no user
-    /// @param tokenId The NFT to get the user expires for
-    /// @return The user expires for this NFT
-    function userExpires(uint256 tokenId) external view returns(uint256);
-    
-}
-
-
-// File contracts/ERC721/Farm.sol
-
-// Original license: SPDX_License_Identifier: CC0-1.0
-//
-//
-//    /$$$$$$$                /$$      /$$                                 /$$
-//   | $$__  $$              | $$$    /$$$                                | $$
-//   | $$  \ $$  /$$$$$$     | $$$$  /$$$$  /$$$$$$  /$$$$$$$   /$$$$$$$ /$$$$$$    /$$$$$$   /$$$$$$
-//   | $$$$$$$/ /$$__  $$    | $$ $$/$$ $$ /$$__  $$| $$__  $$ /$$_____/|_  $$_/   /$$__  $$ /$$__  $$
-//   | $$__  $$| $$$$$$$$    | $$  $$$| $$| $$  \ $$| $$  \ $$|  $$$$$$   | $$    | $$$$$$$$| $$  \__/
-//   | $$  \ $$| $$_____/    | $$\  $ | $$| $$  | $$| $$  | $$ \____  $$  | $$ /$$| $$_____/| $$
-//   | $$  | $$|  $$$$$$$ /$$| $$ \/  | $$|  $$$$$$/| $$  | $$ /$$$$$$$/  |  $$$$/|  $$$$$$$| $$
-//   |__/  |__/ \_______/|__/|__/     |__/ \______/ |__/  |__/|_______/    \___/   \_______/|__/
-//
-//            .----------------. .----------------. .----------------. .----------------.
-//           | .--------------. | .--------------. | .--------------. | .--------------. |
-//           | |  _________   | | |      __      | | |  _______     | | | ____    ____ | |
-//           | | |_   ___  |  | | |     /  \     | | | |_   __ \    | | ||_   \  /   _|| |
-//           | |   | |_  \_|  | | |    / /\ \    | | |   | |__) |   | | |  |   \/   |  | |
-//           | |   |  _|      | | |   / ____ \   | | |   |  __ /    | | |  | |\  /| |  | |
-//           | |  _| |_       | | | _/ /    \ \_ | | |  _| |  \ \_  | | | _| |_\/_| |_ | |
-//           | | |_____|      | | ||____|  |____|| | | |____| |___| | | ||_____||_____|| |
-//           | |              | | |              | | |              | | |              | |
-//           | '--------------' | '--------------' | '--------------' | '--------------' |
-//            '----------------' '----------------' '----------------' '----------------'
-
-pragma solidity ^0.8.18;
-contract ReMonsterFarm is
+contract Monster is
     Ownable,
     ERC721Enumerable,
-    IERC4907,
     AccessControl,
-    ReentrancyGuard,
-    Pausable
+    Pausable,
+    ReentrancyGuard
 {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.UintSet;
-
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    Counters.Counter _tokenIds;
     bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
+    string _baseURIextended;
 
-    // stored current packageId
-    Counters.Counter private _tokenIds;
-    // Base URI
-    string private _baseURIextended;
-    uint256 private totalLimit;
-
-    struct UserInfo {
-        address user; // address of user role
-        uint64 expires; // unix timestamp, user expires
-    }
-
-    struct MonsterInfo {
-        address owner;
-        bool isTraining;
-        IERC721 monsterContract;
-        uint256 tokenId;
-    }
-
-    mapping(address => EnumerableSet.UintSet) userToListFarm;
-    mapping(address => EnumerableSet.UintSet) userToListFreeFarm;
-    mapping(address => EnumerableSet.UintSet) userToListTraining;
-
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-
-    mapping(uint256 => UserInfo) internal _users;
-
-    // ID Farm => Info Monster
-    mapping(uint256 => MonsterInfo) internal training;
-
-    // address => have owned free farm
-    mapping(address => bool) public haveOwned;
-
-    // Free farm
-    mapping(uint256 => bool) public isFree;
-
-    // EVENTS
-    event NewFarm(uint256 typeNFT, uint256 tokenId, address owner);
-
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint256 limit
-    ) ERC721(name_, symbol_) {
-        _setRoleAdmin(ADMIN_ROLE, ADMIN_ROLE);
+    constructor() ERC721("Monster", "Monster") {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
-        _setupRole(ADMIN_ROLE, _msgSender());
         _setupRole(MANAGEMENT_ROLE, _msgSender());
-        totalLimit = limit;
     }
 
-    function setBaseURI(string memory baseURI_) external onlyRole(MANAGEMENT_ROLE) {
+    uint8 NFT = 0;
+    uint8 COLLABORATION_NFT = 1;
+    uint8 FREE = 2;
+    uint8 GENESIS_HASH = 3;
+    uint8 GENERAL_HASH = 4;
+    uint8 HASH_CHIP_NFT = 5;
+    uint8 REGENERATION_ITEM = 6;
+    uint8 FUSION_GENESIS_HASH = 7;
+    uint8 FUSION_MULTIPLE_HASH = 8;
+    uint8 FUSION_GENERAL_HASH = 9;
+    uint8 FUSION_MONSTER = 10;
+
+    mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
+    mapping(uint256 => MonsterDetail) public _monster;
+    mapping(address => bool) public _alreadyOwnNftForFree;
+    //struct Monster
+    struct MonsterDetail {
+        bool lifeSpan;
+        uint8 typeMint;
+    }
+
+    /*
+     * burn monster by id
+     * @param tokenId: tokenId of nft
+     */
+    event burnMonster(uint256 tokenId);
+
+    /*
+     * burn multiple monster by id
+     * @param tokenId: tokenId of nft
+     */
+    event burnMultipleMonster(uint256[] tokenId);
+    /*
+     * set Status Monsters
+     * @param tokenId: tokenId of nft
+     * @param status: status of nft
+     */
+    event setStatusMonsters(uint256 tokenId, bool status);
+
+    event MintMonster(address owner, uint256 tokenId, uint8 _type);
+
+    // Get list Tokens of address
+    function getListTokenOfAddress(address _address)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return _listTokensOfAddress[_address].values();
+    }
+
+    /**
+     *@dev See {ERC721-_beforeTokenTransfer}.
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal virtual override {
+        if (to != address(0)) {
+            require(
+                _monster[firstTokenId].typeMint != FREE,
+                "NFT free is not transferrable"
+            );
+        }
+
+        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+        _listTokensOfAddress[to].add(firstTokenId);
+        _listTokensOfAddress[from].remove(firstTokenId);
+    }
+
+    function setBaseURI(string memory baseURI_) external onlyOwner {
         _baseURIextended = baseURI_;
     }
-    function setTotalLimit(uint256 _total) external onlyRole(MANAGEMENT_ROLE) {
-        totalLimit = _total;
-    }
+
     function _baseURI() internal view virtual override returns (string memory) {
         return _baseURIextended;
     }
 
-    function trainingMonster(
-        IERC721 monsterContract,
-        uint256 farmId,
-        uint256 monsterId
-    ) public {
-        require(!training[farmId].isTraining, "ReMonsterFarm::trainingMonster: Training already exists");
-        require(
-            ERC721.ownerOf(farmId) == msg.sender,
-            "ReMonsterFarm::trainingMonster::ERC721: Incorrect farm owner"
-        );
-
-        // tokenId must be approved for this contract
-        monsterContract.transferFrom(msg.sender, address(this), monsterId);
-        userToListTraining[msg.sender].add(monsterId);
-        training[farmId] = MonsterInfo({
-            owner: msg.sender,
-            isTraining: true,
-            monsterContract: monsterContract,
-            tokenId: monsterId
-        });
-    }
-
-    function endTrainingMonster(
-        IERC721 monsterContract,
-        uint256 farmId,
-        uint256 monsterId
-    ) public {
-        require(training[farmId].isTraining, "ReMonsterFarm::endTrainingMonster: Training does not exist");
-        address ownerMonster = training[farmId].owner;
-        require(
-            ownerMonster == msg.sender || msg.sender == owner(),
-            "ReMonsterFarm::endTrainingMonster: Unauthorized user"
-        );
-
-        monsterContract.transferFrom(address(this), ownerMonster, monsterId);
-        userToListTraining[msg.sender].remove(monsterId);
-        delete training[farmId];
-    }
-
-    function createNFT(
-        address _address,
-        uint256 _type
-    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        _createFarm(_address, false, _type);
-    }
-
-    function createFreeNFT(
-        address _address,
-        uint256 _type
-    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
-        require(!haveOwned[_address], "You have owned");
-        _createFarm(_address, true, _type);
-    }
-
-    /**
-     * create a farm and mint to owner
-     * @param owner: owner of farm
-     */
-    function _createFarm(address owner, bool free, uint256 typeNFT) internal {
-        require(totalSupply() < totalLimit, "Total supply reached the limit");
-        uint256 tokenId = _tokenIds.current();
-        _mint(owner, tokenId);
-        userToListFarm[owner].add(tokenId);
-        _tokenIds.increment();
-        if(free){
-            haveOwned[owner] = true;
-            isFree[tokenId] = true;
-            userToListFreeFarm[owner].add(tokenId);
-        }
-        emit NewFarm(typeNFT, tokenId, owner);
-    }
-
-    /**
-     * withdraw all erc20 token base balance of this contract
-     */
-    function withdrawToken(
-        address contractAddress
-    ) external onlyRole(ADMIN_ROLE) {
-        uint256 balance = IERC20(contractAddress).balanceOf(address(this));
-        require(balance > 0, "ReMonsterFarm::withdrawToken: Insufficient balance");
-        IERC20(contractAddress).transfer(msg.sender, balance);
-    }
-
-    /**
-     * Get list farm by address
-     */
-    function getListFarmByAddress(
-        address _address
-    ) public view returns (uint256[] memory listFarm) {
-        listFarm = userToListFarm[_address].values();
-    }
-    /**
-     * Get list free farm by address
-     */
-    function getListFreeFarmByAddress(
-        address _address
-    ) public view returns (uint256[] memory listFarm) {
-        listFarm = userToListFreeFarm[_address].values();
-    }
-    /**
-     * Get list training monster by address
-     */
-    function getListTrainingMonsterByAddress(
-        address _address
-    ) public view returns (uint256[] memory listTraining) {
-        listTraining = userToListTraining[_address].values();
-    }
-    /// @notice set the user and expires of a NFT
-    /// @dev The zero address indicates there is no user
-    /// Throws if `tokenId` is not valid NFT
-    /// @param user  The new user of the NFT
-    /// @param expires  UNIX timestamp, The new user could use the NFT before expires
-    function setUser(
-        uint256 tokenId,
-        address user,
-        uint64 expires
-    ) external onlyRole(MANAGEMENT_ROLE) {
-        require(
-            _isApprovedOrOwner(msg.sender, tokenId),
-            "ReMonsterFarm::setUser::ERC721: transfer caller is not owner nor approved"
-        );
-        UserInfo storage info = _users[tokenId];
-        info.user = user;
-        info.expires = expires;
-        emit UpdateUser(tokenId, user, expires);
-    }
-
-    /// @notice Get the user address of an NFT
-    /// @dev The zero address indicates that there is no user or the user is expired
-    /// @param tokenId The NFT to get the user address for
-    /// @return The user address for this NFT
-    function userOf(uint256 tokenId) public view virtual returns (address) {
-        if (uint256(_users[tokenId].expires) >= block.timestamp) {
-            return _users[tokenId].user;
-        } else {
-            return address(0);
-        }
-    }
-
-    /// @notice Get the user expires of an NFT
-    /// @dev The zero value indicates that there is no user
-    /// @param tokenId The NFT to get the user expires for
-    /// @return The user expires for this NFT
-    function userExpires(
-        uint256 tokenId
-    ) public view virtual returns (uint256) {
-        return _users[tokenId].expires;
-    }
-
-    /// @dev See {IERC165-supportsInterface}.
-    // function supportsInterface(
-    //     bytes4 interfaceId
-    // ) public view virtual override returns (bool) {
-    //     return
-    //         interfaceId == type(IERC4907).interfaceId ||
-    //         super.supportsInterface(interfaceId);
-    // }
-
-    function supportsInterface(
-        bytes4 interfaceId
-    ) public view override(AccessControl, ERC721Enumerable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(AccessControl, ERC721Enumerable)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer( 
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 batchSize
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-
-        userToListFarm[from].remove(tokenId);
-        userToListFarm[to].add(tokenId);
-        if (from != to && _users[tokenId].user != address(0)) {
-            delete _users[tokenId];
-            emit UpdateUser(tokenId, address(0), 0);
-        }
+    function pause() public onlyRole(MANAGEMENT_ROLE) {
+        _pause();
     }
 
-    function getTotalLimit() external view returns (uint256) {
-        return totalLimit;
+    function unpause() public onlyRole(MANAGEMENT_ROLE) {
+        _unpause();
+    }
+
+    /*
+     * base mint a Monster
+     * @param _address: owner of NFT
+     */
+    function mintMonster(address _address, uint8 _type)
+        external
+        onlyRole(MANAGEMENT_ROLE)
+        returns (uint256)
+    {
+        uint256 tokenId = _tokenIds.current();
+        _mint(_address, tokenId);
+        _monster[tokenId].lifeSpan = true;
+        _monster[tokenId].typeMint = _type;
+        if (_type == FREE) {
+            require(!_alreadyOwnNftForFree[_address], "You owned free NFT");
+            _alreadyOwnNftForFree[_address] = true;
+        }
+        _tokenIds.increment();
+        emit MintMonster(_address, tokenId, _type);
+        return tokenId;
+    }
+
+    /*
+     * burn a Monster
+     * @param _tokenId: tokenId burn
+     */
+    function burn(uint256 _tokenId) external nonReentrant whenNotPaused
+    {
+        require(msg.sender == ownerOf(_tokenId) || hasRole(MANAGEMENT_ROLE, msg.sender),
+                "You not permission"
+        );
+        _burn(_tokenId);
+        emit burnMonster(_tokenId);
+    }
+
+    /*
+     * burn multiple Monster
+     * @param listTokenId: list tokenId burn
+     */
+    function burnMultiple(uint256[] memory listTokenId) external nonReentrant whenNotPaused
+    {   
+        for (uint8 i = 0; i < listTokenId.length; i++) {
+            require(msg.sender == ownerOf(listTokenId[i]) || hasRole(MANAGEMENT_ROLE, msg.sender),
+                            "You not permission"
+            );
+            _burn(listTokenId[i]);
+        }
+        
+        emit burnMultipleMonster(listTokenId);
+    }
+
+    /*
+     * status lifespan a Monster
+     * @param _tokenId: tokenId
+     */
+    function getStatusMonster(uint256 _tokenId) external view returns (bool) {
+        require(_exists(_tokenId), "Monster not exists");
+        return _monster[_tokenId].lifeSpan;
+    }
+
+    /*
+     * set staus lifespan a Monster
+     * @param _tokenId: tokenId of monster
+     * @param _status: _status of monster
+     */
+    function setStatusMonster(uint256 _tokenId, bool _status)
+        external
+        nonReentrant
+        whenNotPaused
+        onlyRole(MANAGEMENT_ROLE)
+    {
+        require(_exists(_tokenId), "Monster not exists");
+        _monster[_tokenId].lifeSpan = _status;
+        emit setStatusMonsters(_tokenId, _status);
+    }
+
+    /*
+     * check monster is Free
+     * @param _tokenId: tokenId
+     */
+    function isFreeMonster(uint256 _tokenId)
+        external
+        view
+        whenNotPaused
+        returns (bool)
+    {
+        require(_exists(_tokenId), "Monster does not exist");
+        return _monster[_tokenId].typeMint == FREE;
     }
 }

@@ -43,9 +43,9 @@ async function main() {
   // const monsterCrystal = await MonsterCrystal.deploy();
   // monsterCrystal.deployed();
   
-  const MonsterMemory= await ethers.getContractFactory("MonsterMemory");
-  const monsterMemory = await MonsterMemory.deploy();
-  monsterMemory.deployed();
+  // const MonsterMemory= await ethers.getContractFactory("MonsterMemory");
+  // const monsterMemory = await MonsterMemory.deploy();
+  // monsterMemory.deployed();
 
   // const Skin= await ethers.getContractFactory("Skin");
   // const skin = await Skin.deploy();
@@ -76,9 +76,9 @@ async function main() {
   // const ehanceItem = await EhanceItem.deploy("baseURL");
   // ehanceItem.deployed();
 
-  // const ReMonsterFarm= await ethers.getContractFactory("ReMonsterFarm");
-  // const reMonsterFarm = await ReMonsterFarm.deploy("Farm", "FARM", 5000);
-  // reMonsterFarm.deployed();
+  const ReMonsterFarm= await ethers.getContractFactory("ReMonsterFarm");
+  const reMonsterFarm = await ReMonsterFarm.deploy("Farm", "FARM", 5000);
+  reMonsterFarm.deployed();
 
   // const Shop= await ethers.getContractFactory("ReMonsterShop");
   // const shop = await Shop.deploy();
@@ -115,17 +115,17 @@ async function main() {
   // console.log(`ADDRESS_CONTRACT_GENERAL=${general.address}`);
   // console.log(`ADDRESS_CONTRACT_GENESIS=${genesis.address}`)
   // console.log(`ADDRESS_CONTRACT_HASHCHIP=${hashChipNFT.address}`)
-  // console.log(`ADDRESS_CONTRACT_CRYSTAL=${monsterCrystal.address}`)
-  console.log(`ADDRESS_CONTRACT_MEMORY=${monsterMemory.address}`)
-  // console.log(`ADDRESS_CONTRACT_SKIN=${skin.address}`)
+  // // console.log(`ADDRESS_CONTRACT_CRYSTAL=${monsterCrystal.address}`)
+  // console.log(`ADDRESS_CONTRACT_MEMORY=${monsterMemory.address}`)
+  // // console.log(`ADDRESS_CONTRACT_SKIN=${skin.address}`)
   // console.log(`ADDRESS_CONTRACT_MONSTER=${monster.address}`)
-  // console.log(`ADDRESS_CONTRACT_TRAINING_ITEM=${trainingItem.address}`)
+  // // console.log(`ADDRESS_CONTRACT_TRAINING_ITEM=${trainingItem.address}`)
   // console.log(`ADDRESS_CONTRACT_REGENERATION_ITEM=${regenerationItem.address}`)
   // console.log(`ADDRESS_CONTRACT_FUSION_ITEM=${fusionItem.address}`)
   // console.log(`ADDRESS_CONTRACT_ENHANCE_ITEM=${ehanceItem.address}`)
   // console.log(`ADDRESS_CONTRACT_SHOP=${shop.address}`)
   // console.log(`ADDRESS_CONTRACT_MARKET=${reMonsterMarketplace.address}`)
-  // console.log(`ADDRESS_CONTRACT_FARM=${reMonsterFarm.address}`)
+  console.log(`ADDRESS_CONTRACT_FARM=${reMonsterFarm.address}`)
   // console.log(`ADDRESS_CONTRACT_TOKEN_XXX=${tokenXXX.address}`)
   // console.log(`ADDRESS_CONTRACT_TREASURY=${treasury.address}`)
   // console.log(`ADDRESS_CONTRACT_BRIDGE=${bridgeOAS.address}`)

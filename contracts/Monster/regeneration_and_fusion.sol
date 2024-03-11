@@ -21,7 +21,11 @@ interface IAccessControl {
      *
      * _Available since v3.1._
      */
-    event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole);
+    event RoleAdminChanged(
+        bytes32 indexed role,
+        bytes32 indexed previousAdminRole,
+        bytes32 indexed newAdminRole
+    );
 
     /**
      * @dev Emitted when `account` is granted `role`.
@@ -29,7 +33,11 @@ interface IAccessControl {
      * `sender` is the account that originated the contract call, an admin role
      * bearer except when using {AccessControl-_setupRole}.
      */
-    event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender);
+    event RoleGranted(
+        bytes32 indexed role,
+        address indexed account,
+        address indexed sender
+    );
 
     /**
      * @dev Emitted when `account` is revoked `role`.
@@ -38,12 +46,19 @@ interface IAccessControl {
      *   - if using `revokeRole`, it is the admin role bearer
      *   - if using `renounceRole`, it is the role bearer (i.e. `account`)
      */
-    event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender);
+    event RoleRevoked(
+        bytes32 indexed role,
+        address indexed account,
+        address indexed sender
+    );
 
     /**
      * @dev Returns `true` if `account` has been granted `role`.
      */
-    function hasRole(bytes32 role, address account) external view returns (bool);
+    function hasRole(
+        bytes32 role,
+        address account
+    ) external view returns (bool);
 
     /**
      * @dev Returns the admin role that controls `role`. See {grantRole} and
@@ -93,7 +108,6 @@ interface IAccessControl {
     function renounceRole(bytes32 role, address account) external;
 }
 
-
 // File @openzeppelin/contracts/utils/Context.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
@@ -120,7 +134,6 @@ abstract contract Context {
         return msg.data;
     }
 }
-
 
 // File @openzeppelin/contracts/utils/introspection/IERC165.sol@v4.9.3
 
@@ -150,7 +163,6 @@ interface IERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-
 // File @openzeppelin/contracts/utils/introspection/ERC165.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
@@ -176,11 +188,12 @@ abstract contract ERC165 is IERC165 {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
         return interfaceId == type(IERC165).interfaceId;
     }
 }
-
 
 // File @openzeppelin/contracts/utils/math/Math.sol@v4.9.3
 
@@ -238,7 +251,11 @@ library Math {
      * @dev Original credit to Remco Bloemen under MIT license (https://xn--2-umb.com/21/muldiv)
      * with further edits by Uniswap Labs also under MIT license.
      */
-    function mulDiv(uint256 x, uint256 y, uint256 denominator) internal pure returns (uint256 result) {
+    function mulDiv(
+        uint256 x,
+        uint256 y,
+        uint256 denominator
+    ) internal pure returns (uint256 result) {
         unchecked {
             // 512-bit multiply [prod1 prod0] = x * y. Compute the product mod 2^256 and mod 2^256 - 1, then use
             // use the Chinese Remainder Theorem to reconstruct the 512 bit result. The result is stored in two 256
@@ -322,7 +339,12 @@ library Math {
     /**
      * @notice Calculates x * y / denominator with full precision, following the selected rounding direction.
      */
-    function mulDiv(uint256 x, uint256 y, uint256 denominator, Rounding rounding) internal pure returns (uint256) {
+    function mulDiv(
+        uint256 x,
+        uint256 y,
+        uint256 denominator,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         uint256 result = mulDiv(x, y, denominator);
         if (rounding == Rounding.Up && mulmod(x, y, denominator) > 0) {
             result += 1;
@@ -371,10 +393,15 @@ library Math {
     /**
      * @notice Calculates sqrt(a), following the selected rounding direction.
      */
-    function sqrt(uint256 a, Rounding rounding) internal pure returns (uint256) {
+    function sqrt(
+        uint256 a,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = sqrt(a);
-            return result + (rounding == Rounding.Up && result * result < a ? 1 : 0);
+            return
+                result +
+                (rounding == Rounding.Up && result * result < a ? 1 : 0);
         }
     }
 
@@ -424,10 +451,15 @@ library Math {
      * @dev Return the log in base 2, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log2(uint256 value, Rounding rounding) internal pure returns (uint256) {
+    function log2(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log2(value);
-            return result + (rounding == Rounding.Up && 1 << result < value ? 1 : 0);
+            return
+                result +
+                (rounding == Rounding.Up && 1 << result < value ? 1 : 0);
         }
     }
 
@@ -473,10 +505,15 @@ library Math {
      * @dev Return the log in base 10, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log10(uint256 value, Rounding rounding) internal pure returns (uint256) {
+    function log10(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log10(value);
-            return result + (rounding == Rounding.Up && 10 ** result < value ? 1 : 0);
+            return
+                result +
+                (rounding == Rounding.Up && 10 ** result < value ? 1 : 0);
         }
     }
 
@@ -516,14 +553,18 @@ library Math {
      * @dev Return the log in base 256, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log256(uint256 value, Rounding rounding) internal pure returns (uint256) {
+    function log256(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log256(value);
-            return result + (rounding == Rounding.Up && 1 << (result << 3) < value ? 1 : 0);
+            return
+                result +
+                (rounding == Rounding.Up && 1 << (result << 3) < value ? 1 : 0);
         }
     }
 }
-
 
 // File @openzeppelin/contracts/utils/math/SignedMath.sol@v4.9.3
 
@@ -571,14 +612,12 @@ library SignedMath {
     }
 }
 
-
 // File @openzeppelin/contracts/utils/Strings.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.9.0) (utils/Strings.sol)
 
 pragma solidity ^0.8.0;
-
 
 /**
  * @dev String operations.
@@ -616,7 +655,13 @@ library Strings {
      * @dev Converts a `int256` to its ASCII `string` decimal representation.
      */
     function toString(int256 value) internal pure returns (string memory) {
-        return string(abi.encodePacked(value < 0 ? "-" : "", toString(SignedMath.abs(value))));
+        return
+            string(
+                abi.encodePacked(
+                    value < 0 ? "-" : "",
+                    toString(SignedMath.abs(value))
+                )
+            );
     }
 
     /**
@@ -631,7 +676,10 @@ library Strings {
     /**
      * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.
      */
-    function toHexString(uint256 value, uint256 length) internal pure returns (string memory) {
+    function toHexString(
+        uint256 value,
+        uint256 length
+    ) internal pure returns (string memory) {
         bytes memory buffer = new bytes(2 * length + 2);
         buffer[0] = "0";
         buffer[1] = "x";
@@ -653,11 +701,13 @@ library Strings {
     /**
      * @dev Returns true if the two strings are equal.
      */
-    function equal(string memory a, string memory b) internal pure returns (bool) {
+    function equal(
+        string memory a,
+        string memory b
+    ) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 }
-
 
 // File @openzeppelin/contracts/access/AccessControl.sol@v4.9.3
 
@@ -665,9 +715,6 @@ library Strings {
 // OpenZeppelin Contracts (last updated v4.9.0) (access/AccessControl.sol)
 
 pragma solidity ^0.8.0;
-
-
-
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -736,14 +783,21 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-        return interfaceId == type(IAccessControl).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
+        return
+            interfaceId == type(IAccessControl).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev Returns `true` if `account` has been granted `role`.
      */
-    function hasRole(bytes32 role, address account) public view virtual override returns (bool) {
+    function hasRole(
+        bytes32 role,
+        address account
+    ) public view virtual override returns (bool) {
         return _roles[role].members[account];
     }
 
@@ -787,7 +841,9 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * To change a role's admin, use {_setRoleAdmin}.
      */
-    function getRoleAdmin(bytes32 role) public view virtual override returns (bytes32) {
+    function getRoleAdmin(
+        bytes32 role
+    ) public view virtual override returns (bytes32) {
         return _roles[role].adminRole;
     }
 
@@ -803,7 +859,10 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * May emit a {RoleGranted} event.
      */
-    function grantRole(bytes32 role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
+    function grantRole(
+        bytes32 role,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role)) {
         _grantRole(role, account);
     }
 
@@ -818,7 +877,10 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * May emit a {RoleRevoked} event.
      */
-    function revokeRole(bytes32 role, address account) public virtual override onlyRole(getRoleAdmin(role)) {
+    function revokeRole(
+        bytes32 role,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role)) {
         _revokeRole(role, account);
     }
 
@@ -838,8 +900,14 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * May emit a {RoleRevoked} event.
      */
-    function renounceRole(bytes32 role, address account) public virtual override {
-        require(account == _msgSender(), "AccessControl: can only renounce roles for self");
+    function renounceRole(
+        bytes32 role,
+        address account
+    ) public virtual override {
+        require(
+            account == _msgSender(),
+            "AccessControl: can only renounce roles for self"
+        );
 
         _revokeRole(role, account);
     }
@@ -908,7 +976,6 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
     }
 }
 
-
 // File @openzeppelin/contracts/access/Ownable.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
@@ -931,7 +998,10 @@ pragma solidity ^0.8.0;
 abstract contract Ownable is Context {
     address private _owner;
 
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 
     /**
      * @dev Initializes the contract setting the deployer as the initial owner.
@@ -978,7 +1048,10 @@ abstract contract Ownable is Context {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        require(
+            newOwner != address(0),
+            "Ownable: new owner is the zero address"
+        );
         _transferOwnership(newOwner);
     }
 
@@ -992,7 +1065,6 @@ abstract contract Ownable is Context {
         emit OwnershipTransferred(oldOwner, newOwner);
     }
 }
-
 
 // File @openzeppelin/contracts/security/Pausable.sol@v4.9.3
 
@@ -1100,7 +1172,6 @@ abstract contract Pausable is Context {
     }
 }
 
-
 // File @openzeppelin/contracts/token/ERC1155/IERC1155.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
@@ -1118,7 +1189,13 @@ interface IERC1155 is IERC165 {
     /**
      * @dev Emitted when `value` tokens of token type `id` are transferred from `from` to `to` by `operator`.
      */
-    event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
+    event TransferSingle(
+        address indexed operator,
+        address indexed from,
+        address indexed to,
+        uint256 id,
+        uint256 value
+    );
 
     /**
      * @dev Equivalent to multiple {TransferSingle} events, where `operator`, `from` and `to` are the same for all
@@ -1136,7 +1213,11 @@ interface IERC1155 is IERC165 {
      * @dev Emitted when `account` grants or revokes permission to `operator` to transfer their tokens, according to
      * `approved`.
      */
-    event ApprovalForAll(address indexed account, address indexed operator, bool approved);
+    event ApprovalForAll(
+        address indexed account,
+        address indexed operator,
+        bool approved
+    );
 
     /**
      * @dev Emitted when the URI for token type `id` changes to `value`, if it is a non-programmatic URI.
@@ -1154,7 +1235,10 @@ interface IERC1155 is IERC165 {
      *
      * - `account` cannot be the zero address.
      */
-    function balanceOf(address account, uint256 id) external view returns (uint256);
+    function balanceOf(
+        address account,
+        uint256 id
+    ) external view returns (uint256);
 
     /**
      * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {balanceOf}.
@@ -1184,7 +1268,10 @@ interface IERC1155 is IERC165 {
      *
      * See {setApprovalForAll}.
      */
-    function isApprovedForAll(address account, address operator) external view returns (bool);
+    function isApprovedForAll(
+        address account,
+        address operator
+    ) external view returns (bool);
 
     /**
      * @dev Transfers `amount` tokens of token type `id` from `from` to `to`.
@@ -1199,7 +1286,13 @@ interface IERC1155 is IERC165 {
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
      * acceptance magic value.
      */
-    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external;
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) external;
 
     /**
      * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {safeTransferFrom}.
@@ -1220,7 +1313,6 @@ interface IERC1155 is IERC165 {
         bytes calldata data
     ) external;
 }
-
 
 // File @openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol@v4.9.3
 
@@ -1244,7 +1336,6 @@ interface IERC1155MetadataURI is IERC1155 {
      */
     function uri(uint256 id) external view returns (string memory);
 }
-
 
 // File @openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol@v4.9.3
 
@@ -1304,7 +1395,6 @@ interface IERC1155Receiver is IERC165 {
         bytes calldata data
     ) external returns (bytes4);
 }
-
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.9.3
 
@@ -1372,10 +1462,16 @@ library Address {
      * https://solidity.readthedocs.io/en/v0.8.0/security-considerations.html#use-the-checks-effects-interactions-pattern[checks-effects-interactions pattern].
      */
     function sendValue(address payable recipient, uint256 amount) internal {
-        require(address(this).balance >= amount, "Address: insufficient balance");
+        require(
+            address(this).balance >= amount,
+            "Address: insufficient balance"
+        );
 
         (bool success, ) = recipient.call{value: amount}("");
-        require(success, "Address: unable to send value, recipient may have reverted");
+        require(
+            success,
+            "Address: unable to send value, recipient may have reverted"
+        );
     }
 
     /**
@@ -1396,8 +1492,17 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, 0, "Address: low-level call failed");
+    function functionCall(
+        address target,
+        bytes memory data
+    ) internal returns (bytes memory) {
+        return
+            functionCallWithValue(
+                target,
+                data,
+                0,
+                "Address: low-level call failed"
+            );
     }
 
     /**
@@ -1425,8 +1530,18 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
+    function functionCallWithValue(
+        address target,
+        bytes memory data,
+        uint256 value
+    ) internal returns (bytes memory) {
+        return
+            functionCallWithValue(
+                target,
+                data,
+                value,
+                "Address: low-level call with value failed"
+            );
     }
 
     /**
@@ -1441,9 +1556,20 @@ library Address {
         uint256 value,
         string memory errorMessage
     ) internal returns (bytes memory) {
-        require(address(this).balance >= value, "Address: insufficient balance for call");
-        (bool success, bytes memory returndata) = target.call{value: value}(data);
-        return verifyCallResultFromTarget(target, success, returndata, errorMessage);
+        require(
+            address(this).balance >= value,
+            "Address: insufficient balance for call"
+        );
+        (bool success, bytes memory returndata) = target.call{value: value}(
+            data
+        );
+        return
+            verifyCallResultFromTarget(
+                target,
+                success,
+                returndata,
+                errorMessage
+            );
     }
 
     /**
@@ -1452,8 +1578,16 @@ library Address {
      *
      * _Available since v3.3._
      */
-    function functionStaticCall(address target, bytes memory data) internal view returns (bytes memory) {
-        return functionStaticCall(target, data, "Address: low-level static call failed");
+    function functionStaticCall(
+        address target,
+        bytes memory data
+    ) internal view returns (bytes memory) {
+        return
+            functionStaticCall(
+                target,
+                data,
+                "Address: low-level static call failed"
+            );
     }
 
     /**
@@ -1468,7 +1602,13 @@ library Address {
         string memory errorMessage
     ) internal view returns (bytes memory) {
         (bool success, bytes memory returndata) = target.staticcall(data);
-        return verifyCallResultFromTarget(target, success, returndata, errorMessage);
+        return
+            verifyCallResultFromTarget(
+                target,
+                success,
+                returndata,
+                errorMessage
+            );
     }
 
     /**
@@ -1477,8 +1617,16 @@ library Address {
      *
      * _Available since v3.4._
      */
-    function functionDelegateCall(address target, bytes memory data) internal returns (bytes memory) {
-        return functionDelegateCall(target, data, "Address: low-level delegate call failed");
+    function functionDelegateCall(
+        address target,
+        bytes memory data
+    ) internal returns (bytes memory) {
+        return
+            functionDelegateCall(
+                target,
+                data,
+                "Address: low-level delegate call failed"
+            );
     }
 
     /**
@@ -1493,7 +1641,13 @@ library Address {
         string memory errorMessage
     ) internal returns (bytes memory) {
         (bool success, bytes memory returndata) = target.delegatecall(data);
-        return verifyCallResultFromTarget(target, success, returndata, errorMessage);
+        return
+            verifyCallResultFromTarget(
+                target,
+                success,
+                returndata,
+                errorMessage
+            );
     }
 
     /**
@@ -1538,7 +1692,10 @@ library Address {
         }
     }
 
-    function _revert(bytes memory returndata, string memory errorMessage) private pure {
+    function _revert(
+        bytes memory returndata,
+        string memory errorMessage
+    ) private pure {
         // Look for revert reason and bubble it up if present
         if (returndata.length > 0) {
             // The easiest way to bubble the revert reason is using memory via assembly
@@ -1553,18 +1710,12 @@ library Address {
     }
 }
 
-
 // File @openzeppelin/contracts/token/ERC1155/ERC1155.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.9.0) (token/ERC1155/ERC1155.sol)
 
 pragma solidity ^0.8.0;
-
-
-
-
-
 
 /**
  * @dev Implementation of the basic standard multi-token.
@@ -1595,7 +1746,9 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC165, IERC165) returns (bool) {
         return
             interfaceId == type(IERC1155).interfaceId ||
             interfaceId == type(IERC1155MetadataURI).interfaceId ||
@@ -1623,8 +1776,14 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      *
      * - `account` cannot be the zero address.
      */
-    function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
-        require(account != address(0), "ERC1155: address zero is not a valid owner");
+    function balanceOf(
+        address account,
+        uint256 id
+    ) public view virtual override returns (uint256) {
+        require(
+            account != address(0),
+            "ERC1155: address zero is not a valid owner"
+        );
         return _balances[id][account];
     }
 
@@ -1639,7 +1798,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         address[] memory accounts,
         uint256[] memory ids
     ) public view virtual override returns (uint256[] memory) {
-        require(accounts.length == ids.length, "ERC1155: accounts and ids length mismatch");
+        require(
+            accounts.length == ids.length,
+            "ERC1155: accounts and ids length mismatch"
+        );
 
         uint256[] memory batchBalances = new uint256[](accounts.length);
 
@@ -1653,14 +1815,20 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
     /**
      * @dev See {IERC1155-setApprovalForAll}.
      */
-    function setApprovalForAll(address operator, bool approved) public virtual override {
+    function setApprovalForAll(
+        address operator,
+        bool approved
+    ) public virtual override {
         _setApprovalForAll(_msgSender(), operator, approved);
     }
 
     /**
      * @dev See {IERC1155-isApprovedForAll}.
      */
-    function isApprovedForAll(address account, address operator) public view virtual override returns (bool) {
+    function isApprovedForAll(
+        address account,
+        address operator
+    ) public view virtual override returns (bool) {
         return _operatorApprovals[account][operator];
     }
 
@@ -1726,7 +1894,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         _beforeTokenTransfer(operator, from, to, ids, amounts, data);
 
         uint256 fromBalance = _balances[id][from];
-        require(fromBalance >= amount, "ERC1155: insufficient balance for transfer");
+        require(
+            fromBalance >= amount,
+            "ERC1155: insufficient balance for transfer"
+        );
         unchecked {
             _balances[id][from] = fromBalance - amount;
         }
@@ -1756,7 +1927,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         uint256[] memory amounts,
         bytes memory data
     ) internal virtual {
-        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+        require(
+            ids.length == amounts.length,
+            "ERC1155: ids and amounts length mismatch"
+        );
         require(to != address(0), "ERC1155: transfer to the zero address");
 
         address operator = _msgSender();
@@ -1768,7 +1942,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
             uint256 amount = amounts[i];
 
             uint256 fromBalance = _balances[id][from];
-            require(fromBalance >= amount, "ERC1155: insufficient balance for transfer");
+            require(
+                fromBalance >= amount,
+                "ERC1155: insufficient balance for transfer"
+            );
             unchecked {
                 _balances[id][from] = fromBalance - amount;
             }
@@ -1779,7 +1956,14 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         _afterTokenTransfer(operator, from, to, ids, amounts, data);
 
-        _doSafeBatchTransferAcceptanceCheck(operator, from, to, ids, amounts, data);
+        _doSafeBatchTransferAcceptanceCheck(
+            operator,
+            from,
+            to,
+            ids,
+            amounts,
+            data
+        );
     }
 
     /**
@@ -1816,7 +2000,12 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
      * acceptance magic value.
      */
-    function _mint(address to, uint256 id, uint256 amount, bytes memory data) internal virtual {
+    function _mint(
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) internal virtual {
         require(to != address(0), "ERC1155: mint to the zero address");
 
         address operator = _msgSender();
@@ -1830,7 +2019,14 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         _afterTokenTransfer(operator, address(0), to, ids, amounts, data);
 
-        _doSafeTransferAcceptanceCheck(operator, address(0), to, id, amount, data);
+        _doSafeTransferAcceptanceCheck(
+            operator,
+            address(0),
+            to,
+            id,
+            amount,
+            data
+        );
     }
 
     /**
@@ -1851,7 +2047,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         bytes memory data
     ) internal virtual {
         require(to != address(0), "ERC1155: mint to the zero address");
-        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+        require(
+            ids.length == amounts.length,
+            "ERC1155: ids and amounts length mismatch"
+        );
 
         address operator = _msgSender();
 
@@ -1865,7 +2064,14 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
 
         _afterTokenTransfer(operator, address(0), to, ids, amounts, data);
 
-        _doSafeBatchTransferAcceptanceCheck(operator, address(0), to, ids, amounts, data);
+        _doSafeBatchTransferAcceptanceCheck(
+            operator,
+            address(0),
+            to,
+            ids,
+            amounts,
+            data
+        );
     }
 
     /**
@@ -1907,9 +2113,16 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      *
      * - `ids` and `amounts` must have the same length.
      */
-    function _burnBatch(address from, uint256[] memory ids, uint256[] memory amounts) internal virtual {
+    function _burnBatch(
+        address from,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) internal virtual {
         require(from != address(0), "ERC1155: burn from the zero address");
-        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+        require(
+            ids.length == amounts.length,
+            "ERC1155: ids and amounts length mismatch"
+        );
 
         address operator = _msgSender();
 
@@ -1920,7 +2133,10 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
             uint256 amount = amounts[i];
 
             uint256 fromBalance = _balances[id][from];
-            require(fromBalance >= amount, "ERC1155: burn amount exceeds balance");
+            require(
+                fromBalance >= amount,
+                "ERC1155: burn amount exceeds balance"
+            );
             unchecked {
                 _balances[id][from] = fromBalance - amount;
             }
@@ -1936,7 +2152,11 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
      *
      * Emits an {ApprovalForAll} event.
      */
-    function _setApprovalForAll(address owner, address operator, bool approved) internal virtual {
+    function _setApprovalForAll(
+        address owner,
+        address operator,
+        bool approved
+    ) internal virtual {
         require(owner != operator, "ERC1155: setting approval status for self");
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
@@ -2009,7 +2229,15 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         bytes memory data
     ) private {
         if (to.isContract()) {
-            try IERC1155Receiver(to).onERC1155Received(operator, from, id, amount, data) returns (bytes4 response) {
+            try
+                IERC1155Receiver(to).onERC1155Received(
+                    operator,
+                    from,
+                    id,
+                    amount,
+                    data
+                )
+            returns (bytes4 response) {
                 if (response != IERC1155Receiver.onERC1155Received.selector) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
@@ -2030,10 +2258,18 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         bytes memory data
     ) private {
         if (to.isContract()) {
-            try IERC1155Receiver(to).onERC1155BatchReceived(operator, from, ids, amounts, data) returns (
-                bytes4 response
-            ) {
-                if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
+            try
+                IERC1155Receiver(to).onERC1155BatchReceived(
+                    operator,
+                    from,
+                    ids,
+                    amounts,
+                    data
+                )
+            returns (bytes4 response) {
+                if (
+                    response != IERC1155Receiver.onERC1155BatchReceived.selector
+                ) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
             } catch Error(string memory reason) {
@@ -2044,14 +2280,15 @@ contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
         }
     }
 
-    function _asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
+    function _asSingletonArray(
+        uint256 element
+    ) private pure returns (uint256[] memory) {
         uint256[] memory array = new uint256[](1);
         array[0] = element;
 
         return array;
     }
 }
-
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v4.9.3
 
@@ -2076,7 +2313,11 @@ interface IERC20 {
      * @dev Emitted when the allowance of a `spender` for an `owner` is set by
      * a call to {approve}. `value` is the new allowance.
      */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 
     /**
      * @dev Returns the amount of tokens in existence.
@@ -2104,7 +2345,10 @@ interface IERC20 {
      *
      * This value changes when {approve} or {transferFrom} are called.
      */
-    function allowance(address owner, address spender) external view returns (uint256);
+    function allowance(
+        address owner,
+        address spender
+    ) external view returns (uint256);
 
     /**
      * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
@@ -2131,9 +2375,12 @@ interface IERC20 {
      *
      * Emits a {Transfer} event.
      */
-    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) external returns (bool);
 }
-
 
 // File @openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol@v4.9.3
 
@@ -2164,15 +2411,12 @@ interface IERC20Metadata is IERC20 {
     function decimals() external view returns (uint8);
 }
 
-
 // File @openzeppelin/contracts/token/ERC20/ERC20.sol@v4.9.3
 
 // Original license: SPDX_License_Identifier: MIT
 // OpenZeppelin Contracts (last updated v4.9.0) (token/ERC20/ERC20.sol)
 
 pragma solidity ^0.8.0;
-
-
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -2265,7 +2509,9 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     /**
      * @dev See {IERC20-balanceOf}.
      */
-    function balanceOf(address account) public view virtual override returns (uint256) {
+    function balanceOf(
+        address account
+    ) public view virtual override returns (uint256) {
         return _balances[account];
     }
 
@@ -2277,7 +2523,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `to` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address to, uint256 amount) public virtual override returns (bool) {
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
         address owner = _msgSender();
         _transfer(owner, to, amount);
         return true;
@@ -2286,7 +2535,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view virtual override returns (uint256) {
+    function allowance(
+        address owner,
+        address spender
+    ) public view virtual override returns (uint256) {
         return _allowances[owner][spender];
     }
 
@@ -2300,7 +2552,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) public virtual override returns (bool) {
+    function approve(
+        address spender,
+        uint256 amount
+    ) public virtual override returns (bool) {
         address owner = _msgSender();
         _approve(owner, spender, amount);
         return true;
@@ -2322,7 +2577,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - the caller must have allowance for ``from``'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address from, address to, uint256 amount) public virtual override returns (bool) {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public virtual override returns (bool) {
         address spender = _msgSender();
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
@@ -2341,7 +2600,10 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+    function increaseAllowance(
+        address spender,
+        uint256 addedValue
+    ) public virtual returns (bool) {
         address owner = _msgSender();
         _approve(owner, spender, allowance(owner, spender) + addedValue);
         return true;
@@ -2361,10 +2623,16 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+    function decreaseAllowance(
+        address spender,
+        uint256 subtractedValue
+    ) public virtual returns (bool) {
         address owner = _msgSender();
         uint256 currentAllowance = allowance(owner, spender);
-        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+        require(
+            currentAllowance >= subtractedValue,
+            "ERC20: decreased allowance below zero"
+        );
         unchecked {
             _approve(owner, spender, currentAllowance - subtractedValue);
         }
@@ -2386,14 +2654,21 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `to` cannot be the zero address.
      * - `from` must have a balance of at least `amount`.
      */
-    function _transfer(address from, address to, uint256 amount) internal virtual {
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
 
         _beforeTokenTransfer(from, to, amount);
 
         uint256 fromBalance = _balances[from];
-        require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
+        require(
+            fromBalance >= amount,
+            "ERC20: transfer amount exceeds balance"
+        );
         unchecked {
             _balances[from] = fromBalance - amount;
             // Overflow not possible: the sum of all balances is capped by totalSupply, and the sum is preserved by
@@ -2472,7 +2747,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      * - `owner` cannot be the zero address.
      * - `spender` cannot be the zero address.
      */
-    function _approve(address owner, address spender, uint256 amount) internal virtual {
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
@@ -2488,10 +2767,17 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * Might emit an {Approval} event.
      */
-    function _spendAllowance(address owner, address spender, uint256 amount) internal virtual {
+    function _spendAllowance(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
         uint256 currentAllowance = allowance(owner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(currentAllowance >= amount, "ERC20: insufficient allowance");
+            require(
+                currentAllowance >= amount,
+                "ERC20: insufficient allowance"
+            );
             unchecked {
                 _approve(owner, spender, currentAllowance - amount);
             }
@@ -2512,7 +2798,11 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual {}
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
 
     /**
      * @dev Hook that is called after any transfer of tokens. This includes
@@ -2528,9 +2818,12 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _afterTokenTransfer(address from, address to, uint256 amount) internal virtual {}
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
 }
-
 
 // File @openzeppelin/contracts/token/ERC721/IERC721.sol@v4.9.3
 
@@ -2546,17 +2839,29 @@ interface IERC721 is IERC165 {
     /**
      * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
      */
-    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 indexed tokenId
+    );
 
     /**
      * @dev Emitted when `owner` enables `approved` to manage the `tokenId` token.
      */
-    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+    event Approval(
+        address indexed owner,
+        address indexed approved,
+        uint256 indexed tokenId
+    );
 
     /**
      * @dev Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
      */
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+    event ApprovalForAll(
+        address indexed owner,
+        address indexed operator,
+        bool approved
+    );
 
     /**
      * @dev Returns the number of tokens in ``owner``'s account.
@@ -2585,7 +2890,12 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external;
 
     /**
      * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
@@ -2601,7 +2911,11 @@ interface IERC721 is IERC165 {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
 
     /**
      * @dev Transfers `tokenId` token from `from` to `to`.
@@ -2655,16 +2969,20 @@ interface IERC721 is IERC165 {
      *
      * - `tokenId` must exist.
      */
-    function getApproved(uint256 tokenId) external view returns (address operator);
+    function getApproved(
+        uint256 tokenId
+    ) external view returns (address operator);
 
     /**
      * @dev Returns if the `operator` is allowed to manage all of the assets of `owner`.
      *
      * See {setApprovalForAll}
      */
-    function isApprovedForAll(address owner, address operator) external view returns (bool);
+    function isApprovedForAll(
+        address owner,
+        address operator
+    ) external view returns (bool);
 }
-
 
 // File @openzeppelin/contracts/utils/cryptography/ECDSA.sol@v4.9.3
 
@@ -2720,7 +3038,10 @@ library ECDSA {
      *
      * _Available since v4.3._
      */
-    function tryRecover(bytes32 hash, bytes memory signature) internal pure returns (address, RecoverError) {
+    function tryRecover(
+        bytes32 hash,
+        bytes memory signature
+    ) internal pure returns (address, RecoverError) {
         if (signature.length == 65) {
             bytes32 r;
             bytes32 s;
@@ -2753,7 +3074,10 @@ library ECDSA {
      * this is by receiving a hash of the original message (which may otherwise
      * be too long), and then calling {toEthSignedMessageHash} on it.
      */
-    function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
+    function recover(
+        bytes32 hash,
+        bytes memory signature
+    ) internal pure returns (address) {
         (address recovered, RecoverError error) = tryRecover(hash, signature);
         _throwError(error);
         return recovered;
@@ -2766,8 +3090,15 @@ library ECDSA {
      *
      * _Available since v4.3._
      */
-    function tryRecover(bytes32 hash, bytes32 r, bytes32 vs) internal pure returns (address, RecoverError) {
-        bytes32 s = vs & bytes32(0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff);
+    function tryRecover(
+        bytes32 hash,
+        bytes32 r,
+        bytes32 vs
+    ) internal pure returns (address, RecoverError) {
+        bytes32 s = vs &
+            bytes32(
+                0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+            );
         uint8 v = uint8((uint256(vs) >> 255) + 27);
         return tryRecover(hash, v, r, s);
     }
@@ -2777,7 +3108,11 @@ library ECDSA {
      *
      * _Available since v4.2._
      */
-    function recover(bytes32 hash, bytes32 r, bytes32 vs) internal pure returns (address) {
+    function recover(
+        bytes32 hash,
+        bytes32 r,
+        bytes32 vs
+    ) internal pure returns (address) {
         (address recovered, RecoverError error) = tryRecover(hash, r, vs);
         _throwError(error);
         return recovered;
@@ -2789,7 +3124,12 @@ library ECDSA {
      *
      * _Available since v4.3._
      */
-    function tryRecover(bytes32 hash, uint8 v, bytes32 r, bytes32 s) internal pure returns (address, RecoverError) {
+    function tryRecover(
+        bytes32 hash,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal pure returns (address, RecoverError) {
         // EIP-2 still allows signature malleability for ecrecover(). Remove this possibility and make the signature
         // unique. Appendix F in the Ethereum Yellow paper (https://ethereum.github.io/yellowpaper/paper.pdf), defines
         // the valid range for s in (301): 0 < s < secp256k1n ├╖ 2 + 1, and for v in (302): v Γêê {27, 28}. Most
@@ -2799,7 +3139,10 @@ library ECDSA {
         // with 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - s1 and flip v from 27 to 28 or
         // vice versa. If your library also generates signatures with 0/1 for v instead 27/28, add 27 to v to accept
         // these malleable signatures as well.
-        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
+        if (
+            uint256(s) >
+            0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0
+        ) {
             return (address(0), RecoverError.InvalidSignatureS);
         }
 
@@ -2816,7 +3159,12 @@ library ECDSA {
      * @dev Overload of {ECDSA-recover} that receives the `v`,
      * `r` and `s` signature fields separately.
      */
-    function recover(bytes32 hash, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
+    function recover(
+        bytes32 hash,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal pure returns (address) {
         (address recovered, RecoverError error) = tryRecover(hash, v, r, s);
         _throwError(error);
         return recovered;
@@ -2830,7 +3178,9 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32 message) {
+    function toEthSignedMessageHash(
+        bytes32 hash
+    ) internal pure returns (bytes32 message) {
         // 32 is the length in bytes of hash,
         // enforced by the type signature above
         /// @solidity memory-safe-assembly
@@ -2849,8 +3199,17 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toEthSignedMessageHash(bytes memory s) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", Strings.toString(s.length), s));
+    function toEthSignedMessageHash(
+        bytes memory s
+    ) internal pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n",
+                    Strings.toString(s.length),
+                    s
+                )
+            );
     }
 
     /**
@@ -2862,7 +3221,10 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toTypedDataHash(bytes32 domainSeparator, bytes32 structHash) internal pure returns (bytes32 data) {
+    function toTypedDataHash(
+        bytes32 domainSeparator,
+        bytes32 structHash
+    ) internal pure returns (bytes32 data) {
         /// @solidity memory-safe-assembly
         assembly {
             let ptr := mload(0x40)
@@ -2879,11 +3241,13 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toDataWithIntendedValidatorHash(address validator, bytes memory data) internal pure returns (bytes32) {
+    function toDataWithIntendedValidatorHash(
+        address validator,
+        bytes memory data
+    ) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19\x00", validator, data));
     }
 }
-
 
 // File @openzeppelin/contracts/security/ReentrancyGuard.sol@v4.9.3
 
@@ -2965,45 +3329,82 @@ abstract contract ReentrancyGuard {
     }
 }
 
-
 // File contracts/ERC721/Monster/RegenAndFusionMonster.sol
 
 // Original license: SPDX_License_Identifier: MIT
 pragma solidity ^0.8.0;
+
 interface IGeneralHash {
     function burn(uint256 _tokenId) external;
-    function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external;
-    function _numberOfRegenerations(uint256 season, uint256 tokenId) external view returns (uint256);
+
+    function setTimesOfRegeneration(
+        uint256 season,
+        uint256 tokenId,
+        uint256 times
+    ) external;
+
+    function _numberOfRegenerations(
+        uint256 season,
+        uint256 tokenId
+    ) external view returns (uint256);
 }
+
 interface IGenesisHash is IGeneralHash {}
+
 interface IHashChip {
     function burn(address _from, uint256 _id, uint256 _amount) external;
-    function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external;
-    function _numberOfRegenerations(uint256 season, uint256 tokenId) external view returns (uint256);
+
+    function setTimesOfRegeneration(
+        uint256 season,
+        uint256 tokenId,
+        uint256 times
+    ) external;
+
+    function _numberOfRegenerations(
+        uint256 season,
+        uint256 tokenId
+    ) external view returns (uint256);
 }
+
 interface IToken {
     function burnToken(address account, uint256 amount) external;
 }
+
 interface IMonsterMemory {
     function mint(address _address, uint256 _monsterId) external;
 }
+
 interface IRegenerationItem {
     function burn(address _from, uint256 _id, uint256 _amount) external;
-    function burnMultipleItem(address _from, uint256[] memory _id, uint256[] memory _amount) external;
+
+    function burnMultipleItem(
+        address _from,
+        uint256[] memory _id,
+        uint256[] memory _amount
+    ) external;
+
     function isMintMonster(uint256 _itemId) external view returns (bool);
 }
+
 interface IFusionItem is IRegenerationItem {}
+
 interface IMonsterContract {
-    function mintMonster(address _address, uint8 _type) external returns (uint256);
+    function mintMonster(
+        address _address,
+        uint8 _type
+    ) external returns (uint256);
+
     function getStatusMonster(uint256 _tokenId) external view returns (bool);
+
     function burn(uint256 _tokenId) external;
 }
 
-contract RegenFusionMonster is Ownable,
+contract RegenFusionMonster is
+    Ownable,
     AccessControl,
     Pausable,
     ReentrancyGuard
-    {
+{
     IToken public tokenBaseContract;
     IGenesisHash public genesisHashContract;
     IGeneralHash public generalHashContract;
@@ -3013,7 +3414,7 @@ contract RegenFusionMonster is Ownable,
     IFusionItem public fusionItem;
     IMonsterContract public monsterContract;
 
-    bytes32 public constant MANAGEMENT_ROLE  = keccak256("MANAGEMENT_ROLE");
+    bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     string _baseURIextended;
 
     // Season
@@ -3022,11 +3423,11 @@ contract RegenFusionMonster is Ownable,
     address validator;
     // Address receive fee
     address receiveFee;
-    // Decimal  
-    uint256 public DECIMAL = 10^18;
+    // Decimal
+    uint256 public DECIMAL = 10 ^ 18;
     // Status signature
     mapping(bytes => bool) public _isSigned;
-    
+
     uint8 NFT = 0;
     uint8 COLLABORATION_NFT = 1;
     uint8 FREE = 2;
@@ -3087,12 +3488,43 @@ contract RegenFusionMonster is Ownable,
     );
 
     event RefreshTimesRegeneration(uint8 _type, uint256 tokenId);
-    
-    event RegenerationFromGenesisHash(address owner, uint256 monsterId, uint8 mainSeed, uint8 subSeed);
-    event RegenerationFromGeneralHash(address owner, uint256 monsterId, uint8 mainSeed, uint8 subSeed);
-    event RegenerationFromHashChip(address owner, uint256 monsterId, uint8 mainSeed, uint8 subSeed);
-    event RegenerationFromExternalNFT(uint8 _type, address owner, uint256 monsterId, uint8 mainSeed, uint8 subSeed, address bornAddress, uint256 bornId, uint256 chainId);
-    event RegenerationFromItems(address owner, uint256 monsterId, uint8 mainSeed, uint8 subSeed, uint256 collectionId, uint256 itemId);
+
+    event RegenerationFromGenesisHash(
+        address owner,
+        uint256 monsterId,
+        uint8 mainSeed,
+        uint8 subSeed
+    );
+    event RegenerationFromGeneralHash(
+        address owner,
+        uint256 monsterId,
+        uint8 mainSeed,
+        uint8 subSeed
+    );
+    event RegenerationFromHashChip(
+        address owner,
+        uint256 monsterId,
+        uint8 mainSeed,
+        uint8 subSeed
+    );
+    event RegenerationFromExternalNFT(
+        uint8 _type,
+        address owner,
+        uint256 monsterId,
+        uint8 mainSeed,
+        uint8 subSeed,
+        address bornAddress,
+        uint256 bornId,
+        uint256 chainId
+    );
+    event RegenerationFromItems(
+        address owner,
+        uint256 monsterId,
+        uint8 mainSeed,
+        uint8 subSeed,
+        uint256 collectionId,
+        uint256 itemId
+    );
 
     // Check status mint nft free of address
     mapping(address => bool) public _realdyFreeNFT;
@@ -3123,14 +3555,12 @@ contract RegenFusionMonster is Ownable,
         receiveFee = receiveFreeAddress;
     }
 
-    constructor(){
-        _setRoleAdmin(MANAGEMENT_ROLE , MANAGEMENT_ROLE );
-        _setupRole(MANAGEMENT_ROLE , _msgSender());
+    constructor() {
+        _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
+        _setupRole(MANAGEMENT_ROLE, _msgSender());
     }
 
-    function setValidator(
-        address _address
-    ) external whenNotPaused onlyOwner {
+    function setValidator(address _address) external whenNotPaused onlyOwner {
         validator = _address;
     }
 
@@ -3142,7 +3572,10 @@ contract RegenFusionMonster is Ownable,
         nftRepair = _cost;
     }
 
-    function setCostOfType(uint8 _type, uint256[] memory cost) external onlyRole(MANAGEMENT_ROLE) {
+    function setCostOfType(
+        uint8 _type,
+        uint256[] memory cost
+    ) external onlyRole(MANAGEMENT_ROLE) {
         require(limits[_type] > 0, "Unsupported type");
         if (_type == GENERAL_HASH) costOfGeneral = cost;
         else if (_type == GENESIS_HASH) costOfGenesis = cost;
@@ -3163,28 +3596,58 @@ contract RegenFusionMonster is Ownable,
         uint8 mainSeed,
         uint8 subSeed
     ) private {
-        uint256 times = generalHashContract._numberOfRegenerations(season, _tokenId);
-        require(times < limits[GENERAL_HASH],"Times limit");
-        require(IERC721(address(generalHashContract)).ownerOf(_tokenId) == msg.sender,"Wrong owner");
+        uint256 times = generalHashContract._numberOfRegenerations(
+            season,
+            _tokenId
+        );
+        require(times < limits[GENERAL_HASH], "Times limit");
+        require(
+            IERC721(address(generalHashContract)).ownerOf(_tokenId) ==
+                msg.sender,
+            "Wrong owner"
+        );
         generalHashContract.setTimesOfRegeneration(season, _tokenId, times + 1);
         if (times + 1 == limits[GENERAL_HASH]) {
             generalHashContract.burn(_tokenId);
         }
-        uint256 monsterId = monsterContract.mintMonster(msg.sender, GENERAL_HASH);
-        emit RegenerationFromGeneralHash(msg.sender, monsterId, mainSeed, subSeed);
+        uint256 monsterId = monsterContract.mintMonster(
+            msg.sender,
+            GENERAL_HASH
+        );
+        emit RegenerationFromGeneralHash(
+            msg.sender,
+            monsterId,
+            mainSeed,
+            subSeed
+        );
     }
 
     function _fromGenesisHash(
         uint256 _tokenId,
         uint8 mainSeed,
         uint8 subSeed
-    ) private{
-        uint256 times = genesisHashContract._numberOfRegenerations(season, _tokenId);
-        require(times < limits[GENESIS_HASH],"Times limit");
-        require(IERC721(address(genesisHashContract)).ownerOf(_tokenId) == msg.sender,"Wrong owner");
+    ) private {
+        uint256 times = genesisHashContract._numberOfRegenerations(
+            season,
+            _tokenId
+        );
+        require(times < limits[GENESIS_HASH], "Times limit");
+        require(
+            IERC721(address(genesisHashContract)).ownerOf(_tokenId) ==
+                msg.sender,
+            "Wrong owner"
+        );
         genesisHashContract.setTimesOfRegeneration(season, _tokenId, times + 1);
-        uint256 monsterId = monsterContract.mintMonster(msg.sender, GENESIS_HASH);
-        emit RegenerationFromGenesisHash(msg.sender, monsterId, mainSeed, subSeed);
+        uint256 monsterId = monsterContract.mintMonster(
+            msg.sender,
+            GENESIS_HASH
+        );
+        emit RegenerationFromGenesisHash(
+            msg.sender,
+            monsterId,
+            mainSeed,
+            subSeed
+        );
     }
 
     function _fromExternalNFT(
@@ -3194,98 +3657,152 @@ contract RegenFusionMonster is Ownable,
         uint256 _tokenId,
         uint8 mainSeed,
         uint8 subSeed
-    ) private{
-        uint256 times = _timesRegenExternal[season][_chainId][_address][_tokenId];
-        if(isERC721(_address)){
-            require(IERC721(_address).ownerOf(_tokenId) == msg.sender,"Wrong owner");
-        }else if(isERC1155(_address)){
-            require(IERC1155(_address).balanceOf(_address, _tokenId) > 0,"Balance not enough");
+    ) private {
+        uint256 times = _timesRegenExternal[season][_chainId][_address][
+            _tokenId
+        ];
+        if (isERC721(_address)) {
+            require(
+                IERC721(_address).ownerOf(_tokenId) == msg.sender,
+                "Wrong owner"
+            );
+        } else if (isERC1155(_address)) {
+            require(
+                IERC1155(_address).balanceOf(_address, _tokenId) > 0,
+                "Balance not enough"
+            );
         }
-        require(times < limits[_type],"Times limit");
+        require(times < limits[_type], "Times limit");
         _timesRegenExternal[season][_chainId][_address][_tokenId]++;
         uint256 monsterId = monsterContract.mintMonster(msg.sender, _type);
-        emit RegenerationFromExternalNFT(_type, msg.sender, monsterId, mainSeed, subSeed, _address, _tokenId, _chainId);
+        emit RegenerationFromExternalNFT(
+            _type,
+            msg.sender,
+            monsterId,
+            mainSeed,
+            subSeed,
+            _address,
+            _tokenId,
+            _chainId
+        );
     }
 
     function _fromHashChipNFT(
         uint256 _tokenId,
         uint8 mainSeed,
         uint8 subSeed
-    ) private{
-        uint256 times = hashChipNFTContract._numberOfRegenerations(season, _tokenId);
-        require(times < limits[HASH_CHIP_NFT],"Times limit");
-        require(IERC721(address(hashChipNFTContract)).ownerOf(_tokenId) == msg.sender,"Wrong owner");
+    ) private {
+        uint256 times = hashChipNFTContract._numberOfRegenerations(
+            season,
+            _tokenId
+        );
+        require(times < limits[HASH_CHIP_NFT], "Times limit");
+        require(
+            IERC721(address(hashChipNFTContract)).ownerOf(_tokenId) ==
+                msg.sender,
+            "Wrong owner"
+        );
         hashChipNFTContract.setTimesOfRegeneration(season, _tokenId, times + 1);
-        uint256 monsterId = monsterContract.mintMonster(msg.sender, HASH_CHIP_NFT);
+        uint256 monsterId = monsterContract.mintMonster(
+            msg.sender,
+            HASH_CHIP_NFT
+        );
         emit RegenerationFromHashChip(msg.sender, monsterId, mainSeed, subSeed);
     }
 
     /*
- * Create a Monster by type
- * @param _type: address of owner
- * @param _tokenId: first tokenId fusion
- * @param _isOAS: last tokenId fusion
- * @param _cost: list fusion item, if dont using fusion item => _itemId = [0]
- * @param _deadline: number of fusion item
- */
-function mintMonster(
-    uint8 _type,
-    address _addressContract,
-    uint256 _chainId,
-    address _account,
-    uint256 _tokenId,
-    bool _isOAS,
-    uint256 _cost,
-    uint256 _deadline,
-    bytes calldata _sig,
-    uint8 _mainSeed,
-    uint8 _subSeed
-) external payable nonReentrant whenNotPaused {
-    if (_isOAS) {
-        require(_deadline > block.timestamp, "Deadline exceeded");
-        require(!_isSigned[_sig], "Signature used");
-        require( _account == msg.sender, "Not owner");
-        address signer = recoverOAS(
-            _type,
-            _account,
-            _cost,
-            _tokenId,
-            block.chainid,
-            _deadline,
-            _sig
-        );
-        require(signer == validator, "Validator fail signature");
-        require(
-            payable(receiveFee).send(_cost),
-            "TreasuryContract::reward: Failed to claim OAS"
-        );
-    } else {
-        uint256 cost = getFeeOfTokenId(_type, _chainId, _addressContract, _tokenId);
-        tokenBaseContract.burnToken(msg.sender, cost * DECIMAL);
+     * Create a Monster by type
+     * @param _type: address of owner
+     * @param _tokenId: first tokenId fusion
+     * @param _isOAS: last tokenId fusion
+     * @param _cost: list fusion item, if dont using fusion item => _itemId = [0]
+     * @param _deadline: number of fusion item
+     */
+    function mintMonster(
+        uint8 _type,
+        address _addressContract,
+        uint256 _chainId,
+        address _account,
+        uint256 _tokenId,
+        bool _isOAS,
+        uint256 _cost,
+        uint256 _deadline,
+        bytes calldata _sig,
+        uint8 _mainSeed,
+        uint8 _subSeed
+    ) external payable nonReentrant whenNotPaused {
+        if (_isOAS) {
+            require(_deadline > block.timestamp, "Deadline exceeded");
+            require(!_isSigned[_sig], "Signature used");
+            require(_account == msg.sender, "Not owner");
+            address signer = recoverOAS(
+                _type,
+                _account,
+                _cost,
+                _tokenId,
+                block.chainid,
+                _deadline,
+                _sig
+            );
+            require(signer == validator, "Validator fail signature");
+            require(
+                payable(receiveFee).send(_cost),
+                "TreasuryContract::reward: Failed to claim OAS"
+            );
+        } else {
+            uint256 cost = getFeeOfTokenId(
+                _type,
+                _chainId,
+                _addressContract,
+                _tokenId
+            );
+            tokenBaseContract.burnToken(msg.sender, cost * DECIMAL);
+        }
+        if (_type == GENERAL_HASH) {
+            _fromGeneralHash(_tokenId, _mainSeed, _subSeed);
+        } else if (_type == GENESIS_HASH) {
+            _fromGenesisHash(_tokenId, _mainSeed, _subSeed);
+        } else if (_type == NFT || _type == COLLABORATION_NFT) {
+            _fromExternalNFT(
+                _type,
+                _chainId,
+                _addressContract,
+                _tokenId,
+                _mainSeed,
+                _subSeed
+            );
+        } else if (_type == HASH_CHIP_NFT) {
+            _fromHashChipNFT(_tokenId, _mainSeed, _subSeed);
+        } else {
+            revert("Unsupported type");
+        }
     }
-    if (_type == GENERAL_HASH) {
-        _fromGeneralHash(_tokenId, _mainSeed, _subSeed);
-    } else if (_type == GENESIS_HASH) {
-        _fromGenesisHash(_tokenId, _mainSeed, _subSeed);
-    } else if (_type == NFT || _type == COLLABORATION_NFT) {
-        _fromExternalNFT(_type, _chainId, _addressContract, _tokenId, _mainSeed, _subSeed);
-    } else if (_type == HASH_CHIP_NFT) {
-        _fromHashChipNFT(_tokenId, _mainSeed, _subSeed);
-    } else {
-        revert("Unsupported type");
-    }
-}
 
     /*
      * Create a Monster by type Free
      */
-    function mintMonsterFromRegeneration(uint256 _collectionId, uint256 _itemId, uint8 _mainSeed, uint8 _subSeed) external nonReentrant whenNotPaused {
+    function mintMonsterFromRegeneration(
+        uint256 _collectionId,
+        uint256 _itemId,
+        uint8 _mainSeed,
+        uint8 _subSeed
+    ) external nonReentrant whenNotPaused {
         require(regenerationItem.isMintMonster(_collectionId), "Wrong id");
         regenerationItem.burn(msg.sender, _collectionId, 1);
-        uint256 monsterId = monsterContract.mintMonster(msg.sender, REGENERATION_ITEM);
-        emit RegenerationFromItems(msg.sender, monsterId, _mainSeed, _subSeed, _collectionId, _itemId);
+        uint256 monsterId = monsterContract.mintMonster(
+            msg.sender,
+            REGENERATION_ITEM
+        );
+        emit RegenerationFromItems(
+            msg.sender,
+            monsterId,
+            _mainSeed,
+            _subSeed,
+            _collectionId,
+            _itemId
+        );
     }
-    
+
     /*
      * fusion a Monster
      * @param _address: address of owner
@@ -3304,13 +3821,23 @@ function mintMonster(
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
-        if(_amount[0] != 0) {
+        if (_amount[0] != 0) {
             fusionItem.burnMultipleItem(_owner, _listItem, _amount);
         }
-        require(IERC721(address(monsterContract)).ownerOf(_firstTokenId) == _owner, "The owner is not correct");
-        require(IERC721(address(monsterContract)).ownerOf(_lastTokenId) == _owner, "The owner is not correct");
-        bool lifeSpanFistMonster = monsterContract.getStatusMonster(_firstTokenId);
-        bool lifeSpanLastMonster = monsterContract.getStatusMonster(_lastTokenId);
+        require(
+            IERC721(address(monsterContract)).ownerOf(_firstTokenId) == _owner,
+            "The owner is not correct"
+        );
+        require(
+            IERC721(address(monsterContract)).ownerOf(_lastTokenId) == _owner,
+            "The owner is not correct"
+        );
+        bool lifeSpanFistMonster = monsterContract.getStatusMonster(
+            _firstTokenId
+        );
+        bool lifeSpanLastMonster = monsterContract.getStatusMonster(
+            _lastTokenId
+        );
         if (!lifeSpanFistMonster) {
             monsterMemory.mint(_owner, _firstTokenId);
         }
@@ -3347,11 +3874,17 @@ function mintMonster(
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
-        if(_amount[0] != 0) {
+        if (_amount[0] != 0) {
             fusionItem.burnMultipleItem(_owner, _listItem, _amount);
         }
-        uint256 timesRegeneration1 = genesisHashContract._numberOfRegenerations(season, _firstId);
-        uint256 timesRegeneration2 = genesisHashContract._numberOfRegenerations(season, _lastId);
+        uint256 timesRegeneration1 = genesisHashContract._numberOfRegenerations(
+            season,
+            _firstId
+        );
+        uint256 timesRegeneration2 = genesisHashContract._numberOfRegenerations(
+            season,
+            _lastId
+        );
         require(
             IERC721(address(genesisHashContract)).ownerOf(_firstId) == _owner,
             "The owner is not correct"
@@ -3366,11 +3899,27 @@ function mintMonster(
             "Exceed the allowed number of times"
         );
 
-        genesisHashContract.setTimesOfRegeneration(season, _firstId, timesRegeneration1 + 1);
-        genesisHashContract.setTimesOfRegeneration(season, _lastId, timesRegeneration2 + 1);
-        emit FusionGenesisHash(_owner, _firstId, _lastId, monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH), _mainSeed, _subSeed);
+        genesisHashContract.setTimesOfRegeneration(
+            season,
+            _firstId,
+            timesRegeneration1 + 1
+        );
+        genesisHashContract.setTimesOfRegeneration(
+            season,
+            _lastId,
+            timesRegeneration2 + 1
+        );
+        emit FusionGenesisHash(
+            _owner,
+            _firstId,
+            _lastId,
+            monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH),
+            _mainSeed,
+            _subSeed
+        );
     }
-     /*
+
+    /*
      * Create monster from fusion general hash
      * @param _owner: address of owner
      * @param _firstId: first tokenId fusion
@@ -3388,11 +3937,17 @@ function mintMonster(
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
-        if(_amount[0] != 0) {
+        if (_amount[0] != 0) {
             fusionItem.burnMultipleItem(_owner, _listItem, _amount);
         }
-        uint256 timesRegeneration1 = generalHashContract._numberOfRegenerations(season, _firstId);
-        uint256 timesRegeneration2 = generalHashContract._numberOfRegenerations(season, _lastId);
+        uint256 timesRegeneration1 = generalHashContract._numberOfRegenerations(
+            season,
+            _firstId
+        );
+        uint256 timesRegeneration2 = generalHashContract._numberOfRegenerations(
+            season,
+            _lastId
+        );
         require(
             IERC721(address(generalHashContract)).ownerOf(_firstId) == _owner,
             "The owner is not correct"
@@ -3406,8 +3961,16 @@ function mintMonster(
                 timesRegeneration2 < limits[GENERAL_HASH],
             "Exceed the allowed number of times"
         );
-        genesisHashContract.setTimesOfRegeneration(season, _firstId, timesRegeneration1 + 1);
-        genesisHashContract.setTimesOfRegeneration(season, _lastId, timesRegeneration2 + 1);
+        genesisHashContract.setTimesOfRegeneration(
+            season,
+            _firstId,
+            timesRegeneration1 + 1
+        );
+        genesisHashContract.setTimesOfRegeneration(
+            season,
+            _lastId,
+            timesRegeneration2 + 1
+        );
 
         if (timesRegeneration1 + 1 == limits[GENERAL_HASH]) {
             generalHashContract.burn(_firstId);
@@ -3415,7 +3978,14 @@ function mintMonster(
         if (timesRegeneration2 + 1 == limits[GENERAL_HASH]) {
             generalHashContract.burn(_lastId);
         }
-        emit FusionGeneralHash(_owner, _firstId, _lastId, monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH), _mainSeed, _subSeed);
+        emit FusionGeneralHash(
+            _owner,
+            _firstId,
+            _lastId,
+            monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH),
+            _mainSeed,
+            _subSeed
+        );
     }
 
     /*
@@ -3436,11 +4006,17 @@ function mintMonster(
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
-        if(_amount[0] != 0) {
+        if (_amount[0] != 0) {
             fusionItem.burnMultipleItem(_owner, _listItem, _amount);
         }
-        uint256 timesGenesis = genesisHashContract._numberOfRegenerations(season, _genesisId);
-        uint256 timesGeneral = generalHashContract._numberOfRegenerations(season, _generalId);
+        uint256 timesGenesis = genesisHashContract._numberOfRegenerations(
+            season,
+            _genesisId
+        );
+        uint256 timesGeneral = generalHashContract._numberOfRegenerations(
+            season,
+            _generalId
+        );
         require(
             IERC721(address(genesisHashContract)).ownerOf(_genesisId) == _owner,
             "The owner is not correct"
@@ -3450,15 +4026,31 @@ function mintMonster(
             "The owner is not correct"
         );
         require(
-            timesGenesis < limits[GENESIS_HASH] && timesGeneral < limits[GENERAL_HASH],
+            timesGenesis < limits[GENESIS_HASH] &&
+                timesGeneral < limits[GENERAL_HASH],
             "Exceed the allowed number of times"
         );
-        genesisHashContract.setTimesOfRegeneration(season, _genesisId, timesGenesis + 1);
-        generalHashContract.setTimesOfRegeneration(season, _generalId, timesGeneral + 1);
+        genesisHashContract.setTimesOfRegeneration(
+            season,
+            _genesisId,
+            timesGenesis + 1
+        );
+        generalHashContract.setTimesOfRegeneration(
+            season,
+            _generalId,
+            timesGeneral + 1
+        );
         if (timesGeneral + 1 == limits[GENERAL_HASH]) {
             generalHashContract.burn(_generalId);
         }
-        emit FusionMultipleHash(_owner, _genesisId, _generalId, monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH), _mainSeed, _subSeed);
+        emit FusionMultipleHash(
+            _owner,
+            _genesisId,
+            _generalId,
+            monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH),
+            _mainSeed,
+            _subSeed
+        );
     }
 
     function _refreshTimesOfRegeneration(
@@ -3471,45 +4063,44 @@ function mintMonster(
     ) private {
         if (_isOAS) {
             bool sent = payable(receiveFee).send(_cost);
-            require(
-                sent,
-                "TreasuryContract::reward: Failed to claim OAS"
-            );
+            require(sent, "TreasuryContract::reward: Failed to claim OAS");
         } else {
             tokenBaseContract.burnToken(msg.sender, _cost);
         }
-        if (_type == NFT ) {
+        if (_type == NFT) {
             require(
-                _timesRegenExternal[season][_chainId][_address][_tokenId] == limits[NFT],
+                _timesRegenExternal[season][_chainId][_address][_tokenId] ==
+                    limits[NFT],
                 "Item being used"
             );
             _timesRegenExternal[season][_chainId][_address][_tokenId] = 0;
-        } else if (_type == COLLABORATION_NFT ) {
+        } else if (_type == COLLABORATION_NFT) {
             require(
-                _timesRegenExternal[season][_chainId][_address][_tokenId] == limits[COLLABORATION_NFT],
+                _timesRegenExternal[season][_chainId][_address][_tokenId] ==
+                    limits[COLLABORATION_NFT],
                 "Item being used"
             );
             _timesRegenExternal[season][_chainId][_address][_tokenId] = 0;
-        }else if (_type == GENESIS_HASH) {
+        } else if (_type == GENESIS_HASH) {
             require(
-                genesisHashContract._numberOfRegenerations(season, _tokenId) == limits[GENESIS_HASH],
+                genesisHashContract._numberOfRegenerations(season, _tokenId) ==
+                    limits[GENESIS_HASH],
                 "Item being used"
             );
             genesisHashContract.setTimesOfRegeneration(season, _tokenId, 0);
         } else if (_type == HASH_CHIP_NFT) {
             require(
-                hashChipNFTContract._numberOfRegenerations(season, _tokenId) == limits[HASH_CHIP_NFT],
+                hashChipNFTContract._numberOfRegenerations(season, _tokenId) ==
+                    limits[HASH_CHIP_NFT],
                 "Item being used"
             );
-           hashChipNFTContract.setTimesOfRegeneration(season, _tokenId, 0);
+            hashChipNFTContract.setTimesOfRegeneration(season, _tokenId, 0);
         } else {
-            revert(
-                "Unsupported type"
-            );
+            revert("Unsupported type");
         }
     }
 
-     /*
+    /*
      * get Fee mint Monster by TyMint & tokenId
      * @param _type: TypeMint
      * @param _tokenId: tokenId
@@ -3521,15 +4112,25 @@ function mintMonster(
         uint256 _tokenId
     ) public view whenNotPaused returns (uint256 fee) {
         if (_type == NFT) {
-            fee = costOfNfts[_timesRegenExternal[season][_chainId][_address][_tokenId]];
+            fee = costOfNfts[
+                _timesRegenExternal[season][_chainId][_address][_tokenId]
+            ];
         } else if (_type == COLLABORATION_NFT) {
-            fee = costOfExternal[_timesRegenExternal[season][_chainId][_address][_tokenId]];
+            fee = costOfExternal[
+                _timesRegenExternal[season][_chainId][_address][_tokenId]
+            ];
         } else if (_type == GENESIS_HASH) {
-            fee = costOfGenesis[genesisHashContract._numberOfRegenerations(season, _tokenId)];
+            fee = costOfGenesis[
+                genesisHashContract._numberOfRegenerations(season, _tokenId)
+            ];
         } else if (_type == GENERAL_HASH) {
-            fee = costOfGeneral[generalHashContract._numberOfRegenerations(season, _tokenId)];
+            fee = costOfGeneral[
+                generalHashContract._numberOfRegenerations(season, _tokenId)
+            ];
         } else if (_type == HASH_CHIP_NFT) {
-            fee = costOfHashChip[hashChipNFTContract._numberOfRegenerations(season, _tokenId)];
+            fee = costOfHashChip[
+                hashChipNFTContract._numberOfRegenerations(season, _tokenId)
+            ];
         } else {
             revert("Unsupported type");
         }
@@ -3554,14 +4155,8 @@ function mintMonster(
         uint256 _deadline,
         bytes calldata _sig
     ) external payable nonReentrant whenNotPaused {
-        require(
-            _deadline > block.timestamp,
-            "Deadline exceeded"
-        );
-        require(
-            !_isSigned[_sig],
-            "Signature used"
-        );
+        require(_deadline > block.timestamp, "Deadline exceeded");
+        require(!_isSigned[_sig], "Signature used");
         address signer = recoverOAS(
             _type,
             _account,
@@ -3571,11 +4166,15 @@ function mintMonster(
             _deadline,
             _sig
         );
-        require(
-            signer == validator,
-            "Validator fail signature"
+        require(signer == validator, "Validator fail signature");
+        _refreshTimesOfRegeneration(
+            _type,
+            _chainId,
+            _addressContract,
+            _tokenId,
+            _isOAS,
+            _cost
         );
-        _refreshTimesOfRegeneration(_type, _chainId, _addressContract, _tokenId, _isOAS, _cost);
     }
 
     function isERC721(address contractAddress) internal view returns (bool) {
@@ -3603,7 +4202,7 @@ function mintMonster(
     }
 
     /*
-     * encode data 
+     * encode data
      * @param _type: type mint Monster
      * @param cost: fee mint NFT
      * @param tokenId: tokenId of nft
@@ -3618,11 +4217,14 @@ function mintMonster(
         uint256 chainId,
         uint256 deadline
     ) public pure returns (bytes32) {
-        return keccak256(abi.encode(_type, account, cost, tokenId, chainId, deadline));
+        return
+            keccak256(
+                abi.encode(_type, account, cost, tokenId, chainId, deadline)
+            );
     }
 
     /*
-     * recover data 
+     * recover data
      * @param _type: type mint Monster
      * @param cost: fee mint NFT
      * @param tokenId: tokenId of nft
@@ -3637,14 +4239,14 @@ function mintMonster(
         uint256 tokenId,
         uint256 chainId,
         uint256 deadline,
-        bytes calldata signature 
+        bytes calldata signature
     ) public pure returns (address) {
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
                     encodeOAS(_type, _account, cost, tokenId, chainId, deadline)
                 ),
-                signature 
+                signature
             );
     }
 }
