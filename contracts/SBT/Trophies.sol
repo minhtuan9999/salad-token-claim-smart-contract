@@ -41,7 +41,7 @@ contract Trophies is
         Rank[] ranks;
     }
 
-    constructor() ERC721("TrainerLicense", "TrainerLicense") {
+    constructor() ERC721("Trophies", "Trophies") {
         _setRoleAdmin(MANAGEMENT_ROLE , MANAGEMENT_ROLE );
         _setupRole(MANAGEMENT_ROLE , _msgSender());
     }
@@ -51,14 +51,14 @@ contract Trophies is
     
     mapping(uint256 => Rank) public _rank;
     /*
-     * mint TrainerLicense
+     * mint Trophies
      * @param _address: address of owner
      * @param tokenId: tokenId
      */
-    event MintTrainerLicense(address _address, uint256 tokenId);
+    event MintTrophies(address _address, uint256 tokenId);
 
     /*
-     * burn TrainerLicense
+     * burn Trophies
      * @param tokenId: tokenId 
      */
     event BurnTrainerLicense(uint256 tokenId);
@@ -84,7 +84,7 @@ contract Trophies is
             _listTokensOfAddress[to].add(firstTokenId);
             _listTokensOfAddress[from].remove(firstTokenId);
         } else {
-            revert("TrainerLicense is not transferrable");
+            revert("Trophies is not transferrable");
         }
     }
 
@@ -127,15 +127,15 @@ contract Trophies is
     }
 
     /*
-     * mint a TrainerLicens
+     * mint a Trophies
      * @param _address: owner of NFT
      */
-    function mintTrainerLicense(address _address, Rank rank) public onlyRole(MANAGEMENT_ROLE) {
+    function mintTrophies(address _address, Rank rank) public onlyRole(MANAGEMENT_ROLE) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
         _tokenIds.increment();
         _rank[tokenId] = rank;
-        emit MintTrainerLicense(_address, tokenId);
+        emit MintTrophies(_address, tokenId);
     }
 
     function getRanksOfAddress(address _address) public view returns (uint256[] memory, Rank[] memory) {
@@ -150,10 +150,11 @@ contract Trophies is
 
 
     /*
-     * burn TrainerLicens
+     * burn Trophies
      * @param _tokenId: tokenId 
      */
-    function burnTrainerLicense(uint256 _tokenId) external nonReentrant onlyRole(MANAGEMENT_ROLE ) {
+    function burnTrophies(uint256 _tokenId) external{
+        require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         _burn(_tokenId);
         emit BurnTrainerLicense(_tokenId);
     }

@@ -161,7 +161,7 @@ contract Coach is Ownable, ERC721Enumerable, AccessControl, Pausable, Reentrancy
         monsterContract.burn(_monsterId);
         emit createCoachByMonster(_owner, tokenId, _monsterId); 
     }
-
+ 
     /*
      * burn a Coach
      * @param _tokenId: tokenId burn

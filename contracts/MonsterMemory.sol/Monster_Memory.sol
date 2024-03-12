@@ -2822,7 +2822,8 @@ contract MonsterMemory is Ownable, ERC721Enumerable, AccessControl, Pausable, Re
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+    ) external whenNotPaused{
+        require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         require(_exists(_tokenId), "tokenId not found");
         _burn(_tokenId);
     }

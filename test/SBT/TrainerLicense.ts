@@ -12,11 +12,11 @@ describe("Trainer license", function () {
   async function deployERC721Fixture() {
     // Contracts are deployed using the first signer/account by default
     const [owner, userAddress, treasuryAddress] = await ethers.getSigners();
-    const Monster = await ethers.getContractFactory("TrainerLicense");
-    const monster = await Monster.connect(owner).deploy();
-    monster.deployed();
+    const Trainer = await ethers.getContractFactory("TrainerLicense");
+    const trainer = await Trainer.connect(owner).deploy();
+    trainer.deployed();
     return {
-      monster,
+      trainer,
       owner,
       userAddress,
     };
@@ -24,56 +24,49 @@ describe("Trainer license", function () {
 
   describe("Deployment", function () {
     it("should deploy and set the owner correctly", async function () {
-      const { monster, owner } = await loadFixture(deployERC721Fixture);
-      expect(await monster.owner()).to.equal(owner.address);
+      const { trainer, owner } = await loadFixture(deployERC721Fixture);
+      expect(await trainer.owner()).to.equal(owner.address);
     });
   });
 
-  describe("Mint monster", function () {
-    it("Should check function: mint monster", async function () {
-      const { monster, owner, userAddress } = await loadFixture(
+  describe("Mint trainer", function () {
+    it("Should check function: mint trainer", async function () {
+      const { trainer, owner, userAddress } = await loadFixture(
         deployERC721Fixture
       );
-      await expect(monster.connect(owner).mintMonster(owner.address, 1)).not.to.be.reverted;
-      await expect(monster.connect(userAddress).mintMonster(owner.address, 1)).to.be.reverted;
+      await expect(trainer.connect(owner).mintTrainerLicense(owner.address)).not.to.be.reverted;
+      await expect(trainer.connect(userAddress).mintTrainerLicense(owner.address)).to.be.reverted;
     });
-    it("Should check function: mint monster free", async function () {
-      const { monster, owner, userAddress } = await loadFixture(
+    
+    it("Should check event: mint trainer", async function () {
+      const { trainer, owner, userAddress } = await loadFixture(
         deployERC721Fixture
       );
-      await expect(monster.connect(userAddress).mintMonster(owner.address, 1)).to.be.reverted;
-      await expect(monster.connect(owner).mintMonster(owner.address, 5)).not.to.be.reverted;
-      await expect(monster.connect(owner).mintMonster(owner.address, 5)).to.be.revertedWith("You owned free NFT");
-    });
-    it("Should check event: mint monster", async function () {
-      const { monster, owner, userAddress } = await loadFixture(
-        deployERC721Fixture
-      );
-      let tx1 = await monster.connect(owner).mintMonster(owner.address, 1);
+      let tx1 = await trainer.connect(owner).mintTrainerLicense(owner.address);
       const receipt1 = await tx1.wait();
       let token1;
       if (receipt1 && receipt1.events) {
         const events = receipt1.events;
         const createEvent = events.find(
-          (event) => event.event === "MintMonster"
+          (event) => event.event === "MintTrainerLicense"
         );
         if (createEvent && createEvent.args) {
           token1 = createEvent.args?.tokenId.toString();
         }
       }
-      expect(await monster.connect(owner).ownerOf(token1)).to.equals(
+      expect(await trainer.connect(owner).ownerOf(token1)).to.equals(
         owner.address
       );
     });
   });
 
-  describe("SetStatus monster", function () {
-    it("Should check function: setStatus monster", async function () {
-      const { monster, owner, userAddress } = await loadFixture(
+  describe("burn TrainerLicens", function () {
+    it("Should check function: burnTrainerLicense", async function () {
+      const { trainer, owner, userAddress } = await loadFixture(
         deployERC721Fixture
       );
-      const tokenId = await monster.connect(owner).mintMonster(owner.address, 1);
-      await expect(monster.connect(owner).setStatusMonster(Number(tokenId), true)).not.to.be.reverted;
+      const tokenId = await trainer.connect(owner).mintTrainerLicense(owner.address);      
+      await expect(trainer.connect(owner).burnTrainerLicense( tokenId.value.toNumber())).not.to.be.reverted;
     });
   });
  

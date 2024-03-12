@@ -125,7 +125,8 @@ contract TrainerLicense is
      * burn TrainerLicens
      * @param _tokenId: tokenId 
      */
-    function burnTrainerLicense(uint256 _tokenId) external nonReentrant onlyRole(MANAGEMENT_ROLE ) {
+    function burnTrainerLicense(uint256 _tokenId) external{
+        require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         _burn(_tokenId);
         emit BurnTrainerLicense(_tokenId);
     }

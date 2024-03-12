@@ -44,7 +44,7 @@ describe("MonsterMemory", function () {
 
             await expect(monsterMemory.mint(owner.address,monsterId))
                 .to.emit(monsterMemory, "createMonsterMemory")
-                .withArgs(owner.address, 0, 1);
+                .withArgs(owner.address, monsterId, monsterId);
         });
     })
 
@@ -56,9 +56,9 @@ describe("MonsterMemory", function () {
 
             const tokenIds = await monsterMemory.getListTokensOfAddress(owner.address);
             expect(tokenIds.length).to.equal(1);
-            expect(tokenIds[0]).to.equal(0);
+            expect(tokenIds[0]).to.equal(monsterId);
 
-            const ownerOfToken = await monsterMemory.ownerOf(0);
+            const ownerOfToken = await monsterMemory.ownerOf(monsterId);
             expect(ownerOfToken).to.equal(owner.address);
         });
     })
@@ -70,12 +70,12 @@ describe("MonsterMemory", function () {
             const monsterId = 1;
             await monsterMemory.mint(owner.address, monsterId);
     
-            await monsterMemory.burn(0);
+            await monsterMemory.burn(monsterId);
     
             const tokenIds = await monsterMemory.getListTokensOfAddress(owner.address);
             expect(tokenIds.length).to.equal(0);
     
-            await expect(monsterMemory.ownerOf(0)).to.be.revertedWith("ERC721: invalid token ID");
+            await expect(monsterMemory.ownerOf(monsterId)).to.be.revertedWith("ERC721: invalid token ID");
         });
         it("should burn a token with caller address has no permission ", async function () {
             const { monsterMemory, owner, userAddress } = await loadFixture(deployERC721Fixture);
