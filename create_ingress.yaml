@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-dep
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"  # ClusterIssuer name
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - k8s-test.remonster.world  # Your domain name
+    secretName: letsencrypt-secret-prod  # Choose a name
+  rules:
+  - host: k8s-test.remonster.world  # Your domain name
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-dep
+            port:
+              number: 8080

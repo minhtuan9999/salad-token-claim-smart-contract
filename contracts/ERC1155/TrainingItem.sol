@@ -11,138 +11,24 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     using EnumerableSet for EnumerableSet.UintSet;
     using Strings for uint256;
+    uint256 public currentId;
 
     constructor(string memory _baseMetadata) ERC1155(_baseMetadata) {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         baseMetadata = _baseMetadata;
-
-        itemDetail[ENERGY_BANANA_C].amountLimit = 5000;
-        itemDetail[ENERGY_BANANA_UC].amountLimit = 1000;
-        itemDetail[ENERGY_BANANA_R].amountLimit = 200;
-
-        itemDetail[REFRESH_HERB_C].amountLimit = 5000;
-        itemDetail[REFRESH_HERB_UC].amountLimit = 1000;
-        itemDetail[REFRESH_HERB_R].amountLimit = 200;
-
-        itemDetail[FRESH_MILK_C].amountLimit = 5000;
-        itemDetail[FRESH_MILK_UC].amountLimit = 1000;
-        itemDetail[FRESH_MILK_R].amountLimit = 200;
-
-        itemDetail[FAIRY_BERRY_C].amountLimit = 5000;
-        itemDetail[FAIRY_BERRY_UC].amountLimit = 1000;
-        itemDetail[FAIRY_BERRY_R].amountLimit = 200;
-
-        itemDetail[CARAMEL_CAKE_C].amountLimit = 5000;
-        itemDetail[CARAMEL_CAKE_UC].amountLimit = 1000;
-        itemDetail[CARAMEL_CAKE_R].amountLimit = 200;
-
-        itemDetail[CHIA_YOGURT_C].amountLimit = 5000;
-        itemDetail[CHIA_YOGURT_UC].amountLimit = 1000;
-        itemDetail[CHIA_YOGURT_R].amountLimit = 200;
-
-        itemDetail[SATIETY_KONJACT_C].amountLimit = 5000;
-        itemDetail[SATIETY_KONJACT_UC].amountLimit = 1000;
-        itemDetail[SATIETY_KONJACT_R].amountLimit = 200;
-
-        itemDetail[GLORIOUS_MEAT_C].amountLimit = 5000;
-        itemDetail[GLORIOUS_MEAT_UC].amountLimit = 1000;
-        itemDetail[GLORIOUS_MEAT_R].amountLimit = 200;
-
-        itemDetail[SUNNY_BLOSSOM_C].amountLimit = 5000;
-        itemDetail[SUNNY_BLOSSOM_UC].amountLimit = 1000;
-        itemDetail[SUNNY_BLOSSOM_R].amountLimit = 200;
-
-        itemDetail[LUNAR_GRASS_C].amountLimit = 5000;
-        itemDetail[LUNAR_GRASS_UC].amountLimit = 1000;
-        itemDetail[LUNAR_GRASS_R].amountLimit = 200;
-
-        itemDetail[LIFE_WATER_C].amountLimit = 500;
-        itemDetail[LIFE_WATER_UC].amountLimit = 200;
-        itemDetail[LIFE_WATER_R].amountLimit = 50;
-    }
+        _initDefautItems();
+    }   
 
     // base metadata
     string public baseMetadata;
 
     struct ITEM_DETAIL {
+        string name;
+        uint8 typeItem;
         uint256 amountLimit;
         uint256 totalAmount;
     }
-
-    uint8 public ENERGY_BANANA_C = 0;
-    uint8 public ENERGY_BANANA_UC = 1;
-    uint8 public ENERGY_BANANA_R = 2;
-    uint8 public ENERGY_BANANA_SHOP = 3;
-
-    uint8 public REFRESH_HERB_C = 4;
-    uint8 public REFRESH_HERB_UC = 5;
-    uint8 public REFRESH_HERB_R = 6;
-    uint8 public REFRESH_HERB_SHOP = 7;
-
-    uint8 public FRESH_MILK_C = 8;
-    uint8 public FRESH_MILK_UC = 9;
-    uint8 public FRESH_MILK_R = 10;
-    uint8 public FRESH_MILK_SHOP = 11;
-
-    uint8 public FAIRY_BERRY_C = 12;
-    uint8 public FAIRY_BERRY_UC = 13;
-    uint8 public FAIRY_BERRY_R = 14;
-    uint8 public FAIRY_BERRY_SHOP = 15;
-
-    uint8 public CARAMEL_CAKE_C = 16;
-    uint8 public CARAMEL_CAKE_UC = 17;
-    uint8 public CARAMEL_CAKE_R = 18;
-    uint8 public CARAMEL_CAKE_SHOP = 19;
-
-    uint8 public CHIA_YOGURT_C = 20;
-    uint8 public CHIA_YOGURT_UC = 21;
-    uint8 public CHIA_YOGURT_R = 22;
-    uint8 public CHIA_YOGURT_SHOP = 23;
-
-    uint8 public SATIETY_KONJACT_C = 24;
-    uint8 public SATIETY_KONJACT_UC = 25;
-    uint8 public SATIETY_KONJACT_R = 26;
-    uint8 public SATIETY_KONJACT_SHOP = 27;
-
-    uint8 public GLORIOUS_MEAT_C = 28;
-    uint8 public GLORIOUS_MEAT_UC = 29;
-    uint8 public GLORIOUS_MEAT_R = 30;
-    uint8 public GLORIOUS_MEAT_SHOP = 31;
-
-    uint8 public SUNNY_BLOSSOM_C = 32;
-    uint8 public SUNNY_BLOSSOM_UC = 33;
-    uint8 public SUNNY_BLOSSOM_R = 34;
-    uint8 public SUNNY_BLOSSOM_SHOP = 35;
-
-    uint8 public LUNAR_GRASS_C = 36;
-    uint8 public LUNAR_GRASS_UC = 37;
-    uint8 public LUNAR_GRASS_R = 38;
-    uint8 public LUNAR_GRASS_SHOP = 39;
-  
-    uint8 public LIFE_WATER_C = 40;
-    uint8 public LIFE_WATER_UC = 41;
-    uint8 public LIFE_WATER_R = 42;
-
-    uint8 public TOURNAMENT_TICKET_UC = 43;
-
-    uint8 public EXPLORATION_TICKET_UC = 44;
-
-    uint8 public FLOWER_CROWN_C = 45;
-
-    uint8 public DEKAUSA_DOLL_C = 46;
-
-    uint8 public SILK_HANDKERCHIEF_C = 47;
-
-    uint8 public NUTS_C = 48;
-
-    uint8 public PRETTY_STONE_C = 49;
-
-    uint8 public SILVER_INGOT_UC = 50;
-
-    uint8 public GOLD_INGOT_UC = 51;
-
-    uint8 public GEM_BAG_R = 52;
 
     // Mapping list token of address
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
@@ -189,12 +75,30 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         return super.supportsInterface(interfaceId);
     }
 
-    // set amount limit
-    function setAmountLimit(
+    // set item detail
+    function setItemDetail(
         uint256 itemId,
+        string memory name,
+        uint8 typeItem,
         uint256 _limit
     ) public onlyRole(MANAGEMENT_ROLE) {
+        require(itemId < currentId, "TrainingItem::setItemDetail: Unsupported itemId");
+        itemDetail[itemId].name = name;
+        itemDetail[itemId].typeItem = typeItem;
         itemDetail[itemId].amountLimit = _limit;
+    }
+
+    // add training item
+    function addTrainingItem(
+        string memory name,
+        uint8 typeItem,
+        uint256 _limit
+    ) public onlyRole(MANAGEMENT_ROLE) {
+        uint256 itemId = currentId;
+        itemDetail[itemId].name = name;
+        itemDetail[itemId].typeItem = typeItem;
+        itemDetail[itemId].amountLimit = _limit;
+        currentId++;
     }
 
     // Override _beforeTokenTransfer
@@ -208,6 +112,7 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     ) internal override {
         for (uint256 i = 0; i < ids.length; i++) {
             if (from != address(0)) {
+                require(itemDetail[ids[i]].typeItem != 4, "TrainingItem::_beforeTokenTransfer: Items cannot be transferred");
                 if ((balanceOf(from, ids[i]) - amounts[i]) == 0) {
                     _listTokensOfAddress[from].remove(ids[i]);
                 }
@@ -240,13 +145,12 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         uint256 _number,
         bytes memory _data
     ) external onlyRole(MANAGEMENT_ROLE) {
-        require(_itemId < 53, "TrainingItem::mint: Unsupported itemId");
-        if (_isUnlimited(_itemId)) {
+        if (itemDetail[_itemId].typeItem != 0 && itemDetail[_itemId].amountLimit == 0) {
             _mint(_addressTo, _itemId, _number, _data);
         } else {
             uint256 remain = itemDetail[_itemId].amountLimit -
                 itemDetail[_itemId].totalAmount;
-            require(remain > 0, "TrainingItem:: mint: exceeding");
+            require(remain >= _number, "TrainingItem:: mint: exceeding");
             _mint(_addressTo, _itemId, _number, _data);
             itemDetail[_itemId].totalAmount++;
         }
@@ -260,10 +164,10 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     ) internal {
         for (uint i = 0; i < _itemId.length; i++) {
             require(
-                _itemId[i] < 53,
+                itemDetail[_itemId[i]].typeItem != 0,
                 "TrainingItem::_updateTotalAmount: Unsupported itemId"
             );
-            if (_isUnlimited(_itemId[i])) continue;
+            if (itemDetail[_itemId[i]].typeItem != 0 && itemDetail[_itemId[i]].amountLimit == 0) continue;
             uint256 remain = itemDetail[_itemId[i]].amountLimit -
                 itemDetail[_itemId[i]].totalAmount;
             require(
@@ -292,30 +196,6 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
         emit mintBatchTrainingItem(_addressTo, _itemId, _number, "");
     }
 
-    function _isUnlimited(uint256 _itemId) private view returns (bool) {
-        return
-            _itemId == ENERGY_BANANA_SHOP ||
-            _itemId == REFRESH_HERB_SHOP ||
-            _itemId == FRESH_MILK_SHOP ||
-            _itemId == FAIRY_BERRY_SHOP ||
-            _itemId == CARAMEL_CAKE_SHOP ||
-            _itemId == CHIA_YOGURT_SHOP ||
-            _itemId == SATIETY_KONJACT_SHOP ||
-            _itemId == GLORIOUS_MEAT_SHOP ||
-            _itemId == SUNNY_BLOSSOM_SHOP ||
-            _itemId == LUNAR_GRASS_SHOP ||
-            _itemId == TOURNAMENT_TICKET_UC ||
-            _itemId == EXPLORATION_TICKET_UC ||
-            _itemId == FLOWER_CROWN_C ||
-            _itemId == DEKAUSA_DOLL_C ||
-            _itemId == SILK_HANDKERCHIEF_C ||
-            _itemId == NUTS_C ||
-            _itemId == PRETTY_STONE_C ||
-            _itemId == SILVER_INGOT_UC ||
-            _itemId == GOLD_INGOT_UC ||
-            _itemId == GEM_BAG_R;
-    }
-
     function burn(
         address _from,
         uint256 _id,
@@ -332,5 +212,188 @@ contract TrainingItem is ERC1155, AccessControl, Ownable {
     ) external onlyRole(MANAGEMENT_ROLE) {
         _burnBatch(_from, _id, _amount);
         emit burnBathItem(_from, _id, _amount);
+    }
+
+    // init defaut items C:1, UC:2, R:3, B:4 (shop/bonus)
+    function _initDefautItems() private {
+        itemDetail[0].name = "ENERGY_BANANA_C";
+        itemDetail[0].typeItem = 1;
+        itemDetail[0].amountLimit = 5000;
+        itemDetail[1].name = "ENERGY_BANANA_UC";
+        itemDetail[1].typeItem = 2;
+        itemDetail[1].amountLimit = 1000;
+        itemDetail[2].name = "ENERGY_BANANA_R";
+        itemDetail[2].typeItem = 3;
+        itemDetail[2].amountLimit = 200;
+        itemDetail[3].name = "ENERGY_BANANA_SHOP";
+        itemDetail[3].typeItem = 4;
+
+        itemDetail[4].name = "REFRESH_HERB_C";
+        itemDetail[4].typeItem = 1;
+        itemDetail[4].amountLimit = 5000;
+        itemDetail[5].name = "REFRESH_HERB_UC";
+        itemDetail[5].typeItem = 2;
+        itemDetail[5].amountLimit = 1000;
+        itemDetail[6].name = "REFRESH_HERB_R";
+        itemDetail[6].typeItem = 3;
+        itemDetail[6].amountLimit = 200;
+        itemDetail[7].name = "REFRESH_HERB_SHOP";
+        itemDetail[7].typeItem = 4;
+
+        itemDetail[8].name = "FRESH_MILK_C";
+        itemDetail[8].typeItem = 1;
+        itemDetail[8].amountLimit = 5000;
+        itemDetail[9].name = "FRESH_MILK_UC";
+        itemDetail[9].typeItem = 2;
+        itemDetail[9].amountLimit = 1000;
+        itemDetail[10].name = "FRESH_MILK_R";
+        itemDetail[10].typeItem = 3;
+        itemDetail[10].amountLimit = 200;
+        itemDetail[11].name = "FRESH_MILK_SHOP";
+        itemDetail[11].typeItem = 4;
+
+        itemDetail[12].name = "FAIRY_BERRY_C";
+        itemDetail[12].typeItem = 1;
+        itemDetail[12].amountLimit = 5000;
+        itemDetail[13].name = "FAIRY_BERRY_UC";
+        itemDetail[13].typeItem = 2;
+        itemDetail[13].amountLimit = 1000;
+        itemDetail[14].name = "FAIRY_BERRY_R";
+        itemDetail[14].typeItem = 3;
+        itemDetail[14].amountLimit = 200;
+        itemDetail[15].name = "FAIRY_BERRY_SHOP";
+        itemDetail[15].typeItem = 4;
+
+        itemDetail[16].name = "CARAMEL_CAKE_C";
+        itemDetail[16].typeItem = 1;
+        itemDetail[16].amountLimit = 5000;
+        itemDetail[17].name = "CARAMEL_CAKE_UC";
+        itemDetail[17].typeItem = 2;
+        itemDetail[17].amountLimit = 1000;
+        itemDetail[18].name = "CARAMEL_CAKE_R";
+        itemDetail[18].typeItem = 3;
+        itemDetail[18].amountLimit = 200;
+        itemDetail[19].name = "CARAMEL_CAKE_SHOP";
+        itemDetail[19].typeItem = 4;
+
+        itemDetail[20].name = "CHIA_YOGURT_C";
+        itemDetail[20].typeItem = 1;
+        itemDetail[20].amountLimit = 5000;
+        itemDetail[21].name = "CHIA_YOGURT_UC";
+        itemDetail[21].typeItem = 2;
+        itemDetail[21].amountLimit = 1000;
+        itemDetail[22].name = "CHIA_YOGURT_R";
+        itemDetail[22].typeItem = 3;
+        itemDetail[22].amountLimit = 200;
+        itemDetail[23].name = "CHIA_YOGURT_SHOP";
+        itemDetail[23].typeItem = 4;
+
+        itemDetail[24].name = "SATIETY_KONJACT_C";
+        itemDetail[24].typeItem = 1;
+        itemDetail[24].amountLimit = 5000;
+        itemDetail[25].name = "SATIETY_KONJACT_UC";
+        itemDetail[25].typeItem = 2;
+        itemDetail[25].amountLimit = 1000;
+        itemDetail[26].name = "SATIETY_KONJACT_R";
+        itemDetail[26].typeItem = 3;
+        itemDetail[26].amountLimit = 200;
+        itemDetail[27].name = "SATIETY_KONJACT_SHOP";
+        itemDetail[27].typeItem = 4;
+
+        itemDetail[28].name = "GLORIOUS_MEAT_C";
+        itemDetail[28].typeItem = 1;
+        itemDetail[28].amountLimit = 5000;
+        itemDetail[29].name = "GLORIOUS_MEAT_UC";
+        itemDetail[29].typeItem = 2;
+        itemDetail[29].amountLimit = 1000;
+        itemDetail[30].name = "GLORIOUS_MEAT_R";
+        itemDetail[30].typeItem = 3;
+        itemDetail[30].amountLimit = 200;
+        itemDetail[31].name = "GLORIOUS_MEAT_SHOP";
+        itemDetail[31].typeItem = 4;
+
+        itemDetail[32].name = "SUNNY_BLOSSOM_C";
+        itemDetail[32].typeItem = 1;
+        itemDetail[32].amountLimit = 5000;
+        itemDetail[33].name = "SUNNY_BLOSSOM_UC";
+        itemDetail[33].typeItem = 2;
+        itemDetail[33].amountLimit = 1000;
+        itemDetail[34].name = "SUNNY_BLOSSOM_R";
+        itemDetail[34].typeItem = 3;
+        itemDetail[34].amountLimit = 200;
+        itemDetail[35].name = "SUNNY_BLOSSOM_SHOP";
+        itemDetail[35].typeItem = 4;
+
+        itemDetail[36].name = "LUNAR_GRASS_C";
+        itemDetail[36].typeItem = 1;
+        itemDetail[36].amountLimit = 5000;
+        itemDetail[37].name = "LUNAR_GRASS_UC";
+        itemDetail[37].typeItem = 2;
+        itemDetail[37].amountLimit = 1000;
+        itemDetail[38].name = "LUNAR_GRASS_R";
+        itemDetail[38].typeItem = 3;
+        itemDetail[38].amountLimit = 200;
+        itemDetail[39].name = "LUNAR_GRASS_SHOP";
+        itemDetail[39].typeItem = 4;
+
+        itemDetail[40].name = "LIFE_WATER_C";
+        itemDetail[40].typeItem = 1;
+        itemDetail[40].amountLimit = 500;
+        itemDetail[41].name = "LIFE_WATER_UC";
+        itemDetail[41].typeItem = 2;
+        itemDetail[41].amountLimit = 200;
+        itemDetail[42].name = "LIFE_WATER_R";
+        itemDetail[42].typeItem = 3;
+        itemDetail[42].amountLimit = 50;
+        
+        itemDetail[43].name = "TOURNAMENT_TICKET_UC";
+        itemDetail[43].typeItem = 2;
+        
+        itemDetail[44].name = "EXPLORATION_TICKET_UC";
+        itemDetail[44].typeItem = 2;
+
+        itemDetail[45].name = "FLOWER_CROWN_C";
+        itemDetail[45].typeItem = 1;
+
+        itemDetail[46].name = "DEKAUSA_DOLL_C";
+        itemDetail[46].typeItem = 1;
+
+        itemDetail[47].name = "SILK_HANDKERCHIEF_C";
+        itemDetail[47].typeItem = 1;
+
+        itemDetail[48].name = "NUTS_C";
+        itemDetail[48].typeItem = 1;
+
+        itemDetail[49].name = "PRETTY_STONE_C";
+        itemDetail[49].typeItem = 1;
+
+        itemDetail[50].name = "SILVER_INGOT_UC";
+        itemDetail[50].typeItem = 2;
+
+        itemDetail[51].name = "GOLD_INGOT_UC";
+        itemDetail[51].typeItem = 2;
+
+        itemDetail[52].name = "GEM_BAG_R";
+        itemDetail[52].typeItem = 3;
+
+        itemDetail[53].name = "TOURNAMENT_TICKET_B";
+        itemDetail[53].typeItem = 4;
+
+        itemDetail[54].name = "EXPLORATION_TICKET_B";
+        itemDetail[54].typeItem = 4;
+
+        itemDetail[55].name = "ENERGY_BANANA_B";
+        itemDetail[55].typeItem = 4;
+
+        itemDetail[56].name = "REFRESH_HERB_B";
+        itemDetail[56].typeItem = 4;
+
+        itemDetail[57].name = "FAIRY_BERRY_B";
+        itemDetail[57].typeItem = 4;
+
+        itemDetail[58].name = "FRESH_MILK_B";
+        itemDetail[58].typeItem = 4;
+
+        currentId = 59;
     }
 }
