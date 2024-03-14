@@ -13,7 +13,7 @@ describe("ReMonsterFarm", function () {
         const [owner, otherAccount] = await ethers.getSigners();
 
         const Farm = await ethers.getContractFactory("ReMonsterFarm");
-        const farm = await Farm.connect(owner).deploy("FARM", "FM");
+        const farm = await Farm.connect(owner).deploy("FARM", "FM", 1000);
         farm.deployed();
 
         return { farm, owner, otherAccount };

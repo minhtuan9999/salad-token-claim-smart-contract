@@ -30,9 +30,15 @@ describe("Shop", function () {
         const farm = await Farm.connect(owner).deploy("Farm", "FARM", 5000);
         farm.deployed();
 
+        const TrainingItem = await ethers.getContractFactory("TrainingItem");
+        const trainingItem = await TrainingItem.connect(owner).deploy("");
+        trainingItem.deployed();
+
         const Shop = await ethers.getContractFactory("ReMonsterShop");
-        const shop = await Shop.connect(owner).deploy(owner.address, generalHash.address, genesisHash.address, farm.address,generalPrice,genesisPrice,farmPrice,bitPrice);
+        const shop = await Shop.connect(owner).deploy();
         shop.deployed();
+
+        shop.initContract(generalHash.address, genesisHash.address, farm.address, trainingItem.address);
 
         return { shop, owner, userAddress };
     }
