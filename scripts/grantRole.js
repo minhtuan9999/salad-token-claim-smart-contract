@@ -20,6 +20,7 @@ const regenerationItemABI = require('../artifacts/contracts/ERC1155/Regeneration
 const marketPlaceABI = require('../artifacts/contracts/MarketPlace/Marketplace.sol/ReMonsterMarketplace.json');
 const shopABI = require('../artifacts/contracts/Shop/Shop.sol/ReMonsterShop.json');
 const treasuryABI = require('../artifacts/contracts/Pools/Pools.sol/PoolsContract.json');
+const tokenABI = require('../artifacts/contracts/TokenXXX/tokenxxx.sol/TokenXXX.json');
 
 // Create a provider connected to the Ethereum network
 const provider = new ethers.providers.JsonRpcProvider(process.env.RPC);
@@ -46,6 +47,22 @@ const contractFusionItem = new ethers.Contract(process.env.ADDRESS_CONTRACT_FUSI
 const contractShop = new ethers.Contract(process.env.ADDRESS_CONTRACT_SHOP, shopABI.abi, managerWallet);
 const contractMarketPlace = new ethers.Contract(process.env.ADDRESS_CONTRACT_MARKET, marketPlaceABI.abi, managerWallet);
 const contractTreasury = new ethers.Contract(process.env.ADDRESS_CONTRACT_TREASURY, treasuryABI.abi, managerWallet);
+
+const contractToken = new ethers.Contract(process.env.ADDRESS_CONTRACT_TOKEN_XXX, tokenABI.abi, managerWallet);
+
+async function callTokenSmartContract() {
+  try {
+    const ROLE = await contractToken.MANAGEMENT_ROLE();
+    const tx1 = await contractToken.grantRole(ROLE, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await tx1.wait();
+    const tx2 = await contractToken.grantRole(ROLE, process.env.ADDRESS_CONTRACT_GUILD);
+    await tx2.wait();
+
+    console.log("Contract Token: DONE ");
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
 
 async function callMonsterSmartContract() {
   try {
@@ -184,7 +201,8 @@ const functionsToCall = [
   callTrainingItem,
   callRegenItem,
   callEhanceItem,
-  callFusionItem
+  callFusionItem,
+  callTokenSmartContract
 ];
 
 const executeCalls = async () => {
