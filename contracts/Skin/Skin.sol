@@ -109,7 +109,8 @@ contract Skin is
      */
     function burn(
         uint256 _tokenId
-    ) external nonReentrant whenNotPaused onlyRole(MANAGEMENT_ROLE) {
+    ) external whenNotPaused{
+        require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         _burn(_tokenId);
     }
 }

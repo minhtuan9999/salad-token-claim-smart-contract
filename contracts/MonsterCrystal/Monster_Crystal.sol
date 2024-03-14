@@ -175,7 +175,7 @@ contract MonsterCrystal is Ownable, ERC721Enumerable, AccessControl, Pausable, R
      * burn a Monster
      * @param _tokenId: tokenId burn
      */
-    function burn(uint256 _tokenId) external nonReentrant {
+    function burn(uint256 _tokenId) external{
         require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         _burn(_tokenId);
     }

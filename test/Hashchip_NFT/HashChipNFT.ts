@@ -54,14 +54,14 @@ describe("HashChipNFT", function () {
     describe("Get list tokens of address", function () {
         it("should mint a new token and update the token lists", async function () {
             const { hashChip, owner } = await loadFixture(deployERC721Fixture);
-
-            await hashChip.createNFT(owner.address, 1);
+            const tokenId = 1;
+            await hashChip.createNFT(owner.address, tokenId);
 
             const tokenIds = await hashChip.getListTokensOfAddress(owner.address);
             expect(tokenIds.length).to.equal(1);
-            expect(tokenIds[0]).to.equal(0);
+            expect(tokenIds[0]).to.equal(tokenId);
 
-            const ownerOfToken = await hashChip.ownerOf(0);
+            const ownerOfToken = await hashChip.ownerOf(tokenId);
             expect(ownerOfToken).to.equal(owner.address);
         });
     })
@@ -77,7 +77,7 @@ describe("HashChipNFT", function () {
             const tokenIds = await hashChip.getListTokensOfAddress(owner.address);
             expect(tokenIds.length).to.equal(0);
     
-            await expect(hashChip.ownerOf(0)).to.be.revertedWith("ERC721: invalid token ID");
+            await expect(hashChip.ownerOf(tokenId)).to.be.revertedWith("ERC721: invalid token ID");
         });
         it("should burn a token with caller address has no permission ", async function () {
             const { hashChip, owner, userAddress } = await loadFixture(deployERC721Fixture);
