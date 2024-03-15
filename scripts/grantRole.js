@@ -189,7 +189,26 @@ async function callFusionItem() {
     console.error('Error:', error);
   }
 }
-
+callFusionItem();
+async function RegenFusion() {
+  try {
+    const tx1 = await contractRegenFusionMonster.initContractAddress(
+      process.env.ADDRESS_CONTRACT_TOKEN_XXX,
+      process.env.ADDRESS_CONTRACT_GENERAL,
+      process.env.ADDRESS_CONTRACT_GENESIS,
+      process.env.ADDRESS_CONTRACT_HASHCHIP,
+      process.env.ADDRESS_CONTRACT_MEMORY,
+      process.env.ADDRESS_CONTRACT_REGENERATION_ITEM,
+      process.env.ADDRESS_CONTRACT_FUSION_ITEM,
+      process.env.ADDRESS_CONTRACT_MONSTER,
+      process.env.ADMIN_ADDRESS,
+    );
+    await tx1.wait();
+    console.log("RegenFusion: DONE ");
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
 const delayBetweenCalls = 1000;
 const functionsToCall = [
   callMonsterSmartContract,
@@ -212,7 +231,7 @@ const executeCalls = async () => {
   }
 };
 
-executeCalls();
+// executeCalls();
 
 // async function mintMonster() {
 //   const abi =[

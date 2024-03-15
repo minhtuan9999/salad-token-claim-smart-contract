@@ -3563,15 +3563,15 @@ contract RegenFusionMonster is
     function setValidator(address _address) external whenNotPaused onlyOwner {
         validator = _address;
     }
-
+    // set new season
     function setNewSeason() external onlyRole(MANAGEMENT_ROLE) {
         season++;
     }
-
+    // set fee repair nft
     function setNftRepair(uint256 _cost) external onlyRole(MANAGEMENT_ROLE) {
         nftRepair = _cost;
     }
-
+    // set cost for type
     function setCostOfType(
         uint8 _type,
         uint256[] memory cost
@@ -3583,7 +3583,7 @@ contract RegenFusionMonster is
         else if (_type == COLLABORATION_NFT) costOfExternal = cost;
         else if (_type == HASH_CHIP_NFT) costOfHashChip = cost;
     }
-
+    
     function setLimitOfType(
         uint8 _type,
         uint256 limit
@@ -3713,10 +3713,16 @@ contract RegenFusionMonster is
     /*
      * Create a Monster by type
      * @param _type: address of owner
-     * @param _tokenId: first tokenId fusion
-     * @param _isOAS: last tokenId fusion
-     * @param _cost: list fusion item, if dont using fusion item => _itemId = [0]
-     * @param _deadline: number of fusion item
+     * @param _addressContract: address of contract
+     * @param _chainId: chain id
+     * @param _account: account 
+     * @param _tokenId: token id
+     * @param _isOAS: used fee oas
+     * @param _cost: fee
+     * @param _deadline: deadline sig
+     * @param _sig: signature
+     * @param _mainSeed: mainseed
+     * @param _subSeed: subseed
      */
     function mintMonster(
         uint8 _type,
@@ -3779,7 +3785,7 @@ contract RegenFusionMonster is
     }
 
     /*
-     * Create a Monster by type Free
+     * Create a Monster by items
      */
     function mintMonsterFromRegeneration(
         uint256 _collectionId,

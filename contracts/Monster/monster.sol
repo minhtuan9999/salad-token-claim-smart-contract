@@ -2832,8 +2832,9 @@ contract Monster is
     }
 
     /*
-     * base mint a Monster
+     * mint a Monster
      * @param _address: owner of NFT
+     * $param _type: type mint
      */
     function mintMonster(address _address, uint8 _type)
         external
