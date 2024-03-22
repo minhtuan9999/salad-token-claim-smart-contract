@@ -69,16 +69,15 @@ async function callMonsterSmartContract() {
     const MONSTER_ROLE = await contractMonster.MANAGEMENT_ROLE();
     const tx1 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
     await tx1.wait();
-    const tx2 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_COACH);
-    await tx2.wait();
-    const tx3 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_CRYSTAL);
-    await tx3.wait();
+    // const tx2 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_COACH);
+    // await tx2.wait();
+    // const tx3 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_CRYSTAL);
+    // await tx3.wait();
     console.log("Monster grantRole: DONE ");
   } catch (error) {
     console.error('Error:', error);
   }
 }
-
 async function callGenesisHashSmartContract() {
   try {
     const GENESIS_HASH = await contractGenesis.MANAGEMENT_ROLE();
@@ -189,7 +188,7 @@ async function callFusionItem() {
     console.error('Error:', error);
   }
 }
-callFusionItem();
+
 async function RegenFusion() {
   try {
     const tx1 = await contractRegenFusionMonster.initContractAddress(
@@ -204,11 +203,47 @@ async function RegenFusion() {
       process.env.ADMIN_ADDRESS,
     );
     await tx1.wait();
+
+    const tokenRole = await contractToken.MANAGEMENT_ROLE();
+    const txToken = await contractToken.grantRole(tokenRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txToken.wait();
+
+    const generalRole = await contractGeneral.MANAGEMENT_ROLE();
+    const txGeneral = await contractGeneral.grantRole(generalRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txGeneral.wait();
+
+    const genesisRole = await contractGenesis.MANAGEMENT_ROLE();
+    const txGenesis = await contractGenesis.grantRole(genesisRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txGenesis.wait();
+
+    const hashchipRole = await contractHashChip.MANAGEMENT_ROLE();
+    const txhashchip= await contractHashChip.grantRole(hashchipRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txhashchip.wait();
+
+    const memeoryRole = await contractMemory.MANAGEMENT_ROLE();
+    const txmemory = await contractMemory.grantRole(memeoryRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txmemory.wait();
+
+    const regenitemRole = await contractRegenerationItem.MANAGEMENT_ROLE();
+    const txRegenItem = await contractRegenerationItem.grantRole(regenitemRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txRegenItem.wait();
+
+    const fusionRole = await contractFusionItem.MANAGEMENT_ROLE();
+    const txFusion = await contractFusionItem.grantRole(fusionRole, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txFusion.wait();
+
+    const MONSTER_ROLE = await contractMonster.MANAGEMENT_ROLE();
+    const txMonster = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
+    await txMonster.wait();
+
     console.log("RegenFusion: DONE ");
   } catch (error) {
     console.error('Error:', error);
   }
 }
+
+RegenFusion()
+
 const delayBetweenCalls = 1000;
 const functionsToCall = [
   callMonsterSmartContract,

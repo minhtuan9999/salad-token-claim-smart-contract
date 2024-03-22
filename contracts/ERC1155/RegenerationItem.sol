@@ -2794,8 +2794,8 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         itemDetail[itemId].amountLimit = _limit;
     }
 
-    // add training item
-    function addTrainingItem(
+    // add Regeneration item
+    function addRegenerationItem(
         string memory name,
         uint8 typeItem,
         uint256 _limit

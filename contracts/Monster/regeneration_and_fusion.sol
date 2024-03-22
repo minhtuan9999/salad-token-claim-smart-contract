@@ -3526,6 +3526,13 @@ contract RegenFusionMonster is
         uint256 itemId
     );
 
+    event RegenerationFreeMonster(
+        address owner,
+        uint256 monsterId,
+        uint8 mainSeed,
+        uint8 subSeed
+    );
+
     // Check status mint nft free of address
     mapping(address => bool) public _realdyFreeNFT;
     //  =>( TypeMint => chainId => (contractAddress => (tokenId => number Of Regenerations)))
@@ -3746,7 +3753,7 @@ contract RegenFusionMonster is
                 _account,
                 _cost,
                 _tokenId,
-                block.chainid,
+                _chainId,
                 _deadline,
                 _sig
             );
@@ -3806,6 +3813,26 @@ contract RegenFusionMonster is
             _subSeed,
             _collectionId,
             _itemId
+        );
+    }
+
+    /*
+     * Create a Monster free
+     */
+    function mintMonsterFree(
+        address owner,
+        uint8 _mainSeed,
+        uint8 _subSeed
+    ) external nonReentrant whenNotPaused {
+        uint256 monsterId = monsterContract.mintMonster(
+            owner,
+            FREE
+        );
+        emit RegenerationFreeMonster(
+            owner,
+            monsterId,
+            _mainSeed,
+            _subSeed
         );
     }
 
@@ -4168,7 +4195,7 @@ contract RegenFusionMonster is
             _account,
             _cost,
             _tokenId,
-            block.chainid,
+            _chainId,
             _deadline,
             _sig
         );
