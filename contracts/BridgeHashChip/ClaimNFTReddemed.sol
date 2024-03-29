@@ -118,7 +118,7 @@ contract Bridge is AccessControl, Pausable {
             );
     }
     /**
-     * @dev Bridge NFT 
+     * @dev Claim NFT 
      * @param to: address bridge
      * @param tokenId: tokenId bridge
      * @param typeGenesis: type genesis box

@@ -311,7 +311,8 @@ contract GeneralHash is
             group = groupDetail[Group.GROUP_E];
         }
     }
-     function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
+    // set regeneration times
+    function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
         _numberOfRegenerations[season][tokenId] = times;
         generalDetail[tokenId].timesRegeneration =times;
     }

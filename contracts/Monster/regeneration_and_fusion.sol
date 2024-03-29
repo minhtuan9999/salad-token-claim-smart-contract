@@ -3565,6 +3565,7 @@ contract RegenFusionMonster is
     constructor() {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
+        validator = _msgSender();
     }
 
     function setValidator(address _address) external whenNotPaused onlyOwner {
@@ -3591,6 +3592,7 @@ contract RegenFusionMonster is
         else if (_type == HASH_CHIP_NFT) costOfHashChip = cost;
     }
     
+    // set limit for type
     function setLimitOfType(
         uint8 _type,
         uint256 limit
@@ -3792,7 +3794,7 @@ contract RegenFusionMonster is
     }
 
     /*
-     * Create a Monster by items
+     * Create a Monster by regeneration items
      */
     function mintMonsterFromRegeneration(
         uint256 _collectionId,
@@ -3841,8 +3843,10 @@ contract RegenFusionMonster is
      * @param _address: address of owner
      * @param _firstTokenId: first tokenId fusion
      * @param _lastTokenId: last tokenId fusion
-     * @param _itemId: list fusion item, if dont using fusion item => _itemId = [0]
+     * @param _listItem: list fusion item, if dont using fusion item => _itemId = [0]
      * @param _amount: number of fusion item
+     * @param _mainSeed: mainseed
+     * @param _subSeed: subseed
      */
     function fusionMonsterNFT(
         address _owner,
@@ -3896,6 +3900,8 @@ contract RegenFusionMonster is
      * @param _lastId: last tokenId fusion
      * @param _itemId: list fusion item, if dont using fusion item => _itemId = [0]
      * @param _amount: number of fusion item
+     * @param _mainSeed: mainseed
+     * @param _subSeed: subseed
      */
     function fusionGenesisHash(
         address _owner,
@@ -3959,6 +3965,8 @@ contract RegenFusionMonster is
      * @param _lastId: last tokenId fusion
      * @param _itemId: list fusion item, if dont using fusion item => _itemId = [0]
      * @param _amount: number of fusion item
+     * @param _mainSeed: mainseed
+     * @param _subSeed: subseed
      */
     function fusionGeneralHash(
         address _owner,
@@ -4028,6 +4036,8 @@ contract RegenFusionMonster is
      * @param _generalId: general tokenId fusion
      * @param _itemId: list fusion item, if dont using fusion item => _itemId = [0]
      * @param _amount: number of fusion item
+     * @param _mainSeed: mainseed
+     * @param _subSeed: subseed
      */
     function fusionMultipleHash(
         address _owner,
@@ -4136,6 +4146,8 @@ contract RegenFusionMonster is
     /*
      * get Fee mint Monster by TyMint & tokenId
      * @param _type: TypeMint
+     * @param _chainId: chainId
+     * @param _address: address
      * @param _tokenId: tokenId
      */
     function getFeeOfTokenId(
@@ -4172,10 +4184,14 @@ contract RegenFusionMonster is
     /*
      * Refresh Times Of Regeneration
      * @param _type: address of owner
+     * @param _chainId: chainId
+     * @param _addressContract: addressContract
+     * @param _account: account
      * @param _tokenId: first tokenId fusion
      * @param _isOAS: last tokenId fusion
      * @param _cost: list fusion item, if dont using fusion item => _itemId = [0]
      * @param _deadline: number of fusion item
+     * @param _sig: signature
      */
     function refreshTimesOfRegeneration(
         uint8 _type,

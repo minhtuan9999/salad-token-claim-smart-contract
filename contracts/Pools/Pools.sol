@@ -2279,7 +2279,7 @@ contract PoolsContract is
 
     /*
      * recover data
-     * @param _type: type reward
+     * @param rewardType: type reward
      * @param _account: account reward
      * @param _totalAmount: amount reward
      * @param _chainId: chainId 

@@ -2957,6 +2957,7 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         emit burnBathItem(_from, _id, _amount);
     }
 
+    // init items defaut
     function _initDefautItems() private {
         itemDetail[HASH_FRAGMENT_UC].name = "HASH_FRAGMENT_UC";
         itemDetail[HASH_FRAGMENT_UC].typeItem = UC;
@@ -2984,6 +2985,7 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         currentId = 8;
     }
 
+    // Mint regeneration item: REGENERATION_HASH_OOO_R, Includes items of fixed types
     function getSpecifiedItems() public view returns(ITEM_DETAIL[] memory) {
         ITEM_DETAIL[] memory data = new ITEM_DETAIL[](totalSpecified);
         for (uint i = 0; i < totalSpecified; i++) {

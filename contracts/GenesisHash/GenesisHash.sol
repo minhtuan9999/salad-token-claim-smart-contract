@@ -336,6 +336,8 @@ contract GenesisHash is
             group = groupDetail[Group.GROUP_E];
         }
     }
+    
+    // set regeneration times
     function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
         _numberOfRegenerations[season][tokenId] = times;
         genesisDetail[tokenId].timesRegeneration =times;

@@ -186,12 +186,13 @@ contract EhanceItem is ERC1155, AccessControl, Ownable {
         _mintBatch(_addressTo, _itemId, _number, "");
         emit mintBatchEnhanceItem(_addressTo, _itemId, _number, "");
     }
-    
+
+    // burn items
     function burn(address _from, uint256 _id, uint256 _amount) external onlyRole(MANAGEMENT_ROLE) {
         _burn(_from, _id, _amount);
         emit burnItem(_from, _id, _amount);
     }
-    
+    // burn multiple items
     function burnMultipleItem(address _from, uint256[] memory _id, uint256[] memory _amount) external onlyRole(MANAGEMENT_ROLE){
         _burnBatch(_from, _id, _amount);
         emit burnBathItem(_from, _id, _amount);

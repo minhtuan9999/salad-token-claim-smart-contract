@@ -107,7 +107,7 @@ contract HashChipNFT is Ownable, ERC721Enumerable, AccessControl, Pausable, Reen
         require(hasRole(MANAGEMENT_ROLE, _msgSender()) || ownerOf(_tokenId) == _msgSender(), "You not permission");
         _burn(_tokenId);
     }
-
+    // set times regenerations
     function setTimesOfRegeneration(uint256 season, uint256 tokenId, uint256 times) external onlyRole(MANAGEMENT_ROLE) {
         _numberOfRegenerations[season][tokenId] = times;
         hashChipDetail[tokenId].timesRegeneration =times;

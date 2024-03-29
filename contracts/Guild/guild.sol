@@ -1829,7 +1829,7 @@ contract Guild is
     function setValidator(address _validator) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         validator = _validator;
     }
-    
+    // set cost guild    
     function setCostGuild(uint256 _cost, uint8 _type) external whenNotPaused onlyRole(MANAGEMENT_ROLE) {
         costType[_type] = _cost;
     }
@@ -1837,10 +1837,11 @@ contract Guild is
     /*
      * set guild function
      * @param _type: type set guild
+     * @param _account: address
      * @param _isOAS: cost type
      * @param _cost: cost
      * @param _deadline: deadline using signature
-     * @param signature: signature
+     * @param _sig: signature
     */ 
     function setGuild(
         uint8 _type,
@@ -1883,7 +1884,6 @@ contract Guild is
 
     /*
      * encode data
-     * @param _type: type 
      * @param _account: account
      * @param _totalAmount: amount 
      * @param _chainId: chainId 
@@ -1908,7 +1908,6 @@ contract Guild is
 
     /*
      * recover data
-     * @param _type: type 
      * @param _account: account 
      * @param _totalAmount: amount 
      * @param _chainId: chainId 
