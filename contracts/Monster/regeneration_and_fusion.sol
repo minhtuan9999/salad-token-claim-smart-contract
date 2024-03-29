@@ -3420,7 +3420,7 @@ contract RegenFusionMonster is
     // Season
     uint256 public season;
     // Validator
-    address validator;
+    address public validator;
     // Address receive fee
     address receiveFee;
     // Decimal
