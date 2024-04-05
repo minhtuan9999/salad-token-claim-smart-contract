@@ -3802,8 +3802,8 @@ contract RegenFusionMonster is
         uint8 _mainSeed,
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
-        require(regenerationItem.isMintMonster(_collectionId), "Wrong id");
-        regenerationItem.burn(msg.sender, _collectionId, 1);
+        require(regenerationItem.isMintMonster(_itemId), "Wrong id");
+        regenerationItem.burn(msg.sender, _itemId, 1);
         uint256 monsterId = monsterContract.mintMonster(
             msg.sender,
             REGENERATION_ITEM
