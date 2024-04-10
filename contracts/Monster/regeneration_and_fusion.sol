@@ -3522,7 +3522,6 @@ contract RegenFusionMonster is
         uint256 monsterId,
         uint8 mainSeed,
         uint8 subSeed,
-        uint256 collectionId,
         uint256 itemId
     );
 
@@ -3797,7 +3796,6 @@ contract RegenFusionMonster is
      * Create a Monster by regeneration items
      */
     function mintMonsterFromRegeneration(
-        uint256 _collectionId,
         uint256 _itemId,
         uint8 _mainSeed,
         uint8 _subSeed
@@ -3813,7 +3811,6 @@ contract RegenFusionMonster is
             monsterId,
             _mainSeed,
             _subSeed,
-            _collectionId,
             _itemId
         );
     }
