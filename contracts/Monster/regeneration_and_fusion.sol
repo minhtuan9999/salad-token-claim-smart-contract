@@ -3855,7 +3855,7 @@ contract RegenFusionMonster is
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
         require(_listItem.length == _amount.length, "Input error");
-        if (_amount[0] != 0) {
+        if (_amount.length != 0) {
             fusionItem.burnMultipleItem(_owner, _listItem, _amount);
         }
         require(
