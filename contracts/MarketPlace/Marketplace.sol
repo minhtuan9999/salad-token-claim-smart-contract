@@ -3500,7 +3500,7 @@ contract ReMonsterMarketplace is
     // fee seller
     uint256 public feeSeller;
     uint8 public decimalsFee = 18;
-    address receiveFeeAddress;
+    address public receiveFeeAddress;
 
     InfoItemSale[] public listSale;
     struct Order {

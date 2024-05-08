@@ -3457,7 +3457,8 @@ contract RegenFusionMonster is
         uint256 firstTokenId,
         uint256 lastTokenId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        address monsterAddress
     );
 
     event FusionGenesisHash(
@@ -3466,7 +3467,8 @@ contract RegenFusionMonster is
         uint256 lastId,
         uint256 newTokenId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        address monsterAddress
     );
 
     event FusionGeneralHash(
@@ -3475,7 +3477,8 @@ contract RegenFusionMonster is
         uint256 lastId,
         uint256 newTokenId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        address monsterAddress
     );
 
     event FusionMultipleHash(
@@ -3484,7 +3487,9 @@ contract RegenFusionMonster is
         uint256 generalId,
         uint256 newTokenId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        address genesisAddress,
+        address generalAddress
     );
 
     event RefreshTimesRegeneration(uint8 _type, uint256 tokenId);
@@ -3493,19 +3498,25 @@ contract RegenFusionMonster is
         address owner,
         uint256 monsterId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        uint256 hashId,
+        address hashAddress
     );
     event RegenerationFromGeneralHash(
         address owner,
         uint256 monsterId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        uint256 hashId,
+        address hashAddress
     );
     event RegenerationFromHashChip(
         address owner,
         uint256 monsterId,
         uint8 mainSeed,
-        uint8 subSeed
+        uint8 subSeed,
+        uint256 hashId,
+        address hashAddress
     );
     event RegenerationFromExternalNFT(
         uint8 _type,
@@ -3522,7 +3533,8 @@ contract RegenFusionMonster is
         uint256 monsterId,
         uint8 mainSeed,
         uint8 subSeed,
-        uint256 itemId
+        uint256 itemId,
+        address itemAddress
     );
 
     event RegenerationFreeMonster(
@@ -3626,7 +3638,9 @@ contract RegenFusionMonster is
             msg.sender,
             monsterId,
             mainSeed,
-            subSeed
+            subSeed,
+            _tokenId,
+            address(generalHashContract)
         );
     }
 
@@ -3654,7 +3668,9 @@ contract RegenFusionMonster is
             msg.sender,
             monsterId,
             mainSeed,
-            subSeed
+            subSeed,
+            _tokenId,
+            address(genesisHashContract)
         );
     }
 
@@ -3715,7 +3731,7 @@ contract RegenFusionMonster is
             msg.sender,
             HASH_CHIP_NFT
         );
-        emit RegenerationFromHashChip(msg.sender, monsterId, mainSeed, subSeed);
+        emit RegenerationFromHashChip(msg.sender, monsterId, mainSeed, subSeed, _tokenId, address(hashChipNFTContract));
     }
 
     /*
@@ -3811,7 +3827,8 @@ contract RegenFusionMonster is
             monsterId,
             _mainSeed,
             _subSeed,
-            _itemId
+            _itemId,
+            address(regenerationItem)
         );
     }
 
@@ -3886,7 +3903,8 @@ contract RegenFusionMonster is
             _firstTokenId,
             _lastTokenId,
             _mainSeed,
-            _subSeed
+            _subSeed,
+            address(monsterContract)
         );
     }
 
@@ -3951,7 +3969,8 @@ contract RegenFusionMonster is
             _lastId,
             monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH),
             _mainSeed,
-            _subSeed
+            _subSeed,
+            address(genesisHashContract)
         );
     }
 
@@ -4022,7 +4041,8 @@ contract RegenFusionMonster is
             _lastId,
             monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH),
             _mainSeed,
-            _subSeed
+            _subSeed,
+            address(generalHashContract)
         );
     }
 
@@ -4089,7 +4109,9 @@ contract RegenFusionMonster is
             _generalId,
             monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH),
             _mainSeed,
-            _subSeed
+            _subSeed,
+            address(genesisHashContract),
+            address(generalHashContract)
         );
     }
 
