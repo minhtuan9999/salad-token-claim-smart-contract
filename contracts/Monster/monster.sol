@@ -3057,6 +3057,7 @@ contract Monster is
     mapping(address => EnumerableSet.UintSet) _listTokensOfAddress;
     mapping(uint256 => MonsterDetail) public _monster;
     mapping(address => bool) public _alreadyOwnNftForFree;
+    mapping(uint256 => bool) public isMonsterFree;
     //struct Monster
     struct MonsterDetail {
         bool lifeSpan;
@@ -3099,12 +3100,8 @@ contract Monster is
         uint256 firstTokenId,
         uint256 batchSize
     ) internal virtual override {
-        if (to != address(0)) {
-            require(
-                _monster[firstTokenId].typeMint != FREE,
-                "NFT free is not transferrable"
-            );
-        }
+        require(to != address(0), "Valid address");
+        require(isMonsterFree[firstTokenId], "NFT free is not transferrable");
 
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
         _listTokensOfAddress[to].add(firstTokenId);
@@ -3140,7 +3137,8 @@ contract Monster is
      */
     function mintMonster(
         address _address,
-        uint8 _type
+        uint8 _type,
+        bool _isMonsterFree
     ) external onlyRole(MANAGEMENT_ROLE) returns (uint256) {
         uint256 tokenId = _tokenIds.current();
         _mint(_address, tokenId);
@@ -3148,8 +3146,10 @@ contract Monster is
         _monster[tokenId].typeMint = _type;
         if (_type == FREE) {
             require(!_alreadyOwnNftForFree[_address], "You owned free NFT");
+            require(_isMonsterFree, "Valid monster free");
             _alreadyOwnNftForFree[_address] = true;
         }
+        isMonsterFree[tokenId] = _isMonsterFree;
         _tokenIds.increment();
         emit MintMonster(_address, tokenId, _type);
         return tokenId;
@@ -3165,7 +3165,7 @@ contract Monster is
                 hasRole(MANAGEMENT_ROLE, msg.sender),
             "You not permission"
         );
-        if (_monster[_tokenId].typeMint == FREE) {
+        if (isMonsterFree[_tokenId]) {
             _alreadyOwnNftForFree[ownerOf(_tokenId)] = false;
         }
         _burn(_tokenId);
@@ -3185,7 +3185,7 @@ contract Monster is
                     hasRole(MANAGEMENT_ROLE, msg.sender),
                 "You not permission"
             );
-            if (_monster[listTokenId[i]].typeMint == FREE) {
+            if (isMonsterFree[listTokenId[i]]) {
                 _alreadyOwnNftForFree[ownerOf(listTokenId[i])] = false;
             }
             _burn(listTokenId[i]);
@@ -3225,6 +3225,6 @@ contract Monster is
         uint256 _tokenId
     ) external view whenNotPaused returns (bool) {
         require(_exists(_tokenId), "Monster does not exist");
-        return _monster[_tokenId].typeMint == FREE;
+        return isMonsterFree[_tokenId];
     }
 }

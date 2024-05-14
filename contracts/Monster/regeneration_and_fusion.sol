@@ -3391,12 +3391,15 @@ interface IFusionItem is IRegenerationItem {}
 interface IMonsterContract {
     function mintMonster(
         address _address,
-        uint8 _type
+        uint8 _type,
+        bool _isMonsterFree
     ) external returns (uint256);
 
     function getStatusMonster(uint256 _tokenId) external view returns (bool);
 
     function burn(uint256 _tokenId) external;
+
+    function isFreeMonster(uint256 _tokenId) external view returns (bool);
 }
 
 contract RegenFusionMonster is
@@ -3450,6 +3453,10 @@ contract RegenFusionMonster is
     uint256[6] public limits = [3, 3, 0, 5, 3, 3];
 
     uint256 public nftRepair = 10;
+
+    uint8 REGENERATION_TICKET_R = 6;
+    uint8 REGENERATION_TICKET_B = 7;
+    mapping(uint8 => bool) public usingTicket;
 
     event FusionMonsterNFT(
         address owner,
@@ -3571,6 +3578,8 @@ contract RegenFusionMonster is
         fusionItem = _fusionItem;
         monsterContract = _monsterContract;
         receiveFee = receiveFreeAddress;
+        usingTicket[REGENERATION_TICKET_B] = true;
+        usingTicket[REGENERATION_TICKET_R] = true;
     }
 
     constructor() {
@@ -3602,7 +3611,7 @@ contract RegenFusionMonster is
         else if (_type == COLLABORATION_NFT) costOfExternal = cost;
         else if (_type == HASH_CHIP_NFT) costOfHashChip = cost;
     }
-    
+
     // set limit for type
     function setLimitOfType(
         uint8 _type,
@@ -3632,7 +3641,8 @@ contract RegenFusionMonster is
         }
         uint256 monsterId = monsterContract.mintMonster(
             msg.sender,
-            GENERAL_HASH
+            GENERAL_HASH,
+            false
         );
         emit RegenerationFromGeneralHash(
             msg.sender,
@@ -3662,7 +3672,8 @@ contract RegenFusionMonster is
         genesisHashContract.setTimesOfRegeneration(season, _tokenId, times + 1);
         uint256 monsterId = monsterContract.mintMonster(
             msg.sender,
-            GENESIS_HASH
+            GENESIS_HASH,
+            false
         );
         emit RegenerationFromGenesisHash(
             msg.sender,
@@ -3698,7 +3709,11 @@ contract RegenFusionMonster is
         }
         require(times < limits[_type], "Times limit");
         _timesRegenExternal[season][_chainId][_address][_tokenId]++;
-        uint256 monsterId = monsterContract.mintMonster(msg.sender, _type);
+        uint256 monsterId = monsterContract.mintMonster(
+            msg.sender,
+            _type,
+            false
+        );
         emit RegenerationFromExternalNFT(
             _type,
             msg.sender,
@@ -3729,9 +3744,17 @@ contract RegenFusionMonster is
         hashChipNFTContract.setTimesOfRegeneration(season, _tokenId, times + 1);
         uint256 monsterId = monsterContract.mintMonster(
             msg.sender,
-            HASH_CHIP_NFT
+            HASH_CHIP_NFT,
+            false
         );
-        emit RegenerationFromHashChip(msg.sender, monsterId, mainSeed, subSeed, _tokenId, address(hashChipNFTContract));
+        emit RegenerationFromHashChip(
+            msg.sender,
+            monsterId,
+            mainSeed,
+            subSeed,
+            _tokenId,
+            address(hashChipNFTContract)
+        );
     }
 
     /*
@@ -3739,7 +3762,48 @@ contract RegenFusionMonster is
      * @param _type: address of owner
      * @param _addressContract: address of contract
      * @param _chainId: chain id
-     * @param _account: account 
+     * @param _tokenId: token id
+     * @param _mainSeed: mainseed
+     * @param _subSeed: subseed
+     * @param _ticketId: TicketId
+     */
+    function mintMonsterUsingTicket(
+        uint8 _type,
+        address _addressContract,
+        uint256 _chainId,
+        uint256 _tokenId,
+        uint8 _mainSeed,
+        uint8 _subSeed,
+        uint8 _ticketId
+    ) external payable nonReentrant whenNotPaused {
+        require(usingTicket[_ticketId], "Item is not supported");
+        regenerationItem.burn(msg.sender, _ticketId, 1);
+        if (_type == GENERAL_HASH) {
+            _fromGeneralHash(_tokenId, _mainSeed, _subSeed);
+        } else if (_type == GENESIS_HASH) {
+            _fromGenesisHash(_tokenId, _mainSeed, _subSeed);
+        } else if (_type == NFT || _type == COLLABORATION_NFT) {
+            _fromExternalNFT(
+                _type,
+                _chainId,
+                _addressContract,
+                _tokenId,
+                _mainSeed,
+                _subSeed
+            );
+        } else if (_type == HASH_CHIP_NFT) {
+            _fromHashChipNFT(_tokenId, _mainSeed, _subSeed);
+        } else {
+            revert("Unsupported type");
+        }
+    }
+
+    /*
+     * Create a Monster by type
+     * @param _type: address of owner
+     * @param _addressContract: address of contract
+     * @param _chainId: chain id
+     * @param _account: account
      * @param _tokenId: token id
      * @param _isOAS: used fee oas
      * @param _cost: fee
@@ -3820,7 +3884,8 @@ contract RegenFusionMonster is
         regenerationItem.burn(msg.sender, _itemId, 1);
         uint256 monsterId = monsterContract.mintMonster(
             msg.sender,
-            REGENERATION_ITEM
+            REGENERATION_ITEM,
+            false
         );
         emit RegenerationFromItems(
             msg.sender,
@@ -3840,16 +3905,8 @@ contract RegenFusionMonster is
         uint8 _mainSeed,
         uint8 _subSeed
     ) external nonReentrant whenNotPaused {
-        uint256 monsterId = monsterContract.mintMonster(
-            owner,
-            FREE
-        );
-        emit RegenerationFreeMonster(
-            owner,
-            monsterId,
-            _mainSeed,
-            _subSeed
-        );
+        uint256 monsterId = monsterContract.mintMonster(owner, FREE, true);
+        emit RegenerationFreeMonster(owner, monsterId, _mainSeed, _subSeed);
     }
 
     /*
@@ -3895,11 +3952,18 @@ contract RegenFusionMonster is
         if (!lifeSpanLastMonster) {
             monsterMemory.mint(_owner, _lastTokenId);
         }
+        bool isFee;
+        if (
+            monsterContract.isFreeMonster(_firstTokenId) ||
+            monsterContract.isFreeMonster(_lastTokenId)
+        ) {
+            isFee = true;
+        }
         monsterContract.burn(_firstTokenId);
         monsterContract.burn(_lastTokenId);
         emit FusionMonsterNFT(
             _owner,
-            monsterContract.mintMonster(_owner, FUSION_MONSTER),
+            monsterContract.mintMonster(_owner, FUSION_MONSTER, isFee),
             _firstTokenId,
             _lastTokenId,
             _mainSeed,
@@ -3967,7 +4031,7 @@ contract RegenFusionMonster is
             _owner,
             _firstId,
             _lastId,
-            monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH),
+            monsterContract.mintMonster(_owner, FUSION_GENESIS_HASH, false),
             _mainSeed,
             _subSeed,
             address(genesisHashContract)
@@ -4039,7 +4103,7 @@ contract RegenFusionMonster is
             _owner,
             _firstId,
             _lastId,
-            monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH),
+            monsterContract.mintMonster(_owner, FUSION_GENERAL_HASH, false),
             _mainSeed,
             _subSeed,
             address(generalHashContract)
@@ -4107,7 +4171,7 @@ contract RegenFusionMonster is
             _owner,
             _genesisId,
             _generalId,
-            monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH),
+            monsterContract.mintMonster(_owner, FUSION_MULTIPLE_HASH, false),
             _mainSeed,
             _subSeed,
             address(genesisHashContract),

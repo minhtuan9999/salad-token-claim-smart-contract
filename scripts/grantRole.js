@@ -242,6 +242,7 @@ async function RegenFusion() {
 }
 const delayBetweenCalls = 1000;
 const functionsToCall = [
+  RegenFusion,
   callMonsterSmartContract,
   callGenesisHashSmartContract,
   callGeneralHashSmartContract,
@@ -261,3 +262,5 @@ const executeCalls = async () => {
     await new Promise(resolve => setTimeout(resolve, delayBetweenCalls));
   }
 };
+
+executeCalls()
