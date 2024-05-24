@@ -5,10 +5,10 @@ async function main() {
   let admin = process.env.ADMIN_ADDRESS as string;
   const urlMetadataItems ="";
 
-  // const RegenerationItem= await ethers.getContractFactory("RegenerationItem");
-  // const regenerationItem = await RegenerationItem.deploy(urlMetadataItems);
-  // regenerationItem.deployed();
-  // console.log(`ADDRESS_CONTRACT_REGENERATION_ITEM=${regenerationItem.address}`)
+  const RegenerationItem= await ethers.getContractFactory("RegenerationItem");
+  const regenerationItem = await RegenerationItem.deploy(urlMetadataItems);
+  regenerationItem.deployed();
+  console.log(`ADDRESS_CONTRACT_REGENERATION_ITEM=${regenerationItem.address}`)
   const RegenFusion= await ethers.getContractFactory("RegenFusionMonster");
   const regenFusion = await RegenFusion.deploy();
   regenFusion.deployed(); 

@@ -50,6 +50,47 @@ const contractTreasury = new ethers.Contract(process.env.ADDRESS_CONTRACT_TREASU
 
 const contractToken = new ethers.Contract(process.env.ADDRESS_CONTRACT_TOKEN_XXX, tokenABI.abi, managerWallet);
 
+// async function callAccessoriesSmartContract() {
+//   try {
+//     const tx1 = await contractAccessories.setMonsterContract(process.env.ADDRESS_CONTRACT_MONSTER);
+//     await tx1.wait();
+//     const tx2 = await contractAccessories.setMonsterMemory(process.env.ADDRESS_CONTRACT_MEMORY);
+//     await tx2.wait();
+
+//     console.log("Contract Coach: DONE ");
+//   } catch (error) {
+//     console.error('Error:', error);
+//   }
+// }
+
+async function callCoachSmartContract() {
+  try {
+    const tx1 = await contractCoach.setMonsterContract(process.env.ADDRESS_CONTRACT_MONSTER);
+    await tx1.wait();
+    const tx2 = await contractCoach.setMonsterMemory(process.env.ADDRESS_CONTRACT_MEMORY);
+    await tx2.wait();
+
+    console.log("Contract Coach: DONE ");
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+
+async function callCrystalSmartContract() {
+  try {
+    const tx1 = await contractCrystal.initSetMonsterContract(process.env.ADDRESS_CONTRACT_MONSTER);
+    await tx1.wait();
+    const tx2 = await contractCrystal.initSetMonsterMemory(process.env.ADDRESS_CONTRACT_MEMORY);
+    await tx2.wait();
+
+    console.log("Contract Crystal: DONE ");
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+
 async function callTokenSmartContract() {
   try {
     const ROLE = await contractToken.MANAGEMENT_ROLE();
@@ -69,10 +110,10 @@ async function callMonsterSmartContract() {
     const MONSTER_ROLE = await contractMonster.MANAGEMENT_ROLE();
     const tx1 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_REGEN_FUSION);
     await tx1.wait();
-    // const tx2 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_COACH);
-    // await tx2.wait();
-    // const tx3 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_CRYSTAL);
-    // await tx3.wait();
+    const tx2 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_COACH);
+    await tx2.wait();
+    const tx3 = await contractMonster.grantRole(MONSTER_ROLE, process.env.ADDRESS_CONTRACT_CRYSTAL);
+    await tx3.wait();
     console.log("Monster grantRole: DONE ");
   } catch (error) {
     console.error('Error:', error);
@@ -242,6 +283,8 @@ async function RegenFusion() {
 }
 const delayBetweenCalls = 1000;
 const functionsToCall = [
+  callCoachSmartContract,
+  callCrystalSmartContract,
   RegenFusion,
   callMonsterSmartContract,
   callGenesisHashSmartContract,

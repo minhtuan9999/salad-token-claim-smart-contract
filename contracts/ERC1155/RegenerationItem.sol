@@ -2755,16 +2755,18 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
         bytes memory data
     ) internal override {
         for (uint256 i = 0; i < ids.length; i++) {
-            if (from != address(0)) {
+            if (from != address(0) && to != address(0)) {
                 require(
                     itemDetail[ids[i]].typeItem != 4,
                     "RegenerationItem::_beforeTokenTransfer: Items cannot be transferred"
                 );
-                if ((balanceOf(from, ids[i]) - amounts[i]) == 0) {
-                    _listTokensOfAddress[from].remove(ids[i]);
-                }
             }
-            if (to != address(0)) {
+
+            if ((balanceOf(from, ids[i]) - amounts[i]) == 0) {
+                _listTokensOfAddress[from].remove(ids[i]);
+            }
+
+            if (!_listTokensOfAddress[to].contains(ids[i])) {
                 _listTokensOfAddress[to].add(ids[i]);
             }
         }

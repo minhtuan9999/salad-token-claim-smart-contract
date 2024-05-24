@@ -55,10 +55,10 @@ interface IAccessControl {
     /**
      * @dev Returns `true` if `account` has been granted `role`.
      */
-    function hasRole(bytes32 role, address account)
-        external
-        view
-        returns (bool);
+    function hasRole(
+        bytes32 role,
+        address account
+    ) external view returns (bool);
 
     /**
      * @dev Returns the admin role that controls `role`. See {grantRole} and
@@ -188,13 +188,9 @@ abstract contract ERC165 is IERC165 {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
         return interfaceId == type(IERC165).interfaceId;
     }
 }
@@ -397,11 +393,10 @@ library Math {
     /**
      * @notice Calculates sqrt(a), following the selected rounding direction.
      */
-    function sqrt(uint256 a, Rounding rounding)
-        internal
-        pure
-        returns (uint256)
-    {
+    function sqrt(
+        uint256 a,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = sqrt(a);
             return
@@ -456,11 +451,10 @@ library Math {
      * @dev Return the log in base 2, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log2(uint256 value, Rounding rounding)
-        internal
-        pure
-        returns (uint256)
-    {
+    function log2(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log2(value);
             return
@@ -476,31 +470,31 @@ library Math {
     function log10(uint256 value) internal pure returns (uint256) {
         uint256 result = 0;
         unchecked {
-            if (value >= 10**64) {
-                value /= 10**64;
+            if (value >= 10 ** 64) {
+                value /= 10 ** 64;
                 result += 64;
             }
-            if (value >= 10**32) {
-                value /= 10**32;
+            if (value >= 10 ** 32) {
+                value /= 10 ** 32;
                 result += 32;
             }
-            if (value >= 10**16) {
-                value /= 10**16;
+            if (value >= 10 ** 16) {
+                value /= 10 ** 16;
                 result += 16;
             }
-            if (value >= 10**8) {
-                value /= 10**8;
+            if (value >= 10 ** 8) {
+                value /= 10 ** 8;
                 result += 8;
             }
-            if (value >= 10**4) {
-                value /= 10**4;
+            if (value >= 10 ** 4) {
+                value /= 10 ** 4;
                 result += 4;
             }
-            if (value >= 10**2) {
-                value /= 10**2;
+            if (value >= 10 ** 2) {
+                value /= 10 ** 2;
                 result += 2;
             }
-            if (value >= 10**1) {
+            if (value >= 10 ** 1) {
                 result += 1;
             }
         }
@@ -511,16 +505,15 @@ library Math {
      * @dev Return the log in base 10, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log10(uint256 value, Rounding rounding)
-        internal
-        pure
-        returns (uint256)
-    {
+    function log10(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log10(value);
             return
                 result +
-                (rounding == Rounding.Up && 10**result < value ? 1 : 0);
+                (rounding == Rounding.Up && 10 ** result < value ? 1 : 0);
         }
     }
 
@@ -560,11 +553,10 @@ library Math {
      * @dev Return the log in base 256, following the selected rounding direction, of a positive value.
      * Returns 0 if given 0.
      */
-    function log256(uint256 value, Rounding rounding)
-        internal
-        pure
-        returns (uint256)
-    {
+    function log256(
+        uint256 value,
+        Rounding rounding
+    ) internal pure returns (uint256) {
         unchecked {
             uint256 result = log256(value);
             return
@@ -684,11 +676,10 @@ library Strings {
     /**
      * @dev Converts a `uint256` to its ASCII `string` hexadecimal representation with fixed length.
      */
-    function toHexString(uint256 value, uint256 length)
-        internal
-        pure
-        returns (string memory)
-    {
+    function toHexString(
+        uint256 value,
+        uint256 length
+    ) internal pure returns (string memory) {
         bytes memory buffer = new bytes(2 * length + 2);
         buffer[0] = "0";
         buffer[1] = "x";
@@ -710,11 +701,10 @@ library Strings {
     /**
      * @dev Returns true if the two strings are equal.
      */
-    function equal(string memory a, string memory b)
-        internal
-        pure
-        returns (bool)
-    {
+    function equal(
+        string memory a,
+        string memory b
+    ) internal pure returns (bool) {
         return keccak256(bytes(a)) == keccak256(bytes(b));
     }
 }
@@ -793,13 +783,9 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override returns (bool) {
         return
             interfaceId == type(IAccessControl).interfaceId ||
             super.supportsInterface(interfaceId);
@@ -808,13 +794,10 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
     /**
      * @dev Returns `true` if `account` has been granted `role`.
      */
-    function hasRole(bytes32 role, address account)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
+    function hasRole(
+        bytes32 role,
+        address account
+    ) public view virtual override returns (bool) {
         return _roles[role].members[account];
     }
 
@@ -858,13 +841,9 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * To change a role's admin, use {_setRoleAdmin}.
      */
-    function getRoleAdmin(bytes32 role)
-        public
-        view
-        virtual
-        override
-        returns (bytes32)
-    {
+    function getRoleAdmin(
+        bytes32 role
+    ) public view virtual override returns (bytes32) {
         return _roles[role].adminRole;
     }
 
@@ -880,12 +859,10 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * May emit a {RoleGranted} event.
      */
-    function grantRole(bytes32 role, address account)
-        public
-        virtual
-        override
-        onlyRole(getRoleAdmin(role))
-    {
+    function grantRole(
+        bytes32 role,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role)) {
         _grantRole(role, account);
     }
 
@@ -900,12 +877,10 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * May emit a {RoleRevoked} event.
      */
-    function revokeRole(bytes32 role, address account)
-        public
-        virtual
-        override
-        onlyRole(getRoleAdmin(role))
-    {
+    function revokeRole(
+        bytes32 role,
+        address account
+    ) public virtual override onlyRole(getRoleAdmin(role)) {
         _revokeRole(role, account);
     }
 
@@ -925,11 +900,10 @@ abstract contract AccessControl is Context, IAccessControl, ERC165 {
      *
      * May emit a {RoleRevoked} event.
      */
-    function renounceRole(bytes32 role, address account)
-        public
-        virtual
-        override
-    {
+    function renounceRole(
+        bytes32 role,
+        address account
+    ) public virtual override {
         require(
             account == _msgSender(),
             "AccessControl: can only renounce roles for self"
@@ -1155,10 +1129,10 @@ interface IERC1155 is IERC165 {
      *
      * - `account` cannot be the zero address.
      */
-    function balanceOf(address account, uint256 id)
-        external
-        view
-        returns (uint256);
+    function balanceOf(
+        address account,
+        uint256 id
+    ) external view returns (uint256);
 
     /**
      * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {balanceOf}.
@@ -1167,10 +1141,10 @@ interface IERC1155 is IERC165 {
      *
      * - `accounts` and `ids` must have the same length.
      */
-    function balanceOfBatch(address[] calldata accounts, uint256[] calldata ids)
-        external
-        view
-        returns (uint256[] memory);
+    function balanceOfBatch(
+        address[] calldata accounts,
+        uint256[] calldata ids
+    ) external view returns (uint256[] memory);
 
     /**
      * @dev Grants or revokes permission to `operator` to transfer the caller's tokens, according to `approved`,
@@ -1188,10 +1162,10 @@ interface IERC1155 is IERC165 {
      *
      * See {setApprovalForAll}.
      */
-    function isApprovedForAll(address account, address operator)
-        external
-        view
-        returns (bool);
+    function isApprovedForAll(
+        address account,
+        address operator
+    ) external view returns (bool);
 
     /**
      * @dev Transfers `amount` tokens of token type `id` from `from` to `to`.
@@ -1412,10 +1386,10 @@ library Address {
      *
      * _Available since v3.1._
      */
-    function functionCall(address target, bytes memory data)
-        internal
-        returns (bytes memory)
-    {
+    function functionCall(
+        address target,
+        bytes memory data
+    ) internal returns (bytes memory) {
         return
             functionCallWithValue(
                 target,
@@ -1498,11 +1472,10 @@ library Address {
      *
      * _Available since v3.3._
      */
-    function functionStaticCall(address target, bytes memory data)
-        internal
-        view
-        returns (bytes memory)
-    {
+    function functionStaticCall(
+        address target,
+        bytes memory data
+    ) internal view returns (bytes memory) {
         return
             functionStaticCall(
                 target,
@@ -1538,10 +1511,10 @@ library Address {
      *
      * _Available since v3.4._
      */
-    function functionDelegateCall(address target, bytes memory data)
-        internal
-        returns (bytes memory)
-    {
+    function functionDelegateCall(
+        address target,
+        bytes memory data
+    ) internal returns (bytes memory) {
         return
             functionDelegateCall(
                 target,
@@ -1613,10 +1586,10 @@ library Address {
         }
     }
 
-    function _revert(bytes memory returndata, string memory errorMessage)
-        private
-        pure
-    {
+    function _revert(
+        bytes memory returndata,
+        string memory errorMessage
+    ) private pure {
         // Look for revert reason and bubble it up if present
         if (returndata.length > 0) {
             // The easiest way to bubble the revert reason is using memory via assembly
@@ -1630,7 +1603,6 @@ library Address {
         }
     }
 }
-
 
 // File @openzeppelin/contracts/utils/cryptography/ECDSA.sol@v4.9.3
 
@@ -1686,11 +1658,10 @@ library ECDSA {
      *
      * _Available since v4.3._
      */
-    function tryRecover(bytes32 hash, bytes memory signature)
-        internal
-        pure
-        returns (address, RecoverError)
-    {
+    function tryRecover(
+        bytes32 hash,
+        bytes memory signature
+    ) internal pure returns (address, RecoverError) {
         if (signature.length == 65) {
             bytes32 r;
             bytes32 s;
@@ -1723,11 +1694,10 @@ library ECDSA {
      * this is by receiving a hash of the original message (which may otherwise
      * be too long), and then calling {toEthSignedMessageHash} on it.
      */
-    function recover(bytes32 hash, bytes memory signature)
-        internal
-        pure
-        returns (address)
-    {
+    function recover(
+        bytes32 hash,
+        bytes memory signature
+    ) internal pure returns (address) {
         (address recovered, RecoverError error) = tryRecover(hash, signature);
         _throwError(error);
         return recovered;
@@ -1828,11 +1798,9 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toEthSignedMessageHash(bytes32 hash)
-        internal
-        pure
-        returns (bytes32 message)
-    {
+    function toEthSignedMessageHash(
+        bytes32 hash
+    ) internal pure returns (bytes32 message) {
         // 32 is the length in bytes of hash,
         // enforced by the type signature above
         /// @solidity memory-safe-assembly
@@ -1851,11 +1819,9 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toEthSignedMessageHash(bytes memory s)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function toEthSignedMessageHash(
+        bytes memory s
+    ) internal pure returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
@@ -1875,11 +1841,10 @@ library ECDSA {
      *
      * See {recover}.
      */
-    function toTypedDataHash(bytes32 domainSeparator, bytes32 structHash)
-        internal
-        pure
-        returns (bytes32 data)
-    {
+    function toTypedDataHash(
+        bytes32 domainSeparator,
+        bytes32 structHash
+    ) internal pure returns (bytes32 data) {
         /// @solidity memory-safe-assembly
         assembly {
             let ptr := mload(0x40)
@@ -2002,10 +1967,10 @@ interface IGeneralHash {
         uint256 times
     ) external;
 
-    function _numberOfRegenerations(uint256 season, uint256 tokenId)
-        external
-        view
-        returns (uint256);
+    function _numberOfRegenerations(
+        uint256 season,
+        uint256 tokenId
+    ) external view returns (uint256);
 
     function ownerOf(uint256 tokenId) external view returns (address owner);
 }
@@ -2015,11 +1980,7 @@ interface IGenesisHash is IGeneralHash {
 }
 
 interface IHashChip {
-    function burn(
-        address _from,
-        uint256 _id,
-        uint256 _amount
-    ) external;
+    function burn(address _from, uint256 _id, uint256 _amount) external;
 
     function setTimesOfRegeneration(
         uint256 season,
@@ -2027,10 +1988,10 @@ interface IHashChip {
         uint256 times
     ) external;
 
-    function _numberOfRegenerations(uint256 season, uint256 tokenId)
-        external
-        view
-        returns (uint256);
+    function _numberOfRegenerations(
+        uint256 season,
+        uint256 tokenId
+    ) external view returns (uint256);
 
     function ownerOf(uint256 tokenId) external view returns (address owner);
 }
@@ -2044,11 +2005,7 @@ interface IMonsterMemory {
 }
 
 interface IRegenerationItem {
-    function burn(
-        address _from,
-        uint256 _id,
-        uint256 _amount
-    ) external;
+    function burn(address _from, uint256 _id, uint256 _amount) external;
 
     function burnMultipleItem(
         address _from,
@@ -2295,10 +2252,10 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
     }
 
     // set cost for type
-    function setCostOfType(TypeMint _typeMint, uint8[] memory cost)
-        external
-        onlyRole(MANAGEMENT_ROLE)
-    {
+    function setCostOfType(
+        TypeMint _typeMint,
+        uint8[] memory cost
+    ) external onlyRole(MANAGEMENT_ROLE) {
         require(limits[uint8(_typeMint)] > 0, "Unsupported type");
         if (_typeMint == TypeMint.GENERAL_HASH) costOfGeneral = cost;
         else if (_typeMint == TypeMint.GENESIS_HASH) costOfGenesis = cost;
@@ -2308,10 +2265,10 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
     }
 
     // set limit for type
-    function setLimitOfType(TypeMint _typeMint, uint8 limit)
-        external
-        onlyRole(MANAGEMENT_ROLE)
-    {
+    function setLimitOfType(
+        TypeMint _typeMint,
+        uint8 limit
+    ) external onlyRole(MANAGEMENT_ROLE) {
         limits[uint8(_typeMint)] = limit;
     }
 
@@ -2321,33 +2278,38 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            generalHashContract._numberOfRegenerations(season, _tokenId) <
-                limits[uint8(TypeMint.GENERAL_HASH)],
-            "Times limit"
+        uint8 typeMintUint = uint8(TypeMint.GENERAL_HASH);
+        uint256 numOfRegenerations = generalHashContract._numberOfRegenerations(
+            season,
+            _tokenId
         );
+
+        require(numOfRegenerations < limits[typeMintUint], "Times limit");
         require(
-            IERC721(address(generalHashContract)).ownerOf(_tokenId) == _address,
+            generalHashContract.ownerOf(_tokenId) == _address,
             "Wrong owner"
         );
+
+        uint256 newNumOfRegenerations = numOfRegenerations + 1;
         generalHashContract.setTimesOfRegeneration(
             season,
             _tokenId,
-            generalHashContract._numberOfRegenerations(season, _tokenId) + 1
+            newNumOfRegenerations
         );
-        if (
-            generalHashContract._numberOfRegenerations(season, _tokenId) + 1 ==
-            limits[uint8(TypeMint.GENERAL_HASH)]
-        ) {
+
+        if (newNumOfRegenerations == limits[typeMintUint]) {
             generalHashContract.burn(_tokenId);
         }
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _address,
+            typeMintUint,
+            false
+        );
+
         emit RegenerationFromGeneralHash(
             _address,
-            monsterContract.mintMonster(
-                _address,
-                uint8(TypeMint.GENERAL_HASH),
-                false
-            ),
+            mintedMonsterId,
             seeds,
             _tokenId,
             address(generalHashContract),
@@ -2361,28 +2323,34 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            genesisHashContract._numberOfRegenerations(season, _tokenId) <
-                limits[uint8(TypeMint.GENESIS_HASH)],
-            "Times limit"
+        uint8 typeMintUint = uint8(TypeMint.GENESIS_HASH);
+        uint256 numOfRegenerations = genesisHashContract._numberOfRegenerations(
+            season,
+            _tokenId
         );
+
+        require(numOfRegenerations < limits[typeMintUint], "Times limit");
         require(
             genesisHashContract.ownerOf(_tokenId) == _address,
             "Wrong owner"
         );
+
+        uint256 newNumOfRegenerations = numOfRegenerations + 1;
         genesisHashContract.setTimesOfRegeneration(
             season,
             _tokenId,
-            genesisHashContract._numberOfRegenerations(season, _tokenId) + 1
+            newNumOfRegenerations
+        );
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _address,
+            typeMintUint,
+            false
         );
 
         emit RegenerationFromGenesisHash(
             _address,
-            monsterContract.mintMonster(
-                _address,
-                uint8(TypeMint.GENESIS_HASH),
-                false
-            ),
+            mintedMonsterId,
             seeds,
             _tokenId,
             address(genesisHashContract),
@@ -2399,6 +2367,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory seeds,
         uint8 _monsterIdGame
     ) private {
+        uint8 typeMintUint = uint8(_typeMint);
         if (isERC721(_addressContract)) {
             require(
                 IERC721(_addressContract).ownerOf(_tokenId) == _address,
@@ -2416,10 +2385,17 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
             "Times limit"
         );
         _timesRegenExternal[season][_chainId][_addressContract][_tokenId]++;
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _address,
+            typeMintUint,
+            false
+        );
+
         emit RegenerationFromExternalNFT(
             uint8(_typeMint),
             _address,
-            monsterContract.mintMonster(_address, uint8(_typeMint), false),
+            mintedMonsterId,
             seeds,
             _addressContract,
             _tokenId,
@@ -2434,28 +2410,34 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            hashChipNFTContract._numberOfRegenerations(season, _tokenId) <
-                limits[uint8(TypeMint.HASH_CHIP_NFT)],
-            "Times limit"
+        uint8 typeMintUint = uint8(TypeMint.HASH_CHIP_NFT);
+        uint256 numOfRegenerations = hashChipNFTContract._numberOfRegenerations(
+            season,
+            _tokenId
         );
+
+        require(numOfRegenerations < limits[typeMintUint], "Times limit");
         require(
             hashChipNFTContract.ownerOf(_tokenId) == _address,
             "Wrong owner"
         );
+
+        uint256 newNumOfRegenerations = numOfRegenerations + 1;
         hashChipNFTContract.setTimesOfRegeneration(
             season,
             _tokenId,
-            hashChipNFTContract._numberOfRegenerations(season, _tokenId) + 1
+            newNumOfRegenerations
+        );
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _address,
+            typeMintUint,
+            false
         );
 
         emit RegenerationFromHashChip(
             _address,
-            monsterContract.mintMonster(
-                _address,
-                uint8(TypeMint.HASH_CHIP_NFT),
-                false
-            ),
+            mintedMonsterId,
             seeds,
             _tokenId,
             address(hashChipNFTContract),
@@ -2481,11 +2463,9 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
      * @param _itemFusionIds: _itemFusionIds
      * @param _itemFusionAmounts: _itemFusionAmounts
      */
-    function mintMonster(MintParams calldata _mintParams)
-        external
-        payable
-        nonReentrant
-    {
+    function mintMonster(
+        MintParams calldata _mintParams
+    ) external payable nonReentrant {
         require(_mintParams.deadline > block.timestamp, "Deadline exceeded");
         require(!_isSigned[_mintParams.sig], "Signature used");
         require(_mintParams.account == msg.sender, "Not owner");
@@ -2499,14 +2479,14 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         );
         require(signer == validator, "Validator fail signature");
 
+        // Handle different minting types
+        uint8 typeMint = uint8(_mintParams.typeMint);
+
         if (
-            _mintParams.typeMint == TypeMint.NFT ||
-            _mintParams.typeMint == TypeMint.COLLABORATION_NFT
+            typeMint == uint8(TypeMint.NFT) ||
+            typeMint == uint8(TypeMint.COLLABORATION_NFT)
         ) {
-            require(
-                _mintParams.tokenIds.length == 1,
-                "Valid tokenIds"
-            );
+            require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
             _fromExternalNFT(
                 msg.sender,
                 _mintParams.typeMint,
@@ -2516,70 +2496,57 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 _mintParams.seed,
                 _mintParams.monsterIdGame
             );
-        } else if (_mintParams.typeMint == TypeMint.FREE) {
-            require(
-                _mintParams.tokenIds.length == 0,
-                "Valid tokenIds"
-            );
+        } else if (typeMint == uint8(TypeMint.FREE)) {
+            require(_mintParams.tokenIds.length == 0, "Valid tokenIds");
             _mintMonsterFree(
                 msg.sender,
                 _mintParams.seed,
                 _mintParams.monsterIdGame
             );
-        } else if (_mintParams.typeMint == TypeMint.GENESIS_HASH) {
-            require(
-                _mintParams.tokenIds.length == 1,
-                "Valid tokenIds"
-            );
+        } else if (typeMint == uint8(TypeMint.GENESIS_HASH)) {
+            require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
             _fromGenesisHash(
                 msg.sender,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
                 _mintParams.monsterIdGame
             );
-        } else if (_mintParams.typeMint == TypeMint.GENERAL_HASH) {
-            require(
-                _mintParams.tokenIds.length == 1,
-                "Valid tokenIds"
-            );
+        } else if (typeMint == uint8(TypeMint.GENERAL_HASH)) {
+            require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
             _fromGeneralHash(
                 msg.sender,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
                 _mintParams.monsterIdGame
             );
-        } else if (_mintParams.typeMint == TypeMint.HASH_CHIP_NFT) {
-            require(
-                _mintParams.tokenIds.length == 1,
-                "Valid tokenIds"
-            );
+        } else if (typeMint == uint8(TypeMint.HASH_CHIP_NFT)) {
+            require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
             _fromHashChipNFT(
                 msg.sender,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
                 _mintParams.monsterIdGame
             );
-        } else if (_mintParams.typeMint == TypeMint.REGENERATION_ITEM) {
-            require(
-                _mintParams.tokenIds.length == 1,
-                "Valid tokenIds"
-            );
+        } else if (typeMint == uint8(TypeMint.REGENERATION_ITEM)) {
+            require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
             _mintMonsterFromRegeneration(
                 msg.sender,
                 uint8(_mintParams.tokenIds[0]),
                 _mintParams.seed,
                 _mintParams.monsterIdGame
             );
-        } else if (_mintParams.typeMint == TypeMint.FUSION_GENESIS_HASH) {
+        } else if (
+            typeMint == uint8(TypeMint.FUSION_GENESIS_HASH) ||
+            typeMint == uint8(TypeMint.FUSION_GENERAL_HASH) ||
+            typeMint == uint8(TypeMint.FUSION_MULTIPLE_HASH) ||
+            typeMint == uint8(TypeMint.FUSION_MONSTER)
+        ) {
             require(
                 _mintParams.itemFusionIds.length ==
                     _mintParams.itemFusionAmounts.length,
                 "Input error"
             );
-            require(
-                _mintParams.tokenIds.length == 2,
-                "Valid tokenIds"
-            );
+            require(_mintParams.tokenIds.length == 2, "Valid tokenIds");
             if (_mintParams.itemFusionIds.length > 0) {
                 fusionItem.burnMultipleItem(
                     msg.sender,
@@ -2587,85 +2554,40 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                     _mintParams.itemFusionAmounts
                 );
             }
-            _fusionGenesisHash(
-                msg.sender,
-                _mintParams.tokenIds,
-                _mintParams.seed,
-                _mintParams.monsterIdGame
-            );
-        } else if (_mintParams.typeMint == TypeMint.FUSION_GENERAL_HASH) {
-            require(
-                _mintParams.itemFusionIds.length ==
-                    _mintParams.itemFusionAmounts.length,
-                "Input error"
-            );
-            require(
-                _mintParams.tokenIds.length == 2,
-                "Valid tokenIds"
-            );
-            if (_mintParams.itemFusionIds.length > 0) {
-                fusionItem.burnMultipleItem(
+            if (typeMint == uint8(TypeMint.FUSION_GENESIS_HASH)) {
+                _fusionGenesisHash(
                     msg.sender,
-                    _mintParams.itemFusionIds,
-                    _mintParams.itemFusionAmounts
+                    _mintParams.tokenIds,
+                    _mintParams.seed,
+                    _mintParams.monsterIdGame
+                );
+            } else if (typeMint == uint8(TypeMint.FUSION_GENERAL_HASH)) {
+                _fusionGeneralHash(
+                    msg.sender,
+                    _mintParams.tokenIds,
+                    _mintParams.seed,
+                    _mintParams.monsterIdGame
+                );
+            } else if (typeMint == uint8(TypeMint.FUSION_MULTIPLE_HASH)) {
+                _fusionMultipleHash(
+                    msg.sender,
+                    _mintParams.tokenIds,
+                    _mintParams.seed,
+                    _mintParams.monsterIdGame
+                );
+            } else if (typeMint == uint8(TypeMint.FUSION_MONSTER)) {
+                _fusionMonsterNFT(
+                    msg.sender,
+                    _mintParams.tokenIds,
+                    _mintParams.seed,
+                    _mintParams.monsterIdGame
                 );
             }
-            _fusionGeneralHash(
-                msg.sender,
-                _mintParams.tokenIds,
-                _mintParams.seed,
-                _mintParams.monsterIdGame
-            );
-        } else if (_mintParams.typeMint == TypeMint.FUSION_MULTIPLE_HASH) {
-            require(
-                _mintParams.itemFusionIds.length ==
-                    _mintParams.itemFusionAmounts.length,
-                "Input error"
-            );
-            require(
-                _mintParams.tokenIds.length == 2,
-                "Valid tokenIds"
-            );
-            if (_mintParams.itemFusionIds.length > 0) {
-                fusionItem.burnMultipleItem(
-                    msg.sender,
-                    _mintParams.itemFusionIds,
-                    _mintParams.itemFusionAmounts
-                );
-            }
-            _fusionMultipleHash(
-                msg.sender,
-                _mintParams.tokenIds,
-                _mintParams.seed,
-                _mintParams.monsterIdGame
-            );
-        } else if (_mintParams.typeMint == TypeMint.FUSION_MONSTER) {
-            require(
-                _mintParams.itemFusionIds.length ==
-                    _mintParams.itemFusionAmounts.length,
-                "Input error"
-            );
-            require(
-                _mintParams.tokenIds.length == 2,
-                "Valid tokenIds"
-            );
-            if (_mintParams.itemFusionIds.length > 0) {
-                fusionItem.burnMultipleItem(
-                    msg.sender,
-                    _mintParams.itemFusionIds,
-                    _mintParams.itemFusionAmounts
-                );
-            }
-            _fusionMonsterNFT(
-                msg.sender,
-                _mintParams.tokenIds,
-                _mintParams.seed,
-                _mintParams.monsterIdGame
-            );
         } else {
             revert("Unsupported type");
         }
 
+        // Handle cost
         if (_mintParams.usingCost == CostMint.OAS) {
             require(
                 payable(receiveFee).send(_mintParams.cost),
@@ -2675,13 +2597,11 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
             tokenBaseContract.burnToken(msg.sender, _mintParams.cost);
         } else if (_mintParams.usingCost == CostMint.TICKET) {
             require(
-                _mintParams.ticketIds.length > _mintParams.ticketAmounts.length,
+                _mintParams.ticketIds.length ==
+                    _mintParams.ticketAmounts.length,
                 "Valid ticket"
             );
-            require(
-                _mintParams.ticketIds.length > 0,
-                "Valid ticketIds > 0"
-            );
+            require(_mintParams.ticketIds.length > 0, "Valid ticketIds > 0");
             for (
                 uint8 index = 0;
                 index < _mintParams.ticketIds.length;
@@ -2711,13 +2631,14 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
     ) private {
         require(regenerationItem.isMintMonster(_itemId), "Wrong id");
         regenerationItem.burn(account, _itemId, 1);
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            account,
+            uint8(TypeMint.REGENERATION_ITEM),
+            false
+        );
         emit RegenerationFromItems(
             account,
-            monsterContract.mintMonster(
-                account,
-                uint8(TypeMint.REGENERATION_ITEM),
-                false
-            ),
+            mintedMonsterId,
             _seeds,
             _itemId,
             address(regenerationItem),
@@ -2733,9 +2654,14 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory _seeds,
         uint8 _monsterIdGame
     ) private {
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            owner,
+            uint8(TypeMint.FREE),
+            true
+        );
         emit RegenerationFreeMonster(
             owner,
-            monsterContract.mintMonster(owner, uint8(TypeMint.FREE), true),
+            mintedMonsterId,
             _seeds,
             _monsterIdGame
         );
@@ -2754,42 +2680,44 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory _seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            monsterContract.ownerOf(_tokenIds[0]) == _owner,
-            "The owner is not correct"
-        );
-        require(
-            monsterContract.ownerOf(_tokenIds[1]) == _owner,
-            "The owner is not correct"
-        );
-        bool lifeSpanFistMonster = monsterContract.getStatusMonster(
+        // require(
+        //     monsterContract.ownerOf(_tokenIds[0]) == _owner,
+        //     "The owner is not correct"
+        // );
+        // require(
+        //     monsterContract.ownerOf(_tokenIds[1]) == _owner,
+        //     "The owner is not correct"
+        // );
+
+        bool lifeSpanFirstMonster = monsterContract.getStatusMonster(
             _tokenIds[0]
         );
         bool lifeSpanLastMonster = monsterContract.getStatusMonster(
             _tokenIds[1]
         );
-        if (!lifeSpanFistMonster) {
+
+        if (!lifeSpanFirstMonster) {
             monsterMemory.mint(_owner, _tokenIds[0]);
         }
         if (!lifeSpanLastMonster) {
             monsterMemory.mint(_owner, _tokenIds[1]);
         }
-        bool isFee;
-        if (
-            monsterContract.isFreeMonster(_tokenIds[0]) ||
-            monsterContract.isFreeMonster(_tokenIds[1])
-        ) {
-            isFee = true;
-        }
+
+        bool isFee = monsterContract.isFreeMonster(_tokenIds[0]) ||
+            monsterContract.isFreeMonster(_tokenIds[1]);
+
         monsterContract.burn(_tokenIds[0]);
         monsterContract.burn(_tokenIds[1]);
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _owner,
+            uint8(TypeMint.FUSION_MONSTER),
+            isFee
+        );
+
         emit FusionMonsterNFT(
             _owner,
-            monsterContract.mintMonster(
-                _owner,
-                uint8(TypeMint.FUSION_MONSTER),
-                isFee
-            ),
+            mintedMonsterId,
             _tokenIds,
             _seeds,
             address(monsterContract),
@@ -2810,45 +2738,54 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory _seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            IERC721(address(genesisHashContract)).ownerOf(_tokenIds[0]) ==
-                _owner,
-            "The owner is not correct"
+        // require(
+        //     IERC721(address(genesisHashContract)).ownerOf(_tokenIds[0]) ==
+        //         _owner,
+        //     "The owner is not correct"
+        // );
+        // require(
+        //     IERC721(address(genesisHashContract)).ownerOf(_tokenIds[1]) ==
+        //         _owner,
+        //     "The owner is not correct"
+        // );
+
+        uint8 typeMintUint = uint8(TypeMint.GENESIS_HASH);
+        uint256 regenCountToken0 = genesisHashContract._numberOfRegenerations(
+            season,
+            _tokenIds[0]
         );
-        require(
-            IERC721(address(genesisHashContract)).ownerOf(_tokenIds[1]) ==
-                _owner,
-            "The owner is not correct"
+        uint256 regenCountToken1 = genesisHashContract._numberOfRegenerations(
+            season,
+            _tokenIds[1]
         );
+
         require(
-            genesisHashContract._numberOfRegenerations(season, _tokenIds[0]) <
-                limits[uint8(TypeMint.GENESIS_HASH)] &&
-                genesisHashContract._numberOfRegenerations(
-                    season,
-                    _tokenIds[1]
-                ) <
-                limits[uint8(TypeMint.GENESIS_HASH)],
+            regenCountToken0 < limits[typeMintUint] &&
+                regenCountToken1 < limits[typeMintUint],
             "Exceed the allowed number of times"
         );
 
         genesisHashContract.setTimesOfRegeneration(
             season,
             _tokenIds[0],
-            genesisHashContract._numberOfRegenerations(season, _tokenIds[0]) + 1
+            regenCountToken0 + 1
         );
         genesisHashContract.setTimesOfRegeneration(
             season,
             _tokenIds[1],
-            genesisHashContract._numberOfRegenerations(season, _tokenIds[1]) + 1
+            regenCountToken1 + 1
         );
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _owner,
+            uint8(TypeMint.FUSION_GENESIS_HASH),
+            false
+        );
+
         emit FusionGenesisHash(
             _owner,
             _tokenIds,
-            monsterContract.mintMonster(
-                _owner,
-                uint8(TypeMint.FUSION_GENESIS_HASH),
-                false
-            ),
+            mintedMonsterId,
             _seeds,
             address(genesisHashContract),
             _monsterIdGame
@@ -2868,57 +2805,59 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory _seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            generalHashContract.ownerOf(_tokenIds[0]) == _owner,
-            "The owner is not correct"
-        );
-        require(
-            generalHashContract.ownerOf(_tokenIds[1]) == _owner,
-            "The owner is not correct"
-        );
-        require(
-            generalHashContract._numberOfRegenerations(season, _tokenIds[0]) <
-                limits[uint8(TypeMint.GENERAL_HASH)] &&
-                generalHashContract._numberOfRegenerations(
-                    season,
-                    _tokenIds[1]
-                ) <
-                limits[uint8(TypeMint.GENERAL_HASH)],
-            "Exceed the allowed number of times"
-        );
-        genesisHashContract.setTimesOfRegeneration(
+        // require(
+        //     generalHashContract.ownerOf(_tokenIds[0]) == _owner,
+        //     "The owner is not correct"
+        // );
+        // require(
+        //     generalHashContract.ownerOf(_tokenIds[1]) == _owner,
+        //     "The owner is not correct"
+        // );
+
+        uint8 typeMintUint = uint8(TypeMint.GENERAL_HASH);
+        uint256 regenCount0 = generalHashContract._numberOfRegenerations(
             season,
-            _tokenIds[0],
-            generalHashContract._numberOfRegenerations(season, _tokenIds[0]) + 1
+            _tokenIds[0]
         );
-        genesisHashContract.setTimesOfRegeneration(
+        uint256 regenCount1 = generalHashContract._numberOfRegenerations(
             season,
-            _tokenIds[1],
-            generalHashContract._numberOfRegenerations(season, _tokenIds[1]) + 1
+            _tokenIds[1]
         );
 
-        if (
-            generalHashContract._numberOfRegenerations(season, _tokenIds[0]) +
-                1 ==
-            limits[uint8(TypeMint.GENERAL_HASH)]
-        ) {
+        require(
+            regenCount0 < limits[typeMintUint] &&
+                regenCount1 < limits[typeMintUint],
+            "Exceed the allowed number of times"
+        );
+
+        generalHashContract.setTimesOfRegeneration(
+            season,
+            _tokenIds[0],
+            regenCount0 + 1
+        );
+        generalHashContract.setTimesOfRegeneration(
+            season,
+            _tokenIds[1],
+            regenCount1 + 1
+        );
+
+        if (regenCount0 + 1 == limits[typeMintUint]) {
             generalHashContract.burn(_tokenIds[0]);
         }
-        if (
-            generalHashContract._numberOfRegenerations(season, _tokenIds[1]) +
-                1 ==
-            limits[uint8(TypeMint.GENERAL_HASH)]
-        ) {
+        if (regenCount1 + 1 == limits[typeMintUint]) {
             generalHashContract.burn(_tokenIds[1]);
         }
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _owner,
+            uint8(TypeMint.FUSION_GENERAL_HASH),
+            false
+        );
+
         emit FusionGeneralHash(
             _owner,
             _tokenIds,
-            monsterContract.mintMonster(
-                _owner,
-                uint8(TypeMint.FUSION_GENERAL_HASH),
-                false
-            ),
+            mintedMonsterId,
             _seeds,
             address(generalHashContract),
             _monsterIdGame
@@ -2938,49 +2877,57 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] memory _seeds,
         uint8 _monsterIdGame
     ) private {
-        require(
-            genesisHashContract.ownerOf(_tokenIds[0]) == _owner,
-            "The owner is not correct"
+        // require(
+        //     genesisHashContract.ownerOf(_tokenIds[0]) == _owner,
+        //     "The owner is not correct"
+        // );
+        // require(
+        //     generalHashContract.ownerOf(_tokenIds[1]) == _owner,
+        //     "The owner is not correct"
+        // );
+
+        uint8 genesisHashLimit = uint8(TypeMint.GENESIS_HASH);
+        uint8 generalHashLimit = uint8(TypeMint.GENERAL_HASH);
+        uint256 regenCount0 = genesisHashContract._numberOfRegenerations(
+            season,
+            _tokenIds[0]
         );
-        require(
-            generalHashContract.ownerOf(_tokenIds[1]) == _owner,
-            "The owner is not correct"
+        uint256 regenCount1 = generalHashContract._numberOfRegenerations(
+            season,
+            _tokenIds[1]
         );
+
         require(
-            genesisHashContract._numberOfRegenerations(season, _tokenIds[0]) <
-                limits[uint8(TypeMint.GENESIS_HASH)] &&
-                generalHashContract._numberOfRegenerations(
-                    season,
-                    _tokenIds[1]
-                ) <
-                limits[uint8(TypeMint.GENERAL_HASH)],
+            regenCount0 < limits[genesisHashLimit] &&
+                regenCount1 < limits[generalHashLimit],
             "Exceed the allowed number of times"
         );
+
         genesisHashContract.setTimesOfRegeneration(
             season,
             _tokenIds[0],
-            genesisHashContract._numberOfRegenerations(season, _tokenIds[0]) + 1
+            regenCount0 + 1
         );
         generalHashContract.setTimesOfRegeneration(
             season,
             _tokenIds[1],
-            generalHashContract._numberOfRegenerations(season, _tokenIds[1]) + 1
+            regenCount1 + 1
         );
-        if (
-            generalHashContract._numberOfRegenerations(season, _tokenIds[1]) +
-                1 ==
-            limits[uint8(TypeMint.GENERAL_HASH)]
-        ) {
+
+        if (regenCount1 + 1 == limits[generalHashLimit]) {
             generalHashContract.burn(_tokenIds[1]);
         }
+
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _owner,
+            uint8(TypeMint.FUSION_MULTIPLE_HASH),
+            false
+        );
+
         emit FusionMultipleHash(
             _owner,
             _tokenIds,
-            monsterContract.mintMonster(
-                _owner,
-                uint8(TypeMint.FUSION_MULTIPLE_HASH),
-                false
-            ),
+            mintedMonsterId,
             _seeds,
             address(genesisHashContract),
             address(generalHashContract),
@@ -3002,31 +2949,29 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         } else {
             tokenBaseContract.burnToken(msg.sender, _cost);
         }
-        if (_typeMint == TypeMint.NFT) {
+
+        uint8 typeMintUint = uint8(_typeMint);
+
+        if (
+            _typeMint == TypeMint.NFT || _typeMint == TypeMint.COLLABORATION_NFT
+        ) {
             require(
                 _timesRegenExternal[season][_chainId][_address][_tokenId] ==
-                    limits[uint8(TypeMint.NFT)],
-                "Item being used"
-            );
-            _timesRegenExternal[season][_chainId][_address][_tokenId] = 0;
-        } else if (_typeMint == TypeMint.COLLABORATION_NFT) {
-            require(
-                _timesRegenExternal[season][_chainId][_address][_tokenId] ==
-                    limits[uint8(TypeMint.COLLABORATION_NFT)],
+                    limits[typeMintUint],
                 "Item being used"
             );
             _timesRegenExternal[season][_chainId][_address][_tokenId] = 0;
         } else if (_typeMint == TypeMint.GENESIS_HASH) {
             require(
                 genesisHashContract._numberOfRegenerations(season, _tokenId) ==
-                    limits[uint8(TypeMint.GENESIS_HASH)],
+                    limits[typeMintUint],
                 "Item being used"
             );
             genesisHashContract.setTimesOfRegeneration(season, _tokenId, 0);
         } else if (_typeMint == TypeMint.HASH_CHIP_NFT) {
             require(
                 hashChipNFTContract._numberOfRegenerations(season, _tokenId) ==
-                    limits[uint8(TypeMint.HASH_CHIP_NFT)],
+                    limits[typeMintUint],
                 "Item being used"
             );
             hashChipNFTContract.setTimesOfRegeneration(season, _tokenId, 0);
@@ -3048,26 +2993,36 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _address,
         uint256 _tokenId
     ) public view returns (uint256 fee) {
+        uint256 regenerationCount;
+
         if (_typeMint == TypeMint.NFT) {
-            fee = costOfNfts[
-                _timesRegenExternal[season][_chainId][_address][_tokenId]
+            regenerationCount = _timesRegenExternal[season][_chainId][_address][
+                _tokenId
             ];
+            fee = costOfNfts[regenerationCount];
         } else if (_typeMint == TypeMint.COLLABORATION_NFT) {
-            fee = costOfExternal[
-                _timesRegenExternal[season][_chainId][_address][_tokenId]
+            regenerationCount = _timesRegenExternal[season][_chainId][_address][
+                _tokenId
             ];
+            fee = costOfExternal[regenerationCount];
         } else if (_typeMint == TypeMint.GENESIS_HASH) {
-            fee = costOfGenesis[
-                genesisHashContract._numberOfRegenerations(season, _tokenId)
-            ];
+            regenerationCount = genesisHashContract._numberOfRegenerations(
+                season,
+                _tokenId
+            );
+            fee = costOfGenesis[regenerationCount];
         } else if (_typeMint == TypeMint.GENERAL_HASH) {
-            fee = costOfGeneral[
-                generalHashContract._numberOfRegenerations(season, _tokenId)
-            ];
+            regenerationCount = generalHashContract._numberOfRegenerations(
+                season,
+                _tokenId
+            );
+            fee = costOfGeneral[regenerationCount];
         } else if (_typeMint == TypeMint.HASH_CHIP_NFT) {
-            fee = costOfHashChip[
-                hashChipNFTContract._numberOfRegenerations(season, _tokenId)
-            ];
+            regenerationCount = hashChipNFTContract._numberOfRegenerations(
+                season,
+                _tokenId
+            );
+            fee = costOfHashChip[regenerationCount];
         } else {
             revert("Unsupported type");
         }
@@ -3098,6 +3053,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
     ) external payable nonReentrant {
         require(_deadline > block.timestamp, "Deadline exceeded");
         require(!_isSigned[_sig], "Signature used");
+
         address signer = recoverOAS(
             uint8(_typeMint),
             _account,
@@ -3107,6 +3063,9 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
             _sig
         );
         require(signer == validator, "Validator fail signature");
+
+        _isSigned[_sig] = true;
+
         _refreshTimesOfRegeneration(
             _typeMint,
             _chainId,
