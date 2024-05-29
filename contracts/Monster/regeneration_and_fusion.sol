@@ -2197,7 +2197,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address owner,
         uint256 monsterId,
         uint8[] seeds,
-        uint8 itemId,
+        uint256 itemId,
         address itemAddress,
         uint256 monsterIdGame
     );
@@ -2578,7 +2578,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
             require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
             _mintMonsterFromRegeneration(
                 msg.sender,
-                uint8(_mintParams.tokenIds[0]),
+                _mintParams.tokenIds[0],
                 _mintParams.seed,
                 _mintParams.monsterIdGame,
                 _mintParams.opt
@@ -2673,7 +2673,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
      */
     function _mintMonsterFromRegeneration(
         address account,
-        uint8 _itemId,
+        uint256 _itemId,
         uint8[] memory _seeds,
         uint256 _monsterIdGame,
         bool _opt
