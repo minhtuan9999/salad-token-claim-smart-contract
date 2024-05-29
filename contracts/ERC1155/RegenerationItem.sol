@@ -2762,7 +2762,7 @@ contract RegenerationItem is ERC1155, AccessControl, Ownable {
                 );
             }
 
-            if ((balanceOf(from, ids[i]) - amounts[i]) == 0) {
+            if (from != address(0) && (balanceOf(from, ids[i]) - amounts[i]) == 0) {
                 _listTokensOfAddress[from].remove(ids[i]);
             }
 

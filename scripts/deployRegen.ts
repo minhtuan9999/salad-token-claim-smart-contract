@@ -12,7 +12,9 @@ async function main() {
   const RegenFusion= await ethers.getContractFactory("RegenFusionMonster");
   const regenFusion = await RegenFusion.deploy();
   regenFusion.deployed(); 
-  // regenFusion.initContractAddress(tokenXXX.address, general.address, genesis.address, hashChipNFT.address, monsterMemory.address, regenerationItem.address, fusionItem.address, monster.address, admin);
+  // console.log(await regenFusion.encodeOAS(0, "0x48C067bBA30256384c2e3194d282b70bf86C9226", 0, "118027387037952600000", "1716618377"));
+  
+  // regenerationItem.mintMultipleItem("0x48C067bBA30256384c2e3194d282b70bf86C9226", [0], [1]);
   // await wait();
   console.log(`RegenFusionMonster=${regenFusion.address}`)
 }

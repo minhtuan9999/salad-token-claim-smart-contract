@@ -3100,9 +3100,9 @@ contract Monster is
         uint256 firstTokenId,
         uint256 batchSize
     ) internal virtual override {
-        require(to != address(0), "Valid address");
-        require(!isMonsterFree[firstTokenId], "NFT free is not transferrable");
-
+        if (to != address(0)) {
+            require(!isMonsterFree[firstTokenId], "NFT free is not transferrable");
+        }
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
         _listTokensOfAddress[to].add(firstTokenId);
         _listTokensOfAddress[from].remove(firstTokenId);
