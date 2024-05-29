@@ -2068,7 +2068,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         FUSION_GENESIS_HASH,
         FUSION_MULTIPLE_HASH,
         FUSION_GENERAL_HASH,
-        FUSION_MONSTER
+        FUSION_MONSTER,
+        RANDOM_HASH
     }
 
     enum CostMint {
@@ -2081,7 +2082,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
     struct MintParams {
         TypeMint typeMint;
         address addressContract;
-        uint8 chainId;
+        uint256 chainId;
         address account;
         uint256[] tokenIds;
         CostMint usingCost;
@@ -2093,7 +2094,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] ticketAmounts;
         uint256[] itemFusionIds;
         uint256[] itemFusionAmounts;
-        uint8 monsterIdGame;
+        uint256 monsterIdGame;
+        bool opt;
     }
 
     // Costs and Limits
@@ -2117,7 +2119,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256[] tokenIds,
         uint8[] seeds,
         address monsterAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
 
     event FusionGenesisHash(
@@ -2126,7 +2128,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 newTokenId,
         uint8[] seeds,
         address monsterAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
 
     event FusionGeneralHash(
@@ -2135,7 +2137,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 newTokenId,
         uint8[] seeds,
         address monsterAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
 
     event FusionMultipleHash(
@@ -2145,7 +2147,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] seeds,
         address genesisAddress,
         address generalAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
 
     event RefreshTimesRegeneration(uint8 _type, uint256 tokenId);
@@ -2156,7 +2158,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] seeds,
         uint256 tokenId,
         address hashAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
     event RegenerationFromGeneralHash(
         address owner,
@@ -2164,7 +2166,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] seeds,
         uint256 tokenId,
         address hashAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
     event RegenerationFromHashChip(
         address owner,
@@ -2172,7 +2174,14 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] seeds,
         uint256 tokenId,
         address hashAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
+    );
+    event RegenerationFromRandomHash(
+        uint8 _type,
+        address owner,
+        uint256 monsterId,
+        uint8[] seeds,
+        uint256 monsterIdGame
     );
     event RegenerationFromExternalNFT(
         uint8 _type,
@@ -2182,7 +2191,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address bornAddress,
         uint256 bornId,
         uint256 chainId,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
     event RegenerationFromItems(
         address owner,
@@ -2190,14 +2199,14 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint8[] seeds,
         uint8 itemId,
         address itemAddress,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
 
     event RegenerationFreeMonster(
         address owner,
         uint256 monsterId,
         uint8[] seeds,
-        uint8 monsterIdGame
+        uint256 monsterIdGame
     );
 
     // Check status mint nft free of address
@@ -2276,7 +2285,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _address,
         uint256 _tokenId,
         uint8[] memory seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame,
+        bool _opt
     ) private {
         uint8 typeMintUint = uint8(TypeMint.GENERAL_HASH);
         uint256 numOfRegenerations = generalHashContract._numberOfRegenerations(
@@ -2304,7 +2314,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 mintedMonsterId = monsterContract.mintMonster(
             _address,
             typeMintUint,
-            false
+            _opt
         );
 
         emit RegenerationFromGeneralHash(
@@ -2321,7 +2331,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _address,
         uint256 _tokenId,
         uint8[] memory seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame,
+        bool _opt
     ) private {
         uint8 typeMintUint = uint8(TypeMint.GENESIS_HASH);
         uint256 numOfRegenerations = genesisHashContract._numberOfRegenerations(
@@ -2345,7 +2356,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 mintedMonsterId = monsterContract.mintMonster(
             _address,
             typeMintUint,
-            false
+            _opt
         );
 
         emit RegenerationFromGenesisHash(
@@ -2365,7 +2376,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _addressContract,
         uint256 _tokenId,
         uint8[] memory seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame,
+        bool _opt
     ) private {
         uint8 typeMintUint = uint8(_typeMint);
         if (isERC721(_addressContract)) {
@@ -2389,7 +2401,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 mintedMonsterId = monsterContract.mintMonster(
             _address,
             typeMintUint,
-            false
+            _opt
         );
 
         emit RegenerationFromExternalNFT(
@@ -2404,11 +2416,34 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         );
     }
 
+    function _fromRandomHash(
+        address _address,
+        uint8[] memory seeds,
+        uint256 _monsterIdGame,
+        bool _opt
+    ) private {
+        uint8 typeMintUint = uint8(TypeMint.RANDOM_HASH);
+        uint256 mintedMonsterId = monsterContract.mintMonster(
+            _address,
+            typeMintUint,
+            _opt
+        );
+
+        emit RegenerationFromRandomHash(
+            typeMintUint,
+            _address,
+            mintedMonsterId,
+            seeds,
+            _monsterIdGame
+        );
+    }
+
     function _fromHashChipNFT(
         address _address,
         uint256 _tokenId,
         uint8[] memory seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame,
+        bool _opt
     ) private {
         uint8 typeMintUint = uint8(TypeMint.HASH_CHIP_NFT);
         uint256 numOfRegenerations = hashChipNFTContract._numberOfRegenerations(
@@ -2432,7 +2467,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 mintedMonsterId = monsterContract.mintMonster(
             _address,
             typeMintUint,
-            false
+            _opt
         );
 
         emit RegenerationFromHashChip(
@@ -2494,14 +2529,16 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 _mintParams.addressContract,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
-                _mintParams.monsterIdGame
+                _mintParams.monsterIdGame,
+                _mintParams.opt
             );
         } else if (typeMint == uint8(TypeMint.FREE)) {
             require(_mintParams.tokenIds.length == 0, "Valid tokenIds");
             _mintMonsterFree(
                 msg.sender,
                 _mintParams.seed,
-                _mintParams.monsterIdGame
+                _mintParams.monsterIdGame,
+                true
             );
         } else if (typeMint == uint8(TypeMint.GENESIS_HASH)) {
             require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
@@ -2509,7 +2546,15 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 msg.sender,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
-                _mintParams.monsterIdGame
+                _mintParams.monsterIdGame,
+                _mintParams.opt
+            );
+        } else if (typeMint == uint8(TypeMint.RANDOM_HASH)) {
+            _fromRandomHash(
+                msg.sender,
+                _mintParams.seed,
+                _mintParams.monsterIdGame,
+                _mintParams.opt
             );
         } else if (typeMint == uint8(TypeMint.GENERAL_HASH)) {
             require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
@@ -2517,7 +2562,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 msg.sender,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
-                _mintParams.monsterIdGame
+                _mintParams.monsterIdGame,
+                _mintParams.opt
             );
         } else if (typeMint == uint8(TypeMint.HASH_CHIP_NFT)) {
             require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
@@ -2525,7 +2571,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 msg.sender,
                 _mintParams.tokenIds[0],
                 _mintParams.seed,
-                _mintParams.monsterIdGame
+                _mintParams.monsterIdGame,
+                _mintParams.opt
             );
         } else if (typeMint == uint8(TypeMint.REGENERATION_ITEM)) {
             require(_mintParams.tokenIds.length == 1, "Valid tokenIds");
@@ -2533,7 +2580,8 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 msg.sender,
                 uint8(_mintParams.tokenIds[0]),
                 _mintParams.seed,
-                _mintParams.monsterIdGame
+                _mintParams.monsterIdGame,
+                _mintParams.opt
             );
         } else if (
             typeMint == uint8(TypeMint.FUSION_GENESIS_HASH) ||
@@ -2627,14 +2675,15 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address account,
         uint8 _itemId,
         uint8[] memory _seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame,
+        bool _opt
     ) private {
         require(regenerationItem.isMintMonster(_itemId), "Wrong id");
         regenerationItem.burn(account, _itemId, 1);
         uint256 mintedMonsterId = monsterContract.mintMonster(
             account,
             uint8(TypeMint.REGENERATION_ITEM),
-            false
+            _opt
         );
         emit RegenerationFromItems(
             account,
@@ -2652,12 +2701,13 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
     function _mintMonsterFree(
         address owner,
         uint8[] memory _seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame,
+        bool _opt
     ) private {
         uint256 mintedMonsterId = monsterContract.mintMonster(
             owner,
             uint8(TypeMint.FREE),
-            true
+            _opt
         );
         emit RegenerationFreeMonster(
             owner,
@@ -2678,7 +2728,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _owner,
         uint256[] memory _tokenIds,
         uint8[] memory _seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame
     ) private {
         // require(
         //     monsterContract.ownerOf(_tokenIds[0]) == _owner,
@@ -2736,7 +2786,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _owner,
         uint256[] memory _tokenIds,
         uint8[] memory _seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame
     ) private {
         // require(
         //     IERC721(address(genesisHashContract)).ownerOf(_tokenIds[0]) ==
@@ -2803,7 +2853,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _owner,
         uint256[] memory _tokenIds,
         uint8[] memory _seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame
     ) private {
         // require(
         //     generalHashContract.ownerOf(_tokenIds[0]) == _owner,
@@ -2875,7 +2925,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         address _owner,
         uint256[] memory _tokenIds,
         uint8[] memory _seeds,
-        uint8 _monsterIdGame
+        uint256 _monsterIdGame
     ) private {
         // require(
         //     genesisHashContract.ownerOf(_tokenIds[0]) == _owner,
