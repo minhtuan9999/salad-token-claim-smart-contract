@@ -2078,7 +2078,6 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         TICKET,
         FREE
     }
-
     struct MintParams {
         TypeMint typeMint;
         address addressContract;
