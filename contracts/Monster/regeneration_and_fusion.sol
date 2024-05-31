@@ -2089,7 +2089,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
         uint256 deadline;
         bytes sig;
         uint8[] seed;
-        uint8[] ticketIds;
+        uint256[] ticketIds;
         uint8[] ticketAmounts;
         uint256[] itemFusionIds;
         uint256[] itemFusionAmounts;
@@ -2110,7 +2110,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
 
     uint8 REGENERATION_TICKET_R = 6;
     uint8 REGENERATION_TICKET_B = 7;
-    mapping(uint8 => bool) public usingTicket;
+    mapping(uint256 => bool) public usingTicket;
 
     event FusionMonsterNFT(
         address owner,
@@ -2655,7 +2655,7 @@ contract RegenFusionMonster is Ownable, AccessControl, ReentrancyGuard {
                 index++
             ) {
                 require(
-                    usingTicket[uint8(_mintParams.ticketIds[index])],
+                    usingTicket[_mintParams.ticketIds[index]],
                     "Item is not supported"
                 );
                 regenerationItem.burn(
