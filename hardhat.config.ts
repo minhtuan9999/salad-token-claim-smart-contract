@@ -9,24 +9,9 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
-    mchVerseTestnet: {
-      url: "https://rpc.sandverse.oasys.games/",
+    kromaTestnet: {
+      url: "https://api.sepolia.kroma.network/",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-      allowUnlimitedContractSize: true,
-    },
-    mchVerseMainnet: {
-      url: "https://rpc.oasys.mycryptoheroes.net/",
-      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
-      allowUnlimitedContractSize: true,
-    },
-    polygonTestnet: {
-      url: "https://rpc-mumbai.maticvigil.com/",
-      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
-      allowUnlimitedContractSize: true,
-    },
-    polygonMainnet: {
-      url: "https://polygon.llamarpc.com/",
-      accounts: process.env.PRIVATE_KEY!== undefined? [process.env.PRIVATE_KEY] : [],
       allowUnlimitedContractSize: true,
     }
   },
