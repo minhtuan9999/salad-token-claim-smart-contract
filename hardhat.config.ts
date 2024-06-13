@@ -9,8 +9,13 @@ const config: HardhatUserConfig = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
-    kromaTestnet: {
-      url: "https://api.sepolia.kroma.network/",
+    ethereumTestnet: {
+      url: "https://ethereum-sepolia-rpc.publicnode.com",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      allowUnlimitedContractSize: true,
+    },
+    ethereumMainnet: {
+      url: "https://ethereum-rpc.publicnode.com",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
       allowUnlimitedContractSize: true,
     }
