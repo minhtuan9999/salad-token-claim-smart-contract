@@ -11,11 +11,10 @@ contract ClaimSystem is AccessControl, Ownable {
     IERC20 tokenBase;
     address public validator;
 
-        struct UserInfor {
+    struct UserInfor {
         uint256 total;
         uint256 claimed;
     }
-
 
     event ChangeValidatorAddress(address validatorAddress);
     event ClaimToken(
@@ -27,6 +26,7 @@ contract ClaimSystem is AccessControl, Ownable {
 
     mapping(address => uint256) deadlineTimeWithAddressClaim;
     mapping(address => UserInfor) public userInfor;
+    mapping(address => mapping(uint256 => bool)) public epochClaimed;
 
     constructor(IERC20 _tokenBase) {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
@@ -46,6 +46,7 @@ contract ClaimSystem is AccessControl, Ownable {
     }
 
     function claimToken(
+        uint256 _epochMkc,
         address _address,
         uint256 _amount,
         uint256 deadline,
@@ -53,12 +54,14 @@ contract ClaimSystem is AccessControl, Ownable {
     ) external {
         require(_address == _msgSender(), "Unauthorized user");
         require(deadline > block.timestamp, "Deadline exceeded");
+        require(!epochClaimed[_msgSender()][_epochMkc], "Epoch marketcap claimed");
         require(
             deadlineTimeWithAddressClaim[_msgSender()] != deadline,
             "Transaction claimed"
         );
 
         address signer = recoverClaim(
+            _epochMkc,
             block.chainid,
             _msgSender(),
             _amount,
@@ -76,11 +79,13 @@ contract ClaimSystem is AccessControl, Ownable {
         tokenBase.transfer(_msgSender(), _amount);
         // set deadline map msgSender
         deadlineTimeWithAddressClaim[_msgSender()] = deadline;
+        epochClaimed[_msgSender()][_epochMkc] = true;
 
         emit ClaimToken(_msgSender(), _amount, address(tokenBase), sig);
     }
 
     function recoverClaim(
+        uint256 epochMkc,
         uint256 chainId,
         address receiver,
         uint256 amount,
@@ -90,19 +95,26 @@ contract ClaimSystem is AccessControl, Ownable {
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeClaim(chainId, receiver, amount, deadline)
+                    encodeClaim(epochMkc, chainId, receiver, amount, deadline)
                 ),
                 sig
             );
     }
 
     function encodeClaim(
+        uint256 epochMkc,
         uint256 chainId,
         address receiver,
         uint256 amount,
         uint256 deadline
     ) public pure returns (bytes32) {
-        bytes memory m = abi.encode(chainId, receiver, amount, deadline);
+        bytes memory m = abi.encode(
+            epochMkc,
+            chainId,
+            receiver,
+            amount,
+            deadline
+        );
 
         return keccak256(m);
     }
