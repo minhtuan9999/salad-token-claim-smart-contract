@@ -46,7 +46,7 @@ contract ClaimSystem is AccessControl, Ownable {
     }
 
     function claimToken(
-        uint256 _epochMkc,
+        uint256[] memory _epochs,
         address _address,
         uint256 _amount,
         uint256 deadline,
@@ -54,14 +54,19 @@ contract ClaimSystem is AccessControl, Ownable {
     ) external {
         require(_address == _msgSender(), "Unauthorized user");
         require(deadline > block.timestamp, "Deadline exceeded");
-        require(!epochClaimed[_msgSender()][_epochMkc], "Epoch marketcap claimed");
+        for (uint256 index = 0; index < _epochs.length; index++) {
+            require(
+                !epochClaimed[_msgSender()][_epochs[index]],
+                "Epoch marketcap claimed"
+            );
+        }
         require(
             deadlineTimeWithAddressClaim[_msgSender()] != deadline,
             "Transaction claimed"
         );
 
         address signer = recoverClaim(
-            _epochMkc,
+            _epochs,
             block.chainid,
             _msgSender(),
             _amount,
@@ -79,13 +84,15 @@ contract ClaimSystem is AccessControl, Ownable {
         tokenBase.transfer(_msgSender(), _amount);
         // set deadline map msgSender
         deadlineTimeWithAddressClaim[_msgSender()] = deadline;
-        epochClaimed[_msgSender()][_epochMkc] = true;
+        for (uint256 index = 0; index < _epochs.length; index++) {
+            epochClaimed[_msgSender()][_epochs[index]] = true;
+        }
 
         emit ClaimToken(_msgSender(), _amount, address(tokenBase), sig);
     }
 
     function recoverClaim(
-        uint256 epochMkc,
+        uint256[] memory epochs,
         uint256 chainId,
         address receiver,
         uint256 amount,
@@ -95,21 +102,21 @@ contract ClaimSystem is AccessControl, Ownable {
         return
             ECDSA.recover(
                 ECDSA.toEthSignedMessageHash(
-                    encodeClaim(epochMkc, chainId, receiver, amount, deadline)
+                    encodeClaim(epochs, chainId, receiver, amount, deadline)
                 ),
                 sig
             );
     }
 
     function encodeClaim(
-        uint256 epochMkc,
+        uint256[] memory epochs,
         uint256 chainId,
         address receiver,
         uint256 amount,
         uint256 deadline
     ) public pure returns (bytes32) {
         bytes memory m = abi.encode(
-            epochMkc,
+            epochs,
             chainId,
             receiver,
             amount,
