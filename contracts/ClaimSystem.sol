@@ -10,6 +10,7 @@ contract ClaimSystem is AccessControl, Ownable {
     bytes32 public constant MANAGEMENT_ROLE = keccak256("MANAGEMENT_ROLE");
     IERC20 tokenBase;
     address public validator;
+    uint256 public sessionId;
 
     struct UserInfor {
         uint256 total;
@@ -24,25 +25,30 @@ contract ClaimSystem is AccessControl, Ownable {
         bytes signature
     );
 
-    mapping(address => uint256) deadlineTimeWithAddressClaim;
+    mapping(bytes => bool) public _isSignedClaim;
     mapping(address => UserInfor) public userInfor;
-    mapping(address => mapping(uint256 => bool)) public epochClaimed;
+    mapping(uint256 => mapping(address => mapping(uint256 => bool))) public epochClaimed;
 
     constructor(IERC20 _tokenBase) {
         _setRoleAdmin(MANAGEMENT_ROLE, MANAGEMENT_ROLE);
         _setupRole(MANAGEMENT_ROLE, _msgSender());
         validator = _msgSender();
         tokenBase = _tokenBase;
+        sessionId = 1;
     }
 
     /**
      * @dev Change validator address
      * @param _validatorAddress  new validator address
      */
-    function changeValidator(address _validatorAddress) external onlyOwner {
+    function changeValidator(address _validatorAddress) external onlyRole(MANAGEMENT_ROLE) {
         // verify new exchange value
         validator = _validatorAddress;
         emit ChangeValidatorAddress(_validatorAddress);
+    }
+
+    function setSession(uint256 _sessionId) external onlyRole(MANAGEMENT_ROLE) {
+        sessionId = _sessionId;
     }
 
     function claimToken(
@@ -56,14 +62,11 @@ contract ClaimSystem is AccessControl, Ownable {
         require(deadline > block.timestamp, "Deadline exceeded");
         for (uint256 index = 0; index < _epochs.length; index++) {
             require(
-                !epochClaimed[_msgSender()][_epochs[index]],
+                !epochClaimed[sessionId][_msgSender()][_epochs[index]],
                 "Epoch marketcap claimed"
             );
         }
-        require(
-            deadlineTimeWithAddressClaim[_msgSender()] != deadline,
-            "Transaction claimed"
-        );
+        require(!_isSignedClaim[sig], "Signature used");
 
         address signer = recoverClaim(
             _epochs,
@@ -83,9 +86,9 @@ contract ClaimSystem is AccessControl, Ownable {
         // transfer token to user
         tokenBase.transfer(_msgSender(), _amount);
         // set deadline map msgSender
-        deadlineTimeWithAddressClaim[_msgSender()] = deadline;
+        _isSignedClaim[sig] = true;
         for (uint256 index = 0; index < _epochs.length; index++) {
-            epochClaimed[_msgSender()][_epochs[index]] = true;
+            epochClaimed[sessionId][_msgSender()][_epochs[index]] = true;
         }
 
         emit ClaimToken(_msgSender(), _amount, address(tokenBase), sig);
@@ -135,7 +138,7 @@ contract ClaimSystem is AccessControl, Ownable {
     function emergencyWithdraw(
         IERC20 _tokenAddress,
         address _to
-    ) external onlyOwner {
+    ) external onlyRole(MANAGEMENT_ROLE) {
         // Get token balance
         uint256 balance = _tokenAddress.balanceOf(address(this));
 

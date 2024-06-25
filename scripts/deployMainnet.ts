@@ -1,0 +1,24 @@
+import { ethers } from "hardhat";
+require('dotenv').config();
+
+async function main() {
+  const SALD_ADDRESS = process.env.SALD_ADDRESS || "0x5582a479f0c403e207d2578963ccef5d03ba636f";
+
+  // Deploy contract token SALD
+  const SaladToken = await ethers.getContractFactory("SaladToken");
+  const saladToken = SaladToken.attach(SALD_ADDRESS);
+  console.log(`SALD_ADDRESS=${saladToken.address}`)
+
+  // Deploy contract claim system
+  const ClaimSystem = await ethers.getContractFactory("ClaimSystem");
+  const claimSystem = await ClaimSystem.deploy(saladToken.address);
+  claimSystem.deployed();
+  console.log(`CLAIM_ADDRESS=${claimSystem.address}`)
+}
+
+// We recommend this pattern to be able to use async/await everywhere
+// and properly handle errors.
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

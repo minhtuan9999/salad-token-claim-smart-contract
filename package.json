@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy-testnet": "npx hardhat run --network ethereumTestnet scripts/deploy.ts",
-    "deploy-mainnet": "npx hardhat run --network ethereumMainnet scripts/deploy.ts"
+    "deploy-mainnet": "npx hardhat run --network ethereumMainnet scripts/deployMainnet.ts"
   },
   "repository": {
     "type": "git",
