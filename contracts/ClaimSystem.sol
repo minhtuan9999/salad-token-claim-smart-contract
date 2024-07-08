@@ -53,12 +53,10 @@ contract ClaimSystem is AccessControl, Ownable {
 
     function claimToken(
         uint256[] memory _epochs,
-        address _address,
         uint256 _amount,
         uint256 deadline,
         bytes calldata sig
     ) external {
-        require(_address == _msgSender(), "Unauthorized user");
         require(deadline > block.timestamp, "Deadline exceeded");
         for (uint256 index = 0; index < _epochs.length; index++) {
             require(
